@@ -1,6 +1,6 @@
 {
 	"name": "@open-form/core",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Core package for OpenForm framework - schemas, builders, validation, and serialization utilities",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -55,6 +55,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
+		"postbuild": "node scripts/fix-json-imports.mjs",
 		"dev": "tsup --watch",
 		"clean": "rm -rf dist",
 		"prebuild": "pnpm run clean",

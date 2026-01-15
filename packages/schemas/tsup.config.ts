@@ -9,6 +9,7 @@ export default defineConfig({
 	splitting: false,
 	sourcemap: false,
 	clean: true,
+	preserveImportMeta: true, // Preserve JSON import attributes
 	external: [
 		// TypeBox is dev-only, but mark as external if referenced
 		'@sinclair/typebox',

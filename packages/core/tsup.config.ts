@@ -11,6 +11,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
+  preserveImportMeta: true, // Preserve JSON import attributes
   external: [
     // Mark workspace dependencies as external (they'll be installed separately)
     "@open-form/schemas", // Schema JSON is imported directly from package root
