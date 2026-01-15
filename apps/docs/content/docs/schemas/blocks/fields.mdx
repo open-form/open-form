@@ -1,0 +1,806 @@
+---
+title: Fields
+description: All field types for capturing data
+---
+
+Fields define the data structure of forms. Each field type captures specific kinds of data.
+
+## Field Type Summary
+
+| Type | Value Type | Key Properties |
+|------|-----------|----------------|
+| `text` | `string` | minLength, maxLength, pattern |
+| `number` | `number` | min, max |
+| `boolean` | `boolean` | default |
+| `enum` | `string \| number` | enum (array of options) |
+| `multiselect` | `(string \| number)[]` | options, min, max |
+| `email` | `string` | minLength, maxLength |
+| `uri` | `string` | minLength, maxLength, pattern |
+| `uuid` | `string` | minLength, maxLength, pattern |
+| `date` | `string` | min, max (ISO 8601 YYYY-MM-DD) |
+| `datetime` | `string` | min, max (ISO 8601) |
+| `time` | `string` | min, max (HH:MM:SS) |
+| `duration` | `Duration` | default |
+| `money` | `Money` | min, max |
+| `percentage` | `number` | min, max, precision |
+| `rating` | `number` | min, max, step |
+| `address` | `Address` | default |
+| `phone` | `Phone` | default |
+| `coordinate` | `Coordinate` | default |
+| `bbox` | `Bbox` | default |
+| `person` | `Person` | default |
+| `organization` | `Organization` | default |
+| `identification` | `Identification` | allowedTypes |
+| `fieldset` | `object` | fields (nested) |
+
+## Common Properties
+
+All field types share these base properties:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `string` | Yes | Field type discriminator |
+| `label` | `string` | No | Human-readable label for the field |
+| `required` | `boolean \| string` | No | Whether this field is required. Can be a boolean or logic expression |
+| `visible` | `boolean \| string` | No | Whether this field is visible. Can be a boolean or logic expression. Defaults to true |
+| `description` | `string` | No | Long-form description or helper text displayed in the UI |
+| `disabled` | `boolean \| string` | No | Whether the field is read-only/disabled. Can be a boolean or logic expression |
+| `attrs` | `Record<string, string \| number \| boolean>` | No | Custom attribute-value pairs for field metadata |
+
+---
+
+## Text Field
+
+Text input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'text'` | Yes | Field type discriminator |
+| `minLength` | `number` | No | Minimum character length |
+| `maxLength` | `number` | No | Maximum character length |
+| `pattern` | `string` | No | Regex pattern for validation |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+name:
+  type: text
+  label: Full Name
+  required: true
+  minLength: 2
+  maxLength: 100
+```
+
+```json tab="JSON"
+{
+  "name": {
+    "type": "text",
+    "label": "Full Name",
+    "required": true,
+    "minLength": 2,
+    "maxLength": 100
+  }
+}
+```
+
+---
+
+## Number Field
+
+Number input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'number'` | Yes | Field type discriminator |
+| `min` | `number` | No | Minimum value |
+| `max` | `number` | No | Maximum value |
+| `default` | `number` | No | Default value |
+
+```yaml tab="YAML"
+age:
+  type: number
+  label: Age
+  required: true
+  min: 0
+  max: 150
+```
+
+```json tab="JSON"
+{
+  "age": {
+    "type": "number",
+    "label": "Age",
+    "required": true,
+    "min": 0,
+    "max": 150
+  }
+}
+```
+
+---
+
+## Boolean Field
+
+Boolean checkbox/toggle field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'boolean'` | Yes | Field type discriminator |
+| `default` | `boolean` | No | Default value |
+
+```yaml tab="YAML"
+acceptTerms:
+  type: boolean
+  label: I accept the terms and conditions
+  required: true
+  default: false
+```
+
+```json tab="JSON"
+{
+  "acceptTerms": {
+    "type": "boolean",
+    "label": "I accept the terms and conditions",
+    "required": true,
+    "default": false
+  }
+}
+```
+
+---
+
+## Enum Field
+
+Enum/select dropdown field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'enum'` | Yes | Field type discriminator |
+| `enum` | `(string \| number)[]` | Yes | Allowed values |
+| `default` | `string \| number` | No | Default selection |
+
+```yaml tab="YAML"
+priority:
+  type: enum
+  label: Priority
+  enum:
+    - low
+    - medium
+    - high
+    - urgent
+  default: medium
+```
+
+```json tab="JSON"
+{
+  "priority": {
+    "type": "enum",
+    "label": "Priority",
+    "enum": ["low", "medium", "high", "urgent"],
+    "default": "medium"
+  }
+}
+```
+
+---
+
+## Multiselect Field
+
+Multi-select field allowing multiple selections from options.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'multiselect'` | Yes | Field type discriminator |
+| `options` | `(string \| number)[]` | Yes | Available options |
+| `min` | `number` | No | Minimum selections required |
+| `max` | `number` | No | Maximum selections allowed |
+| `default` | `(string \| number)[]` | No | Default selections |
+
+```yaml tab="YAML"
+amenities:
+  type: multiselect
+  label: Amenities Included
+  options:
+    - parking
+    - laundry
+    - gym
+    - pool
+    - storage
+  min: 1
+  max: 3
+```
+
+```json tab="JSON"
+{
+  "amenities": {
+    "type": "multiselect",
+    "label": "Amenities Included",
+    "options": ["parking", "laundry", "gym", "pool", "storage"],
+    "min": 1,
+    "max": 3
+  }
+}
+```
+
+---
+
+## Email Field
+
+Email address input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'email'` | Yes | Field type discriminator |
+| `minLength` | `number` | No | Minimum character length |
+| `maxLength` | `number` | No | Maximum character length |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+email:
+  type: email
+  label: Email Address
+  required: true
+```
+
+```json tab="JSON"
+{
+  "email": {
+    "type": "email",
+    "label": "Email Address",
+    "required": true
+  }
+}
+```
+
+---
+
+## URI Field
+
+URI/URL input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'uri'` | Yes | Field type discriminator |
+| `minLength` | `number` | No | Minimum character length |
+| `maxLength` | `number` | No | Maximum character length |
+| `pattern` | `string` | No | Regex pattern for validation |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+website:
+  type: uri
+  label: Website URL
+```
+
+```json tab="JSON"
+{
+  "website": {
+    "type": "uri",
+    "label": "Website URL"
+  }
+}
+```
+
+---
+
+## UUID Field
+
+UUID input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'uuid'` | Yes | Field type discriminator |
+| `minLength` | `number` | No | Minimum character length |
+| `maxLength` | `number` | No | Maximum character length |
+| `pattern` | `string` | No | Regex pattern for validation |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+transactionId:
+  type: uuid
+  label: Transaction ID
+  required: true
+```
+
+```json tab="JSON"
+{
+  "transactionId": {
+    "type": "uuid",
+    "label": "Transaction ID",
+    "required": true
+  }
+}
+```
+
+---
+
+## Date Field
+
+Date input field (ISO 8601 format: YYYY-MM-DD).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'date'` | Yes | Field type discriminator |
+| `min` | `string` | No | Minimum date (ISO 8601) |
+| `max` | `string` | No | Maximum date (ISO 8601) |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+birthDate:
+  type: date
+  label: Date of Birth
+  required: true
+  max: "2010-01-01"
+```
+
+```json tab="JSON"
+{
+  "birthDate": {
+    "type": "date",
+    "label": "Date of Birth",
+    "required": true,
+    "max": "2010-01-01"
+  }
+}
+```
+
+---
+
+## Datetime Field
+
+Datetime input field (ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'datetime'` | Yes | Field type discriminator |
+| `min` | `string` | No | Minimum datetime (ISO 8601) |
+| `max` | `string` | No | Maximum datetime (ISO 8601) |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+appointmentTime:
+  type: datetime
+  label: Appointment Date and Time
+  required: true
+```
+
+```json tab="JSON"
+{
+  "appointmentTime": {
+    "type": "datetime",
+    "label": "Appointment Date and Time",
+    "required": true
+  }
+}
+```
+
+---
+
+## Time Field
+
+Time input field (HH:MM:SS format).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'time'` | Yes | Field type discriminator |
+| `min` | `string` | No | Minimum time |
+| `max` | `string` | No | Maximum time |
+| `default` | `string` | No | Default value |
+
+```yaml tab="YAML"
+officeHoursStart:
+  type: time
+  label: Office Hours Start
+  default: "09:00:00"
+```
+
+```json tab="JSON"
+{
+  "officeHoursStart": {
+    "type": "time",
+    "label": "Office Hours Start",
+    "default": "09:00:00"
+  }
+}
+```
+
+---
+
+## Duration Field
+
+Duration (ISO 8601) input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'duration'` | Yes | Field type discriminator |
+| `default` | `Duration` | No | Default value |
+
+```yaml tab="YAML"
+leaseTerm:
+  type: duration
+  label: Lease Term
+  default: P1Y
+```
+
+```json tab="JSON"
+{
+  "leaseTerm": {
+    "type": "duration",
+    "label": "Lease Term",
+    "default": "P1Y"
+  }
+}
+```
+
+---
+
+## Money Field
+
+Money amount input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'money'` | Yes | Field type discriminator |
+| `min` | `number` | No | Minimum amount |
+| `max` | `number` | No | Maximum amount |
+| `default` | `Money` | No | Default value |
+
+```yaml tab="YAML"
+monthlyRent:
+  type: money
+  label: Monthly Rent
+  required: true
+  min: 0
+  default:
+    amount: 0
+    currency: USD
+```
+
+```json tab="JSON"
+{
+  "monthlyRent": {
+    "type": "money",
+    "label": "Monthly Rent",
+    "required": true,
+    "min": 0,
+    "default": {
+      "amount": 0,
+      "currency": "USD"
+    }
+  }
+}
+```
+
+---
+
+## Percentage Field
+
+Percentage input field (0-100 by default).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'percentage'` | Yes | Field type discriminator |
+| `min` | `number` | No | Minimum percentage |
+| `max` | `number` | No | Maximum percentage |
+| `precision` | `number` | No | Decimal precision |
+| `default` | `number` | No | Default value |
+
+```yaml tab="YAML"
+downPayment:
+  type: percentage
+  label: Down Payment Percentage
+  min: 0
+  max: 100
+  precision: 2
+  default: 20
+```
+
+```json tab="JSON"
+{
+  "downPayment": {
+    "type": "percentage",
+    "label": "Down Payment Percentage",
+    "min": 0,
+    "max": 100,
+    "precision": 2,
+    "default": 20
+  }
+}
+```
+
+---
+
+## Rating Field
+
+Rating input field (1-5 by default).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'rating'` | Yes | Field type discriminator |
+| `min` | `number` | No | Minimum rating |
+| `max` | `number` | No | Maximum rating |
+| `step` | `number` | No | Step increment |
+| `default` | `number` | No | Default value |
+
+```yaml tab="YAML"
+satisfaction:
+  type: rating
+  label: Satisfaction Rating
+  min: 1
+  max: 5
+```
+
+```json tab="JSON"
+{
+  "satisfaction": {
+    "type": "rating",
+    "label": "Satisfaction Rating",
+    "min": 1,
+    "max": 5
+  }
+}
+```
+
+---
+
+## Address Field
+
+Address input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'address'` | Yes | Field type discriminator |
+| `default` | `Address` | No | Default value |
+
+```yaml tab="YAML"
+propertyAddress:
+  type: address
+  label: Property Address
+  required: true
+```
+
+```json tab="JSON"
+{
+  "propertyAddress": {
+    "type": "address",
+    "label": "Property Address",
+    "required": true
+  }
+}
+```
+
+---
+
+## Phone Field
+
+Phone number input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'phone'` | Yes | Field type discriminator |
+| `default` | `Phone` | No | Default value |
+
+```yaml tab="YAML"
+phone:
+  type: phone
+  label: Phone Number
+  required: true
+```
+
+```json tab="JSON"
+{
+  "phone": {
+    "type": "phone",
+    "label": "Phone Number",
+    "required": true
+  }
+}
+```
+
+---
+
+## Coordinate Field
+
+Coordinate (latitude/longitude) input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'coordinate'` | Yes | Field type discriminator |
+| `default` | `Coordinate` | No | Default value |
+
+```yaml tab="YAML"
+location:
+  type: coordinate
+  label: Location
+```
+
+```json tab="JSON"
+{
+  "location": {
+    "type": "coordinate",
+    "label": "Location"
+  }
+}
+```
+
+---
+
+## Bbox Field
+
+Bounding box (geographic area) input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'bbox'` | Yes | Field type discriminator |
+| `default` | `Bbox` | No | Default value |
+
+```yaml tab="YAML"
+serviceArea:
+  type: bbox
+  label: Service Area
+```
+
+```json tab="JSON"
+{
+  "serviceArea": {
+    "type": "bbox",
+    "label": "Service Area"
+  }
+}
+```
+
+---
+
+## Person Field
+
+Person information input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'person'` | Yes | Field type discriminator |
+| `default` | `Person` | No | Default value |
+
+```yaml tab="YAML"
+tenant:
+  type: person
+  label: Tenant Information
+  required: true
+```
+
+```json tab="JSON"
+{
+  "tenant": {
+    "type": "person",
+    "label": "Tenant Information",
+    "required": true
+  }
+}
+```
+
+---
+
+## Organization Field
+
+Organization information input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'organization'` | Yes | Field type discriminator |
+| `default` | `Organization` | No | Default value |
+
+```yaml tab="YAML"
+company:
+  type: organization
+  label: Company Information
+  required: true
+```
+
+```json tab="JSON"
+{
+  "company": {
+    "type": "organization",
+    "label": "Company Information",
+    "required": true
+  }
+}
+```
+
+---
+
+## Identification Field
+
+Identification document input field.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'identification'` | Yes | Field type discriminator |
+| `allowedTypes` | `string[]` | No | Allowed identification types |
+| `default` | `Identification` | No | Default value |
+
+```yaml tab="YAML"
+governmentId:
+  type: identification
+  label: Government ID
+  required: true
+  allowedTypes:
+    - passport
+    - drivers_license
+    - national_id
+```
+
+```json tab="JSON"
+{
+  "governmentId": {
+    "type": "identification",
+    "label": "Government ID",
+    "required": true,
+    "allowedTypes": ["passport", "drivers_license", "national_id"]
+  }
+}
+```
+
+---
+
+## Fieldset Field
+
+Nested field container for grouping related fields.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'fieldset'` | Yes | Literal 'fieldset' discriminator |
+| `fields` | `Record<string, Field>` | Yes | Nested field definitions keyed by identifier |
+
+```yaml tab="YAML"
+contact:
+  type: fieldset
+  label: Contact Information
+  fields:
+    name:
+      type: text
+      label: Name
+      required: true
+    email:
+      type: email
+      label: Email
+      required: true
+    phone:
+      type: phone
+      label: Phone
+```
+
+```json tab="JSON"
+{
+  "contact": {
+    "type": "fieldset",
+    "label": "Contact Information",
+    "fields": {
+      "name": {
+        "type": "text",
+        "label": "Name",
+        "required": true
+      },
+      "email": {
+        "type": "email",
+        "label": "Email",
+        "required": true
+      },
+      "phone": {
+        "type": "phone",
+        "label": "Phone"
+      }
+    }
+  }
+}
+```
+
+## Related
+
+- [Fieldset](/docs/schemas/blocks/fieldset) — Standalone fieldset grouping
+- [Person](/docs/schemas/primitives/person) — Person primitive type
+- [Organization](/docs/schemas/primitives/organization) — Organization primitive type
+- [Identification](/docs/schemas/primitives/identification) — Identification primitive type
+- [Money](/docs/schemas/primitives/money) — Money primitive type
+- [Address](/docs/schemas/primitives/address) — Address primitive type
+- [Phone](/docs/schemas/primitives/phone) — Phone primitive type
+- [Coordinate](/docs/schemas/primitives/coordinate) — Coordinate primitive type
+- [Bbox](/docs/schemas/primitives/bbox) — Bbox primitive type
+- [Duration](/docs/schemas/primitives/duration) — Duration primitive type

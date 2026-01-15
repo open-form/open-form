@@ -1,0 +1,76 @@
+---
+title: Welcome
+description: OpenForm - Documents as Code
+icon: House
+---
+
+OpenForm is a framework for defining, validating, and rendering documents as code. Define forms with typed fields, validate user input safely, and render to PDF, DOCX, or HTML.
+
+## Why OpenForm?
+
+- **Type-safe definitions** - Define forms with TypeScript, get full type inference
+- **Built-in validation** - Zod-style parsing with detailed error messages
+- **Multi-format output** - Same data renders to PDF, DOCX, HTML, or plain text
+- **Version control** - YAML/JSON artifacts work with git like source code
+- **No vendor lock-in** - Open standards, MIT licensed, works offline
+
+## Quick Example
+
+```typescript
+import { open } from "@open-form/sdk";
+import { textRenderer } from "@open-form/sdk";
+
+// Define a form
+const form = open
+  .form()
+  .name("contact")
+  .version("1.0.0")
+  .title("Contact Form")
+  .fields({
+    name: { type: "text", required: true },
+    email: { type: "email", required: true },
+  })
+  .inlineTemplate("html", "text/html", "<p>{{name}}: {{email}}</p>")
+  .defaultTemplate("html")
+  .build();
+
+// Validate data
+const result = form.safeParseData({
+  name: "Alice",
+  email: "alice@example.com",
+});
+
+if (result.success) {
+  // Render to HTML
+  const html = await form.render(textRenderer, { data: result.data });
+}
+```
+
+## Get Started
+
+<Cards>
+  <Card title="Quickstart" href="/quickstart">
+    Build your first form in 5 minutes
+  </Card>
+  <Card title="Concepts" href="/concepts">
+    Learn the core concepts
+  </Card>
+  <Card title="Guides" href="/guides">
+    Step-by-step tutorials
+  </Card>
+  <Card title="SDK Reference" href="/sdk">
+    Full API documentation
+  </Card>
+</Cards>
+
+## Installation
+
+```bash
+npm install @open-form/sdk
+```
+
+Or with pnpm:
+
+```bash
+pnpm add @open-form/sdk
+```

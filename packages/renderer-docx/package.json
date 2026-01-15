@@ -1,0 +1,92 @@
+{
+  "name": "@open-form/renderer-docx",
+  "version": "0.1.0",
+  "description": "DOCX renderer package for OpenForm framework",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "forms",
+    "docx",
+    "rendering",
+    "renderer"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "OpenForm",
+    "url": "https://open-form.dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "packages/renderer-docx"
+  },
+  "homepage": "https://open-form.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "pnpm run clean",
+    "pack:dry": "pnpm run build && npm pack --dry-run",
+    "prepublishOnly": "pnpm run build",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "check": "pnpm lint && pnpm check-types && echo \"✅ All checks passed\" || echo \"❌ Checks failed\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "docx-templates": "^4.14.1"
+  },
+  "peerDependencies": {
+    "@open-form/types": ">=0.1.0",
+    "@open-form/serialization": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@open-form/types": {
+      "optional": false
+    },
+    "@open-form/serialization": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@open-form/types": "workspace:^",
+    "@open-form/serialization": "workspace:^",
+    "@open-form/eslint-config": "workspace:*",
+    "@open-form/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

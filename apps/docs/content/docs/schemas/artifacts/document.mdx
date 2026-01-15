@@ -1,0 +1,101 @@
+---
+title: Document
+description: Static content with no inputs
+---
+
+A Document is static content with no inputs. Documents are used for disclosures, pamphlets, or any static content that can be rendered to different formats via layers.
+
+## Properties
+
+In addition to [common artifact properties](/docs/schemas/artifacts#common-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'document'` | Yes | Literal "document" discriminator |
+| `layers` | `Record<string, Layer>` | No | Named layers for rendering this document into different formats |
+| `defaultLayer` | `string` | No | Key of the default layer to use when none specified |
+
+## Layer
+
+Layers define how content is rendered. A layer can be inline (embedded text) or file-backed (external file reference).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'inline'` \| `'file'` | Yes | Layer type discriminator |
+| `mimeType` | `string` | Yes | MIME type of the content (e.g., `text/markdown`, `application/pdf`) |
+| `title` | `string` | No | Human-readable title for this layer |
+| `description` | `string` | No | Description of what this layer represents |
+| `checksum` | `string` | No | SHA-256 checksum for integrity verification |
+
+**Inline Layer** (additional properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `text` | `string` | Yes | Layer content with interpolation placeholders |
+| `bindings` | `Record<string, string>` | No | Field bindings for the layer (typically for PDF) |
+
+**File Layer** (additional properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `path` | `string` | Yes | Absolute path from repo root to the layer file |
+| `bindings` | `Record<string, string>` | No | Field bindings for the layer (typically for PDF) |
+
+## Examples
+
+```yaml tab="YAML"
+kind: document
+name: lead-paint-disclosure
+version: "1.0.0"
+title: Lead Paint Disclosure
+description: Required disclosure for properties built before 1978
+
+layers:
+  pdf:
+    kind: file
+    mimeType: application/pdf
+    path: /disclosures/lead-paint.pdf
+    title: PDF Version
+
+  markdown:
+    kind: inline
+    mimeType: text/markdown
+    text: |
+      # Lead Paint Disclosure
+
+      This property was built before 1978 and may contain lead-based paint.
+
+      ## Important Information
+
+      Lead from paint, paint chips, and dust can pose health hazards...
+
+defaultLayer: pdf
+```
+
+```json tab="JSON"
+{
+  "kind": "document",
+  "name": "lead-paint-disclosure",
+  "version": "1.0.0",
+  "title": "Lead Paint Disclosure",
+  "description": "Required disclosure for properties built before 1978",
+  "layers": {
+    "pdf": {
+      "kind": "file",
+      "mimeType": "application/pdf",
+      "path": "/disclosures/lead-paint.pdf",
+      "title": "PDF Version"
+    },
+    "markdown": {
+      "kind": "inline",
+      "mimeType": "text/markdown",
+      "text": "# Lead Paint Disclosure\n\nThis property was built before 1978 and may contain lead-based paint.\n\n## Important Information\n\nLead from paint, paint chips, and dust can pose health hazards..."
+    }
+  },
+  "defaultLayer": "pdf"
+}
+```
+
+## Related
+
+- [Layers](/docs/schemas/blocks/layers) — Layer specification details

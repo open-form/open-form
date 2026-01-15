@@ -1,0 +1,117 @@
+---
+title: Bundle
+description: A container for documents, forms, checklists, and other bundles
+---
+
+A Bundle is a recursive container for content artifacts. Bundles group together documents, forms, checklists, and other bundles into a single distributable unit.
+
+For example, a loan application packet, new hire paperwork, or compliance submission.
+
+## Properties
+
+In addition to [common artifact properties](/docs/schemas/artifacts#common-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'bundle'` | Yes | Literal "bundle" discriminator |
+| `logic` | `LogicSection` | No | Named logic expressions that can be referenced in include conditions |
+| `contents` | `BundleContentItem[]` | Yes | Ordered list of bundle contents with keys |
+
+## BundleContentItem
+
+Bundle contents can be inline artifacts, path references, or registry references.
+
+| Variant | Properties | Description |
+|---------|------------|-------------|
+| `inline` | `type`, `key`, `artifact` | Inline artifact definition |
+| `path` | `type`, `key`, `path`, `include?` | Reference to a local artifact file |
+| `registry` | `type`, `key`, `slug`, `include?` | Reference to a registry artifact |
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `'inline'` \| `'path'` \| `'registry'` | Yes | Content item type |
+| `key` | `string` | Yes | Unique key for this content item within the bundle |
+| `artifact` | `Document \| Form \| Checklist \| Bundle` | Yes (inline) | Inline artifact definition |
+| `path` | `string` | Yes (path) | Absolute path from repo root to the artifact |
+| `slug` | `string` | Yes (registry) | Registry artifact slug (e.g., `@openform/irs/w9@1.0.0`) |
+| `include` | `CondExpr` | No | Conditional expression controlling inclusion |
+
+## Examples
+
+```yaml tab="YAML"
+kind: bundle
+name: loan-application
+version: "1.0.0"
+title: Loan Application Packet
+description: Complete loan application with all required forms and disclosures
+
+logic:
+  needsW9: "applicant.type == 'contractor'"
+
+contents:
+  - type: path
+    key: borrower-info
+    path: /forms/borrower-info.yaml
+
+  - type: path
+    key: income-verification
+    path: /forms/income-verification.yaml
+
+  - type: registry
+    key: w9
+    slug: "@openform/irs/w9@1.0.0"
+    include: needsW9
+
+  - type: path
+    key: lead-paint-disclosure
+    path: /documents/lead-paint-disclosure.yaml
+
+  - type: path
+    key: closing-checklist
+    path: /checklists/closing-checklist.yaml
+```
+
+```json tab="JSON"
+{
+  "kind": "bundle",
+  "name": "loan-application",
+  "version": "1.0.0",
+  "title": "Loan Application Packet",
+  "description": "Complete loan application with all required forms and disclosures",
+  "logic": {
+    "needsW9": "applicant.type == 'contractor'"
+  },
+  "contents": [
+    {
+      "type": "path",
+      "key": "borrower-info",
+      "path": "/forms/borrower-info.yaml"
+    },
+    {
+      "type": "path",
+      "key": "income-verification",
+      "path": "/forms/income-verification.yaml"
+    },
+    {
+      "type": "registry",
+      "key": "w9",
+      "slug": "@openform/irs/w9@1.0.0",
+      "include": "needsW9"
+    },
+    {
+      "type": "path",
+      "key": "lead-paint-disclosure",
+      "path": "/documents/lead-paint-disclosure.yaml"
+    },
+    {
+      "type": "path",
+      "key": "closing-checklist",
+      "path": "/checklists/closing-checklist.yaml"
+    }
+  ]
+}
+```
+
+## Related
+
+- [Logic](/docs/schemas/blocks/logic) — Conditional expressions for include conditions

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/checklist.json",
+  "title": "Checklist",
+  "unevaluatedProperties": false,
+  "description": "A checklist artifact containing an ordered list of items to track. Each item may define how its status should be represented at runtime (boolean or enum).",
+  "type": "object",
+  "allOf": [
+    {
+      "title": "Artifact",
+      "description": "Root schema for all OpenForm artifacts (containers and documents).",
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "format": "uri",
+          "description": "JSON Schema URI for this artifact instance.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+          "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+          "minLength": 1,
+          "maxLength": 128,
+          "type": "string"
+        },
+        "version": {
+          "description": "Artifact version.",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "description": {
+          "description": "Detailed description or context for the artifact.",
+          "minLength": 0,
+          "maxLength": 2000,
+          "type": "string"
+        },
+        "code": {
+          "description": "Optional user-defined internal code.",
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "releaseDate": {
+          "format": "date",
+          "description": "Artifact release date",
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Metadata"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "title"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "checklist",
+          "type": "string"
+        },
+        "items": {
+          "description": "Array of checklist items. Each item represents a task, step, or requirement.",
+          "type": "array",
+          "items": {
+            "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/ChecklistItem"
+          }
+        },
+        "layers": {
+          "description": "Named layers for rendering this checklist into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Layer"
+            }
+          }
+        },
+        "defaultLayer": {
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Key of the default layer to use when none specified at render time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "items"
+      ]
+    }
+  ]
+}

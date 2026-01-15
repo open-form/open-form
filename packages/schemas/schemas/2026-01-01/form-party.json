@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/formparty.json",
+  "title": "FormParty",
+  "description": "Design-time party role definition. Defines what roles exist and what constraints apply when filling a form.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "minLength": 1,
+      "maxLength": 50,
+      "pattern": "^[a-z][a-z0-9_-]*$",
+      "description": "Role identifier (e.g., buyer, seller, lessee)",
+      "type": "string"
+    },
+    "label": {
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Display name for this role",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 500,
+      "description": "Description of this role",
+      "type": "string"
+    },
+    "partyType": {
+      "default": "any",
+      "description": "Constraint on party type",
+      "anyOf": [
+        {
+          "const": "person",
+          "type": "string"
+        },
+        {
+          "const": "organization",
+          "type": "string"
+        },
+        {
+          "const": "any",
+          "type": "string"
+        }
+      ]
+    },
+    "multiple": {
+      "default": false,
+      "description": "Whether multiple parties can fill this role",
+      "type": "boolean"
+    },
+    "min": {
+      "minimum": 0,
+      "description": "Minimum parties required (when multiple=true)",
+      "type": "number"
+    },
+    "max": {
+      "minimum": 1,
+      "description": "Maximum parties allowed (when multiple=true)",
+      "type": "number"
+    },
+    "required": {
+      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+    },
+    "signature": {
+      "title": "SignatureRequirement",
+      "description": "Signature requirements for a party role",
+      "type": "object",
+      "properties": {
+        "required": {
+          "description": "Whether signature is required for this role",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "any",
+          "description": "Type of signature accepted",
+          "anyOf": [
+            {
+              "const": "electronic",
+              "type": "string"
+            },
+            {
+              "const": "wet",
+              "type": "string"
+            },
+            {
+              "const": "any",
+              "type": "string"
+            }
+          ]
+        },
+        "order": {
+          "minimum": 1,
+          "description": "Signing sequence (1 = first signer)",
+          "type": "number"
+        }
+      },
+      "required": [
+        "required"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "label"
+  ]
+}

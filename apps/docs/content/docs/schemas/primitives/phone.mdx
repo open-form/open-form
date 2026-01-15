@@ -1,0 +1,49 @@
+---
+title: Phone
+description: A phone number in E.164 format
+---
+
+A phone number in international E.164 format with optional type and extension.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `number` | `string` | Yes | Phone number in international E.164 format (e.g., +14155552671) |
+| `type` | `string` | No | Category/usage of the number (mobile, work, home, etc.) |
+| `extension` | `string` | No | Optional extension digits |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+number: "+14155552671"
+type: mobile
+```
+
+
+```json tab="JSON"
+{
+  "number": "+14155552671",
+  "type": "mobile"
+}
+```
+
+
+
+### With extension
+
+```yaml tab="YAML"
+number: "+12125551234"
+type: work
+extension: "4567"
+```
+
+```json tab="JSON"
+{
+  "number": "+12125551234",
+  "type": "work",
+  "extension": "4567"
+}
+```

@@ -1,0 +1,30 @@
+---
+title: Money
+description: A monetary amount with currency
+---
+
+A monetary amount paired with an ISO 4217 currency code.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `amount` | `number` | Yes | Amount expressed in decimal form (supports negative values) |
+| `currency` | `string` | Yes | ISO 4217 alpha-3 currency code (e.g., USD, EUR) |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+amount: 99.99
+currency: USD
+```
+
+
+```json tab="JSON"
+{
+  "amount": 99.99,
+  "currency": "USD"
+}
+```

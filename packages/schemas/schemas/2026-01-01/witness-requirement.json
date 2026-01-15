@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/witnessrequirement.json",
+  "title": "WitnessRequirement",
+  "description": "Witness requirements for form execution",
+  "type": "object",
+  "properties": {
+    "required": {
+      "description": "Whether witnesses are required",
+      "type": "boolean"
+    },
+    "min": {
+      "minimum": 1,
+      "default": 1,
+      "description": "Minimum number of witnesses required",
+      "type": "number"
+    },
+    "max": {
+      "minimum": 1,
+      "description": "Maximum number of witnesses allowed",
+      "type": "number"
+    },
+    "notarized": {
+      "default": false,
+      "description": "Whether witnesses must be notarized",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "required"
+  ]
+}

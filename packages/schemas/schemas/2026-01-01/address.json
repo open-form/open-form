@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/address.json",
+  "title": "Address",
+  "description": "Physical address with street, locality, region, postal code, and country",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "line1": {
+      "description": "Primary address line",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "line2": {
+      "description": "Secondary address line",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "locality": {
+      "description": "City or locality name",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "region": {
+      "description": "State, province, or region name",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "postalCode": {
+      "description": "Postal or ZIP code",
+      "minLength": 3,
+      "maxLength": 20,
+      "pattern": "^[A-Z0-9\\s-]+$",
+      "type": "string"
+    },
+    "country": {
+      "description": "ISO 3166-1 country code (e.g., \"US\", \"GB\", \"FRA\") or full country name",
+      "minLength": 2,
+      "maxLength": 100,
+      "type": "string"
+    }
+  },
+  "required": [
+    "line1",
+    "locality",
+    "region",
+    "postalCode",
+    "country"
+  ]
+}

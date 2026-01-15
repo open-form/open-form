@@ -1,0 +1,41 @@
+---
+title: Bbox
+description: A geographic bounding box
+---
+
+A geographic bounding box defined by southwest and northeast coordinates. Used to represent rectangular geographic areas.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `southWest` | [Coordinate](/docs/schemas/primitives/coordinate) | Yes | Southwest corner coordinate, representing minimum latitude/longitude |
+| `northEast` | [Coordinate](/docs/schemas/primitives/coordinate) | Yes | Northeast corner coordinate, representing maximum latitude/longitude |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+# San Francisco Bay Area
+southWest:
+  lat: 37.2
+  lon: -122.5
+northEast:
+  lat: 37.9
+  lon: -121.8
+```
+
+
+```json tab="JSON"
+{
+  "southWest": {
+    "lat": 37.2,
+    "lon": -122.5
+  },
+  "northEast": {
+    "lat": 37.9,
+    "lon": -121.8
+  }
+}
+```

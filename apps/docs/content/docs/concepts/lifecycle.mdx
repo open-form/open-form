@@ -1,0 +1,88 @@
+---
+title: Lifecycle
+description: When things happen — build time and run time
+---
+
+Everything in OpenForm happens in one of two phases: build time or run time.
+
+## Two Phases
+
+| Phase | What Happens |
+|-------|--------------|
+| **Build time** | Artifacts are authored and published |
+| **Run time** | Artifacts are populated, validated, rendered, and assembled |
+
+Build time is about definition. Run time is about execution.
+
+## Build Time
+
+Build time is when you author artifacts:
+
+- Use primitives to define artifacts (Form, Document, Checklist, Bundle)
+- Author layers for each artifact
+- Test artifacts locally
+- Version and publish to the registry
+
+Artifacts live within repos. You work locally, then publish when ready.
+
+```typescript
+const leaseAgreement = open
+  .form()
+  .name("lease-agreement")
+  .version("1.0.0")
+  .fields({
+    tenantName: { type: "text", required: true },
+    monthlyRent: { type: "money", required: true },
+  })
+  .layers({
+    html: {
+      kind: "file",
+      mimeType: "text/html",
+      path: "fixtures/lease.html",
+    },
+  })
+  .build();
+```
+
+## Run Time
+
+Run time is when artifacts are used. Data flows in, outputs flow out. You select which layer to render for each use case.
+
+### Population & Validation
+
+Forms accept data and validate it against the schema:
+
+```typescript
+const filledLease = leaseAgreement.fill(leaseAgreementData);
+
+if (!filledLease.isValid()) {
+  console.error(filledLease.errors());
+}
+```
+
+Required fields must be present, types must be correct, and constraints must be satisfied.
+
+### Rendering
+
+Rendering produces output in the selected layer format:
+
+```typescript
+const html = await filledLease.render({
+  renderer: textRenderer,
+  resolver,
+  layer: "html",
+});
+```
+
+### Compilation
+
+Bundles assemble their member artifacts into a single package:
+
+```typescript
+const assembled = await leaseBundle.assemble({
+  resolver,
+  includeDocumentBytes: true,
+});
+```
+
+Each content artifact is rendered, then everything is combined into the final bundle.

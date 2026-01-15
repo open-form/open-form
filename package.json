@@ -1,0 +1,31 @@
+{
+  "name": "open-form",
+  "description": "OpenForm monorepo - Documents as Code framework",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git"
+  },
+  "homepage": "https://open-form.dev",
+  "packageManager": "pnpm@10.5.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.2.3",
+      "react-dom": "19.2.3",
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.3"
+    }
+  }
+}

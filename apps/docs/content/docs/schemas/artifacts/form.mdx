@@ -1,0 +1,264 @@
+---
+title: Form
+description: An artifact for collecting structured data
+---
+
+A Form defines fields for collecting data from users, with validation rules, conditional logic, layers for rendering, and optional attachment slots.
+
+For example, a patient intake form, a lease agreement, or a tax form.
+
+## Properties
+
+In addition to [common artifact properties](/docs/schemas/artifacts#common-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'form'` | Yes | Literal "form" discriminator |
+| `logic` | `LogicSection` | No | Named logic expressions that can be referenced in field/annex conditions |
+| `fields` | `Record<string, Field>` | No | Field definitions keyed by identifier |
+| `layers` | `Record<string, Layer>` | No | Named layers for rendering this form into different formats |
+| `defaultLayer` | `string` | No | Key of the default layer to use when none specified |
+| `allowAnnexes` | `boolean` | No | Whether additional ad-hoc annexes can be attached beyond defined slots |
+| `annexes` | `Annex[]` | No | Predefined annex slots (some required, some optional) |
+| `parties` | `FormParty[]` | No | Party role definitions with constraints and signature requirements |
+| `witnesses` | `WitnessRequirement` | No | Witness requirements for form execution |
+
+## FormParty
+
+Design-time party role definition. Defines what roles exist and what constraints apply when filling a form.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | Yes | Unique party role identifier (slug format) |
+| `label` | `string` | Yes | Human-readable role name |
+| `description` | `string` | No | Description of this role |
+| `partyType` | `'person'` \| `'organization'` \| `'any'` | No | Constraint on party type |
+| `multiple` | `boolean` | No | Whether multiple parties can fill this role |
+| `min` | `number` | No | Minimum parties required (when multiple=true) |
+| `max` | `number` | No | Maximum parties allowed (when multiple=true) |
+| `required` | `boolean \| string` | No | Whether this role is required. Can be boolean or expression |
+| `signature` | `SignatureRequirement` | No | Signature requirements for this role |
+
+## SignatureRequirement
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `required` | `boolean` | Yes | Whether signature is required for this role |
+| `type` | `'electronic'` \| `'wet'` \| `'any'` | No | Type of signature accepted |
+| `order` | `number` | No | Signing order (1 = first signer) |
+
+## WitnessRequirement
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `required` | `boolean` | Yes | Whether witnesses are required |
+| `min` | `number` | No | Minimum number of witnesses required |
+| `max` | `number` | No | Maximum number of witnesses allowed |
+| `notarized` | `boolean` | No | Whether witnesses must be notarized |
+
+## Examples
+
+```yaml tab="YAML"
+kind: form
+name: lease-agreement
+version: "1.0.0"
+title: Residential Lease Agreement
+description: Standard residential lease agreement
+
+logic:
+  hasPets: "fields.petsAllowed.value == true"
+
+fields:
+  propertyAddress:
+    type: address
+    label: Property Address
+    required: true
+  monthlyRent:
+    type: money
+    label: Monthly Rent
+    required: true
+  leaseStart:
+    type: date
+    label: Lease Start Date
+    required: true
+  leaseTerm:
+    type: enum
+    label: Lease Term
+    enum: ["12 months", "24 months", "Month-to-month"]
+  petsAllowed:
+    type: boolean
+    label: Pets Allowed
+    default: false
+  petDeposit:
+    type: money
+    label: Pet Deposit
+    visible: hasPets
+    required: hasPets
+
+parties:
+  - id: landlord
+    label: Landlord
+    partyType: any
+    required: true
+    signature:
+      required: true
+      type: any
+      order: 1
+  - id: tenant
+    label: Tenant
+    partyType: person
+    multiple: true
+    min: 1
+    max: 4
+    required: true
+    signature:
+      required: true
+      type: any
+      order: 2
+
+witnesses:
+  required: true
+  min: 1
+  max: 2
+
+layers:
+  pdf:
+    kind: file
+    mimeType: application/pdf
+    path: /templates/lease-agreement.pdf
+    bindings:
+      property_address: propertyAddress
+      monthly_rent: monthlyRent
+  html:
+    kind: file
+    mimeType: text/html
+    path: /templates/lease-agreement.html
+
+defaultLayer: pdf
+
+annexes:
+  - id: identification
+    title: Tenant Identification
+    description: Copy of government-issued ID
+    required: true
+  - id: proof-of-income
+    title: Proof of Income
+    description: Recent pay stubs or tax returns
+    required: false
+```
+
+```json tab="JSON"
+{
+  "kind": "form",
+  "name": "lease-agreement",
+  "version": "1.0.0",
+  "title": "Residential Lease Agreement",
+  "description": "Standard residential lease agreement",
+  "logic": {
+    "hasPets": "fields.petsAllowed.value == true"
+  },
+  "fields": {
+    "propertyAddress": {
+      "type": "address",
+      "label": "Property Address",
+      "required": true
+    },
+    "monthlyRent": {
+      "type": "money",
+      "label": "Monthly Rent",
+      "required": true
+    },
+    "leaseStart": {
+      "type": "date",
+      "label": "Lease Start Date",
+      "required": true
+    },
+    "leaseTerm": {
+      "type": "enum",
+      "label": "Lease Term",
+      "enum": ["12 months", "24 months", "Month-to-month"]
+    },
+    "petsAllowed": {
+      "type": "boolean",
+      "label": "Pets Allowed",
+      "default": false
+    },
+    "petDeposit": {
+      "type": "money",
+      "label": "Pet Deposit",
+      "visible": "hasPets",
+      "required": "hasPets"
+    }
+  },
+  "parties": [
+    {
+      "id": "landlord",
+      "label": "Landlord",
+      "partyType": "any",
+      "required": true,
+      "signature": {
+        "required": true,
+        "type": "any",
+        "order": 1
+      }
+    },
+    {
+      "id": "tenant",
+      "label": "Tenant",
+      "partyType": "person",
+      "multiple": true,
+      "min": 1,
+      "max": 4,
+      "required": true,
+      "signature": {
+        "required": true,
+        "type": "any",
+        "order": 2
+      }
+    }
+  ],
+  "witnesses": {
+    "required": true,
+    "min": 1,
+    "max": 2
+  },
+  "layers": {
+    "pdf": {
+      "kind": "file",
+      "mimeType": "application/pdf",
+      "path": "/templates/lease-agreement.pdf",
+      "bindings": {
+        "property_address": "propertyAddress",
+        "monthly_rent": "monthlyRent"
+      }
+    },
+    "html": {
+      "kind": "file",
+      "mimeType": "text/html",
+      "path": "/templates/lease-agreement.html"
+    }
+  },
+  "defaultLayer": "pdf",
+  "annexes": [
+    {
+      "id": "identification",
+      "title": "Tenant Identification",
+      "description": "Copy of government-issued ID",
+      "required": true
+    },
+    {
+      "id": "proof-of-income",
+      "title": "Proof of Income",
+      "description": "Recent pay stubs or tax returns",
+      "required": false
+    }
+  ]
+}
+```
+
+## Related
+
+- [Fields](/docs/schemas/blocks/fields) — All field type definitions
+- [Layers](/docs/schemas/blocks/layers) — Layer specification
+- [Annex](/docs/schemas/blocks/annex) — Annex slot definition
+- [Logic](/docs/schemas/blocks/logic) — Logic section and expressions

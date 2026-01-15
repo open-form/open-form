@@ -1,0 +1,30 @@
+---
+title: Artifacts
+description: Top-level document types in OpenForm
+---
+
+Artifacts are the top-level document types in OpenForm. Each artifact represents a complete, self-contained unit that can be versioned, published, and rendered.
+
+## The Four Artifact Types
+
+| Artifact | Description |
+|----------|-------------|
+| [Document](/docs/schemas/artifacts/document) | Static content with no inputs |
+| [Form](/docs/schemas/artifacts/form) | Collects structured data via fields |
+| [Checklist](/docs/schemas/artifacts/checklist) | Ordered items with boolean or enum status |
+| [Bundle](/docs/schemas/artifacts/bundle) | Container for documents, forms, checklists, and other bundles |
+
+## Common Properties
+
+All artifacts extend `ArtifactBase` and share these properties:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'document'` \| `'form'` \| `'checklist'` \| `'bundle'` | Yes | Artifact type discriminator |
+| `name` | `string` | Yes | Unique identifier; must follow slug constraints |
+| `version` | `string` | Yes | Artifact version |
+| `title` | `string` | Yes | Human-friendly name presented to end users |
+| `description` | `string` | No | Optional long-form description or context |
+| `code` | `string` | No | Optional internal code or reference number |
+| `releaseDate` | `string` | No | Optional ISO date string indicating when the artifact was released/published |
+| `metadata` | `Metadata` | No | Optional custom metadata map |

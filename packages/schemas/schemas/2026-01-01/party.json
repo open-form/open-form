@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/party.json",
+  "title": "Party",
+  "description": "Party definition: either a person (with full name and optional name components) or an organization (with name and optional legal/entity details). May include an optional signature reference",
+  "anyOf": [
+    {
+      "unevaluatedProperties": false,
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Person"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "person",
+              "type": "string"
+            },
+            "signature": {
+              "description": "Signature identifier or reference (e.g., signature image URI, signature ID)",
+              "minLength": 1,
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    {
+      "unevaluatedProperties": false,
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Organization"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "organization",
+              "type": "string"
+            },
+            "signature": {
+              "description": "Signature identifier or reference (e.g., signature image URI, signature ID)",
+              "minLength": 1,
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    }
+  ]
+}

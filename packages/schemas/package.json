@@ -1,0 +1,89 @@
+{
+  "name": "@open-form/schemas",
+  "version": "0.1.0",
+  "description": "JSON Schema definitions for OpenForm framework artifacts, blocks, and primitives",
+  "type": "module",
+  "main": "./schemas/schema.json",
+  "exports": {
+    ".": {
+      "import": "./schemas/schema.json",
+      "require": "./schemas/schema.json",
+      "default": "./schemas/schema.json"
+    },
+    "./schema.json": {
+      "import": "./schemas/schema.json",
+      "require": "./schemas/schema.json",
+      "default": "./schemas/schema.json"
+    },
+    "./manifest.json": {
+      "import": "./schemas/manifest.json",
+      "require": "./schemas/manifest.json",
+      "default": "./schemas/manifest.json"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "schemas/schema.json",
+    "schemas/manifest.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "forms",
+    "json-schema",
+    "schemas",
+    "typebox",
+    "validation"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "OpenForm",
+    "url": "https://open-form.dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "packages/schemas"
+  },
+  "homepage": "https://open-form.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsx scripts/export-root-schema.ts",
+    "dev": "tsx scripts/export-root-schema.ts",
+    "clean": "rm -rf schemas/open-form.schema.json",
+    "pack:dry": "npm pack --dry-run",
+    "prepublishOnly": "pnpm run build",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "check": "pnpm lint && pnpm check-types && echo \"✅ All checks passed\" || echo \"❌ Checks failed\"",
+    "export:all-schemas": "tsx scripts/export-all-schemas.ts",
+    "export:root-schema": "tsx scripts/export-root-schema.ts",
+    "export:manifest": "tsx scripts/export-manifest-schema.ts",
+    "export:all": "pnpm export:root-schema && pnpm export:all-schemas && pnpm export:manifest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@sinclair/typebox": "^0.34.41",
+    "@open-form/eslint-config": "workspace:*",
+    "@open-form/types": "workspace:*",
+    "@open-form/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "^4.20.6",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

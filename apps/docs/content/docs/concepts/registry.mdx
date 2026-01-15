@@ -1,0 +1,58 @@
+---
+title: Registry
+description: Publishing, distribution, and immutability
+---
+
+The registry is where artifacts are published and discovered. It's npm for documents.
+
+## What the Registry Does
+
+| Function | Description |
+|----------|-------------|
+| **Store** | Hosts published artifact versions |
+| **Package** | Bundles artifact definitions with their layer sources |
+| **Distribute** | Serves artifacts for install and runtime resolution |
+
+## Publishing
+
+When you publish an artifact, the registry packages the definition and all referenced layer sources.
+
+```bash
+openform publish
+```
+
+The CLI reads your artifact definitions, resolves all path references, and uploads the complete package.
+
+## Slugs
+
+A slug is the immutable identifier for a published artifact: `@org/repo/artifact@version`
+
+| Segment | Description |
+|---------|-------------|
+| `org` | The organization that owns the artifact |
+| `repo` | The repository containing the artifact |
+| `artifact` | The artifact name |
+| `version` | The semantic version |
+
+Examples:
+```
+@acme/forms/lease-agreement@1.0.0
+@openform/irs/w9@2025.1.0
+```
+
+### Version Resolution
+
+| Reference | Resolves To |
+|-----------|-------------|
+| `@acme/forms/lease-agreement@1.2.3` | Exact version |
+| `@acme/forms/lease-agreement` | Latest stable release |
+
+Explicit versions are recommended for production.
+
+OpenForm does not support version ranges like `^1.0.0` or `~1.2.0`. Every reference resolves to exactly one version.
+
+## Immutability
+
+Once published, an artifact version never changes. `@acme/forms/lease-agreement@1.0.0` today is the same next month and next year.
+
+If you need to change something, publish a new version.

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/fieldset.json",
+  "title": "Fieldset",
+  "additionalProperties": false,
+  "description": "Grouped collection of fields that can be nested. Fields are keyed by their identifier",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the fieldset (e.g., address-section, personal-info)",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "type": "string"
+    },
+    "title": {
+      "description": "Title or heading for the fieldset",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description or summary of the fieldset",
+      "minLength": 1,
+      "maxLength": 1000,
+      "type": "string"
+    },
+    "fields": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Field"
+        }
+      }
+    },
+    "required": {
+      "description": "Whether fieldset is required",
+      "type": "boolean"
+    },
+    "order": {
+      "description": "Display order (lower numbers appear first)",
+      "minimum": 0,
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "fields"
+  ]
+}

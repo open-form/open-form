@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/metadata.json",
+  "title": "Metadata",
+  "description": "Custom key-value pairs for storing domain-specific or organizational metadata. Keys must be alphanumeric with hyphens, values can be strings, numbers, booleans, or null",
+  "type": "object",
+  "patternProperties": {
+    "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "description": "Metadata value as a string (max 500 characters)",
+          "type": "string"
+        },
+        {
+          "description": "Metadata value as a number",
+          "type": "number"
+        },
+        {
+          "description": "Metadata value as a boolean",
+          "type": "boolean"
+        },
+        {
+          "description": "Metadata value as null",
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

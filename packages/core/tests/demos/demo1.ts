@@ -1,0 +1,39 @@
+import { open } from "@/index";
+
+const myForm = open
+  .form()
+  .name("pet-addendum")
+  .title("Pet Addendum")
+  .code("PET-123")
+  .releaseDate("2025-01-01")
+  .description("This is a simple pet addendum.")
+  .fields({
+    name: open.field
+      .text()
+      .label("Name")
+      .description("The name of the pet")
+      .minLength(1)
+      .maxLength(100)
+      .required(true)
+      .build(),
+    type: open.field
+      .enum()
+      .enum("dog", "cat", "bird", "turtle")
+      .label("Species")
+      .description("The species of the pet")
+      .required(true)
+      .build(),
+    age: open.field
+      .number()
+      .label("Age")
+      .description("The age of the pet")
+      .required(false)
+      .min(0)
+      .max(100)
+      .build(),
+  })
+  .inlineLayer('default', 'text/plain', `The pet is a {{name}} of type {{type}} and is {{age}} years old.`)
+  .defaultLayer('default')
+  .build();
+
+console.log(myForm);

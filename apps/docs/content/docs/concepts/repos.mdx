@@ -1,0 +1,79 @@
+---
+title: Repos & Resolution
+description: Boundaries, paths, and environment-agnostic design
+---
+
+OpenForm is environment-agnostic. It runs in the browser, in Node, or in the cloud without assuming a filesystem. Repos define boundaries, and resolvers handle the environment.
+
+## Repos
+
+A repo is a versioned collection of artifacts and related files. Every OpenForm project lives in a repo.
+
+```
+my-repo/
+├── lease-agreement.ts
+├── fixtures/
+│   ├── lease-agreement.html
+│   └── lease-agreement.pdf
+└── checklist.ts
+```
+
+### The Root
+
+Every repo has a root. All paths are absolute from that root.
+
+```
+lease-agreement.ts
+fixtures/lease-agreement.html
+fixtures/lease-agreement.pdf
+```
+
+These are not filesystem paths — they're logical identifiers that the environment uses to locate content.
+
+### Self-Contained
+
+Layer sources must be in the same repo as the artifacts that reference them. You cannot reference a template in another repo.
+
+This ensures artifacts are self-contained and publishing packages everything needed.
+
+## Paths as Identifiers
+
+Paths in OpenForm are logical, not physical. The path `fixtures/lease-agreement.pdf` is an identifier, not a filesystem location.
+
+| Environment | What `fixtures/lease-agreement.pdf` Means |
+|-------------|-------------------------------------------|
+| Filesystem | `${repoRoot}/fixtures/lease-agreement.pdf` |
+| Browser | `memoryMap.get('fixtures/lease-agreement.pdf')` |
+| S3 | `s3.getObject({ key: 'fixtures/lease-agreement.pdf' })` |
+
+Same path. Different resolution strategies.
+
+## Resolution
+
+Resolution is turning paths into content at runtime. Because OpenForm doesn't assume a filesystem, environments provide a resolver.
+
+A resolver implements one method — how to read a path:
+
+```typescript
+interface Resolver {
+  read(path: string): Promise<Uint8Array>
+}
+```
+
+OpenForm ships with a filesystem resolver. You can define your own for other environments.
+
+```typescript
+import { createFsResolver } from "@open-form/resolvers/fs";
+import { textRenderer } from "@open-form/sdk";
+
+const resolver = createFsResolver({ root: "./my-repo" });
+
+const filledForm = leaseAgreement.fill(data);
+const output = await filledForm.render({
+  renderer: textRenderer,
+  resolver,
+  layer: "pdf",
+});
+```
+
+Swap resolvers, change environments. The artifact definition stays the same.

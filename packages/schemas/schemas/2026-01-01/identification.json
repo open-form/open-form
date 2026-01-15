@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/identification.json",
+  "title": "Identification",
+  "description": "Identification document with type, number, issuer, and optional issue and expiry dates",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "type": {
+      "description": "Type of identification document (e.g., ssn, passport, license, ein)",
+      "minLength": 1,
+      "maxLength": 50,
+      "type": "string"
+    },
+    "number": {
+      "description": "Identification number or identifier",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "issuer": {
+      "description": "Issuing authority, country, or state (e.g., US, CA, DMV)",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "issueDate": {
+      "format": "date",
+      "description": "Issue date in ISO 8601 format (YYYY-MM-DD)",
+      "minLength": 10,
+      "maxLength": 10,
+      "type": "string"
+    },
+    "expiryDate": {
+      "format": "date",
+      "description": "Expiry date in ISO 8601 format (YYYY-MM-DD)",
+      "minLength": 10,
+      "maxLength": 10,
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "number"
+  ]
+}

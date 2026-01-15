@@ -1,0 +1,12 @@
+{
+  "title": "Blocks",
+  "pages": [
+    "index",
+    "fields",
+    "fieldset",
+    "annex",
+    "layers",
+    "logic"
+  ],
+  "defaultOpen": false
+}

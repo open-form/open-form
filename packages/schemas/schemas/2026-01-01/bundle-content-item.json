@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/bundlecontentitem.json",
+  "title": "BundleContentItem",
+  "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "inline",
+          "type": "string"
+        },
+        "key": {
+          "description": "Unique identifier for this content item, used to reference it in logic expressions",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "type": "string"
+        },
+        "artifact": {
+          "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
+          "anyOf": [
+            {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Document"
+            },
+            {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Form"
+            },
+            {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Checklist"
+            },
+            {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Bundle"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "key",
+        "artifact"
+      ]
+    },
+    {
+      "unevaluatedProperties": false,
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+              "type": "string"
+            },
+            "include": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "path",
+              "type": "string"
+            },
+            "path": {
+              "description": "Absolute path from repo root to the artifact file",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "path"
+          ]
+        }
+      ]
+    },
+    {
+      "unevaluatedProperties": false,
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+              "type": "string"
+            },
+            "include": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "registry",
+              "type": "string"
+            },
+            "slug": {
+              "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "slug"
+          ]
+        }
+      ]
+    }
+  ]
+}

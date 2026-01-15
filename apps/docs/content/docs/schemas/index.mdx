@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: Complete reference for OpenForm data structures and types
+---
+
+This section provides the complete reference for all OpenForm data structures. The schemas define the shape of data used throughout the OpenForm ecosystem.
+
+## JSON Schema
+
+The complete OpenForm schema is published as a JSON Schema document conforming to [JSON Schema 2020-12](https://json-schema.org/specification).
+
+| Schema | URL |
+|--------|-----|
+| Latest bundle | `https://schema.open-form.dev/schema.json` |
+| Versioned bundle | `https://schema.open-form.dev/2026-01-01.json` |
+| Individual items | `https://schema.open-form.dev/2026-01-01/form.json` |
+
+Add the `$schema` property to enable editor validation and autocompletion:
+
+```yaml
+$schema: https://schema.open-form.dev/schema.json
+kind: form
+name: my-form
+# ...
+```
+
+## Schema Reference
+
+### [Artifacts](/docs/schemas/artifacts)
+
+Top-level document types. Each artifact has a `kind` discriminator and shared base properties.
+
+| Artifact | Description |
+|----------|-------------|
+| [Document](/docs/schemas/artifacts/document) | Static content with no inputs |
+| [Form](/docs/schemas/artifacts/form) | Collects structured data via fields |
+| [Checklist](/docs/schemas/artifacts/checklist) | Ordered items with boolean or enum status |
+| [Bundle](/docs/schemas/artifacts/bundle) | Container for documents, forms, checklists, and other bundles |
+
+### [Blocks](/docs/schemas/blocks)
+
+Composable pieces within artifacts — fields, fieldsets, annexes, layers, and logic expressions.
+
+| Block | Description |
+|-------|-------------|
+| [Fields](/docs/schemas/blocks/fields) | Field types for capturing data |
+| [Fieldset](/docs/schemas/blocks/fieldset) | Logical grouping of fields |
+| [Annex](/docs/schemas/blocks/annex) | Slots for supplementary documents |
+| [Layers](/docs/schemas/blocks/layers) | Inline and file-based layer definitions |
+| [Logic](/docs/schemas/blocks/logic) | Conditional expressions |
+
+### [Primitives](/docs/schemas/primitives)
+
+Basic value types for common data like addresses, phone numbers, monetary amounts, and geographic coordinates.
+
+| Primitive | Description |
+|-----------|-------------|
+| [Address](/docs/schemas/primitives/address) | Postal address |
+| [Bbox](/docs/schemas/primitives/bbox) | Geographic bounding box |
+| [Coordinate](/docs/schemas/primitives/coordinate) | Geographic lat/lon coordinate |
+| [Duration](/docs/schemas/primitives/duration) | ISO 8601 duration |
+| [File](/docs/schemas/primitives/file) | File metadata |
+| [Identification](/docs/schemas/primitives/identification) | Identity document details |
+| [Metadata](/docs/schemas/primitives/metadata) | Custom key-value pairs |
+| [Money](/docs/schemas/primitives/money) | Monetary amount with currency |
+| [Organization](/docs/schemas/primitives/organization) | Organization identity |
+| [Person](/docs/schemas/primitives/person) | Person name information |
+| [Phone](/docs/schemas/primitives/phone) | Phone number |
+| [Resource Ref](/docs/schemas/primitives/resource-ref) | Reference by slug or path |

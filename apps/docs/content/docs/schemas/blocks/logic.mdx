@@ -1,0 +1,114 @@
+---
+title: Logic
+description: Conditional expressions and logic sections
+---
+
+Logic enables conditional behavior through expressions. These expressions control field visibility, required state, and content includes.
+
+## CondExpr
+
+A conditional expression that can be used in `include`, `required`, `visible`, and `disabled` properties.
+
+| Type | Description |
+|------|-------------|
+| `boolean` | Literal true/false value |
+| `string` | Logic expression that evaluates to boolean |
+
+## LogicSection
+
+A named collection of logic expressions that can be referenced throughout the artifact.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `[key]` | `string` | - | Named expression where key is the reference name and value is the expression |
+
+## Example
+
+
+
+```yaml tab="YAML"
+logic:
+  isBusiness: "fields.applicantType.value == 'business'"
+  isIndividual: "fields.applicantType.value == 'individual'"
+
+fields:
+  applicantType:
+    type: enum
+    label: Applicant Type
+    enum: [individual, business]
+    required: true
+
+  firstName:
+    type: text
+    label: First Name
+    visible: isIndividual
+    required: isIndividual
+
+  companyName:
+    type: text
+    label: Company Name
+    visible: isBusiness
+    required: isBusiness
+```
+
+
+```json tab="JSON"
+{
+  "logic": {
+    "isBusiness": "fields.applicantType.value == 'business'",
+    "isIndividual": "fields.applicantType.value == 'individual'"
+  },
+  "fields": {
+    "applicantType": {
+      "type": "enum",
+      "label": "Applicant Type",
+      "enum": ["individual", "business"],
+      "required": true
+    },
+    "firstName": {
+      "type": "text",
+      "label": "First Name",
+      "visible": "isIndividual",
+      "required": "isIndividual"
+    },
+    "companyName": {
+      "type": "text",
+      "label": "Company Name",
+      "visible": "isBusiness",
+      "required": "isBusiness"
+    }
+  }
+}
+```
+
+
+
+## Expression Syntax
+
+Logic expressions support common operators and field references:
+
+### Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `==` | Equals | `fields.status.value == 'active'` |
+| `!=` | Not equals | `fields.type.value != 'guest'` |
+| `>` | Greater than | `fields.age.value > 18` |
+| `>=` | Greater or equal | `fields.score.value >= 70` |
+| `<` | Less than | `fields.quantity.value < 10` |
+| `<=` | Less or equal | `fields.amount.value <= 1000` |
+| `&&` | Logical AND | `isAdult && hasConsent` |
+| `\|\|` | Logical OR | `isAdmin \|\| isOwner` |
+| `!` | Logical NOT | `!isGuest` |
+
+### Field References
+
+| Pattern | Description |
+|---------|-------------|
+| `fields.fieldName.value` | Access field value |
+| `expressionName` | Reference named expression from logic section |
+
+## Related
+
+- [Fields](/docs/schemas/blocks/fields) — Field visibility and required conditions
+- [Bundle](/docs/schemas/artifacts/bundle) — Conditional content includes

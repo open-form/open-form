@@ -1,0 +1,78 @@
+---
+title: Fieldset
+description: Logical grouping of fields
+---
+
+A Fieldset groups related fields together for rendering. Unlike the `fieldset` field type (which creates nested data), this block organizes form layout without affecting data structure.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | Yes | Fieldset identifier (slug format) |
+| `title` | `string` | No | Optional title/heading |
+| `description` | `string` | No | Optional description/help text |
+| `fields` | `Record<string, Field>` | Yes | Map of field identifiers to field definitions |
+| `required` | `boolean` | No | Whether completion of the entire fieldset is required |
+| `order` | `number` | No | Display order hint (lower numbers first) |
+
+## Example
+
+
+
+```yaml tab="YAML"
+fieldsets:
+  - id: personal-info
+    title: Personal Information
+    description: Please provide your personal details
+    order: 1
+    fields:
+      firstName:
+        type: text
+        label: First Name
+        required: true
+      lastName:
+        type: text
+        label: Last Name
+        required: true
+```
+
+
+```json tab="JSON"
+{
+  "fieldsets": [
+    {
+      "id": "personal-info",
+      "title": "Personal Information",
+      "description": "Please provide your personal details",
+      "order": 1,
+      "fields": {
+        "firstName": {
+          "type": "text",
+          "label": "First Name",
+          "required": true
+        },
+        "lastName": {
+          "type": "text",
+          "label": "Last Name",
+          "required": true
+        }
+      }
+    }
+  ]
+}
+```
+
+
+
+## Fieldset vs Fieldset Field
+
+| Aspect | Fieldset (Block) | Fieldset Field |
+|--------|-----------------|----------------|
+| Purpose | Layout organization | Nested data structure |
+| Data shape | Flat fields | Nested object |
+| Use case | Visual grouping | Logical nesting (e.g., `contact.email`) |
+
+## Related
+
+- [Fields](/docs/schemas/blocks/fields) — All field type definitions including fieldset field

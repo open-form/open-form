@@ -1,0 +1,107 @@
+---
+title: Layers
+description: Named renderings of content artifacts into specific formats
+---
+
+A layer is a named rendering of a content artifact into a specific format. Same artifact, multiple outputs.
+
+## Defining Layers
+
+When you define a Form, Document, or Checklist, you declare its layers — the formats it can render to.
+
+```typescript
+const lease = open
+  .form()
+  .name("lease-agreement")
+  .version("1.0.0")
+  .layers({
+    pdf: {
+      kind: "file",
+      mimeType: "application/pdf",
+      path: "fixtures/lease.pdf",
+    },
+    markdown: {
+      kind: "file",
+      mimeType: "text/markdown",
+      path: "fixtures/lease.md",
+    },
+    html: {
+      kind: "file",
+      mimeType: "text/html",
+      path: "fixtures/lease.html",
+    },
+  })
+  .build();
+```
+
+This form can render to PDF, Markdown, or HTML — each derived from the same source of truth.
+
+Layers are versioned with the artifact. Changing a layer requires a new artifact version.
+
+## Layer Sources
+
+Each layer has a source — where its template content comes from.
+
+| Source | Description |
+|--------|-------------|
+| **Inline** | Content defined directly in the artifact |
+| **Path** | Content read from a repo-root path |
+
+### Inline
+
+For simple templates, define the content directly:
+
+```typescript
+layers: {
+  markdown: {
+    kind: 'inline',
+    mimeType: 'text/markdown',
+    text: '# {{title}}\n\nName: {{fields.name}}'
+  }
+}
+```
+
+### File
+
+For complex templates, reference a file:
+
+```typescript
+layers: {
+  pdf: {
+    kind: 'file',
+    mimeType: 'application/pdf',
+    path: '/templates/lease.pdf.hbs'
+  }
+}
+```
+
+Paths are always absolute from repo root.
+
+## The Markdown Convention
+
+<Callout type="info">
+Content artifacts should define a `markdown` layer to enable AI agents to read them directly.
+</Callout>
+
+AI agents can read Markdown natively. If your artifact has a Markdown layer, agents can understand its content without parsing PDF or HTML.
+
+## Layer Keys
+
+The key you use (`pdf`, `markdown`, `html`) is arbitrary but conventional:
+
+| Key | Typical Use |
+|-----|-------------|
+| `pdf` | PDF output |
+| `markdown` | Markdown output (especially for agents) |
+| `html` | HTML output |
+| `json` | Structured data output |
+
+## What Layers Are Not
+
+Layers are not:
+
+- **Separate artifacts** — they don't have their own versions or slugs
+- **Stacked views** — they're alternatives, not overlays
+- **Optional** — content artifacts must define at least one layer
+
+Think of layers as "the same content, rendered differently."

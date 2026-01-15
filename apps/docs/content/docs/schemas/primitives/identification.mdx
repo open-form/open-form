@@ -1,0 +1,40 @@
+---
+title: Identification
+description: An identity document
+---
+
+Details for an identity document such as a passport, driver's license, or Social Security number.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | `string` | Yes | Identification type (passport, ssn, license, etc.) |
+| `number` | `string` | Yes | Document/identifier number |
+| `issuer` | `string` | No | Issuing authority, country, or state |
+| `issueDate` | `string` | No | Issue date in ISO 8601 format (YYYY-MM-DD) |
+| `expiryDate` | `string` | No | Expiration date in ISO 8601 format (YYYY-MM-DD) |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+# Passport
+type: passport
+number: AB1234567
+issuer: United States
+issueDate: "2020-01-15"
+expiryDate: "2030-01-14"
+```
+
+
+```json tab="JSON"
+{
+  "type": "passport",
+  "number": "AB1234567",
+  "issuer": "United States",
+  "issueDate": "2020-01-15",
+  "expiryDate": "2030-01-14"
+}
+```

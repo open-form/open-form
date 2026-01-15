@@ -1,0 +1,208 @@
+---
+title: Checklist
+description: An artifact for tracking tasks and progress
+---
+
+A Checklist defines ordered items to track within a workflow. Each item can have a boolean (done/not done) or enumerated status (e.g., pending, approved, rejected).
+
+For example, a loan closing checklist, document review checklist, or onboarding checklist.
+
+## Properties
+
+In addition to [common artifact properties](/docs/schemas/artifacts#common-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'checklist'` | Yes | Literal "checklist" discriminator |
+| `items` | `ChecklistItem[]` | Yes | Ordered list of checklist items |
+| `layers` | `Record<string, Layer>` | No | Named layers for rendering this checklist into different formats |
+| `defaultLayer` | `string` | No | Key of the default layer to use when none specified |
+
+## ChecklistItem
+
+Template-time checklist item definition.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | Yes | Item identifier |
+| `title` | `string` | Yes | Item title |
+| `description` | `string` | No | Item description |
+| `status` | `StatusSpec` | No | Status specification for this item |
+
+## StatusSpec
+
+Status can be boolean (done/not done) or enumerated (multiple status options).
+
+**Boolean Status:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'boolean'` | Yes | Boolean status type |
+| `default` | `boolean` | No | Default value |
+
+**Enum Status:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `kind` | `'enum'` | Yes | Enum status type |
+| `options` | `EnumStatusOption[]` | Yes | Available status options |
+| `default` | `string` | No | Default option value |
+
+**EnumStatusOption:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `value` | `string` | Yes | Option value |
+| `label` | `string` | Yes | Display label |
+| `description` | `string` | No | Option description |
+
+## Examples
+
+```yaml tab="YAML"
+kind: checklist
+name: loan-closing
+version: "1.0.0"
+title: Loan Closing Checklist
+description: Required steps for loan closing
+
+items:
+  - id: title-search
+    title: Title Search
+    description: Complete title search and review
+    status:
+      kind: boolean
+      default: false
+
+  - id: appraisal
+    title: Appraisal
+    description: Property appraisal received and reviewed
+    status:
+      kind: enum
+      options:
+        - value: pending
+          label: Pending
+        - value: ordered
+          label: Ordered
+        - value: received
+          label: Received
+        - value: approved
+          label: Approved
+      default: pending
+
+  - id: insurance
+    title: Insurance Verification
+    description: Verify homeowner's insurance
+    status:
+      kind: boolean
+      default: false
+
+  - id: final-approval
+    title: Final Approval
+    description: Loan approved for closing
+    status:
+      kind: enum
+      options:
+        - value: pending
+          label: Pending Review
+        - value: approved
+          label: Approved
+        - value: denied
+          label: Denied
+        - value: escalated
+          label: Escalated
+      default: pending
+
+layers:
+  markdown:
+    kind: inline
+    mimeType: text/markdown
+    text: |
+      # {{title}}
+
+      {{#each items}}
+      - [ ] **{{title}}**: {{description}}
+      {{/each}}
+  pdf:
+    kind: file
+    mimeType: application/pdf
+    path: /templates/loan-closing-checklist.pdf
+
+defaultLayer: markdown
+```
+
+```json tab="JSON"
+{
+  "kind": "checklist",
+  "name": "loan-closing",
+  "version": "1.0.0",
+  "title": "Loan Closing Checklist",
+  "description": "Required steps for loan closing",
+  "items": [
+    {
+      "id": "title-search",
+      "title": "Title Search",
+      "description": "Complete title search and review",
+      "status": {
+        "kind": "boolean",
+        "default": false
+      }
+    },
+    {
+      "id": "appraisal",
+      "title": "Appraisal",
+      "description": "Property appraisal received and reviewed",
+      "status": {
+        "kind": "enum",
+        "options": [
+          { "value": "pending", "label": "Pending" },
+          { "value": "ordered", "label": "Ordered" },
+          { "value": "received", "label": "Received" },
+          { "value": "approved", "label": "Approved" }
+        ],
+        "default": "pending"
+      }
+    },
+    {
+      "id": "insurance",
+      "title": "Insurance Verification",
+      "description": "Verify homeowner's insurance",
+      "status": {
+        "kind": "boolean",
+        "default": false
+      }
+    },
+    {
+      "id": "final-approval",
+      "title": "Final Approval",
+      "description": "Loan approved for closing",
+      "status": {
+        "kind": "enum",
+        "options": [
+          { "value": "pending", "label": "Pending Review" },
+          { "value": "approved", "label": "Approved" },
+          { "value": "denied", "label": "Denied" },
+          { "value": "escalated", "label": "Escalated" }
+        ],
+        "default": "pending"
+      }
+    }
+  ],
+  "layers": {
+    "markdown": {
+      "kind": "inline",
+      "mimeType": "text/markdown",
+      "text": "# {{title}}\n\n{{#each items}}\n- [ ] **{{title}}**: {{description}}\n{{/each}}"
+    },
+    "pdf": {
+      "kind": "file",
+      "mimeType": "application/pdf",
+      "path": "/templates/loan-closing-checklist.pdf"
+    }
+  },
+  "defaultLayer": "markdown"
+}
+```
+
+## Related
+
+- [Layers](/docs/schemas/blocks/layers) — Layer specification

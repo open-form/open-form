@@ -1,0 +1,22 @@
+{
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@open-form/core": ["../core/src/index.ts"],
+      "@open-form/renderers": ["../renderers/src/index.ts"],
+      "@open-form/client": ["../client/src/index.ts"],
+      "@open-form/contracts": ["../contracts/src/index.ts"],
+      "@open-form/renderer-pdf": ["../renderer-pdf/src/index.ts"],
+      "@open-form/renderer-docx": ["../renderer-docx/src/index.ts"],
+      "@open-form/renderer-text": ["../renderer-text/src/index.ts"],
+      "@/*": ["../core/src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
+

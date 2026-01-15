@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/organization.json",
+  "title": "Organization",
+  "description": "Organization with legal details and identification",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Organization name",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "legalName": {
+      "description": "Legal or registered name of the organization",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "domicile": {
+      "description": "Domicile",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "entityType": {
+      "description": "Legal entity type of the organization",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "entityId": {
+      "description": "Business identification number",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    },
+    "taxId": {
+      "description": "Tax identification number",
+      "minLength": 1,
+      "maxLength": 100,
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

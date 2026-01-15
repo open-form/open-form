@@ -1,0 +1,42 @@
+---
+title: Address
+description: A postal address
+---
+
+A postal address with structured components for street, city, region, postal code, and country.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `line1` | `string` | Yes | Primary address line (street address, PO box, company name) |
+| `line2` | `string` | No | Secondary address line (apartment, suite, unit, building) |
+| `locality` | `string` | Yes | City, town, or locality |
+| `region` | `string` | Yes | State, province, or region |
+| `postalCode` | `string` | Yes | Postal or ZIP code |
+| `country` | `string` | Yes | ISO country code or full country name |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+line1: 123 Main Street
+line2: Suite 400
+locality: San Francisco
+region: CA
+postalCode: "94102"
+country: US
+```
+
+
+```json tab="JSON"
+{
+  "line1": "123 Main Street",
+  "line2": "Suite 400",
+  "locality": "San Francisco",
+  "region": "CA",
+  "postalCode": "94102",
+  "country": "US"
+}
+```

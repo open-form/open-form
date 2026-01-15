@@ -1,0 +1,57 @@
+{
+  "name": "@open-form/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared ESLint configuration for OpenForm framework packages",
+  "type": "module",
+  "files": [
+    "*.js",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "eslint",
+    "eslint-config",
+    "config"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "OpenForm",
+    "url": "https://open-form.dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "packages/eslint-config"
+  },
+  "homepage": "https://www.open-form.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "exports": {
+    "./base": "./base.js",
+    "./next-js": "./next.js",
+    "./react-internal": "./react-internal.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@next/eslint-plugin-next": "^15.5.0",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-turbo": "^2.6.0",
+    "globals": "^16.5.0",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.46.3"
+  }
+}

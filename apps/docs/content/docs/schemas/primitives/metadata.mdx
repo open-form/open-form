@@ -1,0 +1,38 @@
+---
+title: Metadata
+description: Custom key-value pairs
+---
+
+Custom key-value pairs for storing domain-specific or organizational data on artifacts.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `[key]` | `string \| number \| boolean \| null` | - | Any alphanumeric key with hyphens, values can be strings, numbers, booleans, or null |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+metadata:
+  department: Human Resources
+  category: onboarding
+  priority: 1
+  isPublic: false
+  approvedBy: null
+```
+
+
+```json tab="JSON"
+{
+  "metadata": {
+    "department": "Human Resources",
+    "category": "onboarding",
+    "priority": 1,
+    "isPublic": false,
+    "approvedBy": null
+  }
+}
+```

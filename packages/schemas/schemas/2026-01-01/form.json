@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/form.json",
+  "title": "Form",
+  "unevaluatedProperties": false,
+  "description": "A form artifact that defines a data contract with field definitions, optional layers for rendering, and optional annexes. Forms are the primary artifact type for structured data collection and document generation.",
+  "type": "object",
+  "allOf": [
+    {
+      "title": "Artifact",
+      "description": "Root schema for all OpenForm artifacts (containers and documents).",
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "format": "uri",
+          "description": "JSON Schema URI for this artifact instance.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+          "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+          "minLength": 1,
+          "maxLength": 128,
+          "type": "string"
+        },
+        "version": {
+          "description": "Artifact version.",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        },
+        "title": {
+          "description": "Human-readable title.",
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "description": {
+          "description": "Detailed description or context for the artifact.",
+          "minLength": 0,
+          "maxLength": 2000,
+          "type": "string"
+        },
+        "code": {
+          "description": "Optional user-defined internal code.",
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "releaseDate": {
+          "format": "date",
+          "description": "Artifact release date",
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Metadata"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "title"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "form",
+          "type": "string"
+        },
+        "logic": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/LogicSection"
+        },
+        "fields": {
+          "description": "Form field definitions keyed by field identifier. Fields define the input structure and validation rules for the form",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Field"
+            }
+          }
+        },
+        "layers": {
+          "description": "Named layers for rendering this form into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Layer"
+            }
+          }
+        },
+        "defaultLayer": {
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Key of the default layer to use when none specified at render time",
+          "type": "string"
+        },
+        "allowAnnexes": {
+          "default": false,
+          "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes array",
+          "type": "boolean"
+        },
+        "annexes": {
+          "minItems": 0,
+          "description": "Predefined annex slots for supplementary documents. Each slot can be marked as required (must be filled at runtime) or optional",
+          "type": "array",
+          "items": {
+            "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Annex"
+          }
+        },
+        "parties": {
+          "minItems": 0,
+          "description": "Party role definitions. Each role specifies constraints on who can fill it (person/organization) and signature requirements.",
+          "type": "array",
+          "items": {
+            "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormParty"
+          }
+        },
+        "witnesses": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/WitnessRequirement"
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    }
+  ]
+}

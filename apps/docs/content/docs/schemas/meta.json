@@ -1,0 +1,10 @@
+{
+  "title": "Schemas",
+  "pages": [
+    "index",
+    "artifacts",
+    "blocks",
+    "primitives"
+  ],
+  "defaultOpen": false
+}

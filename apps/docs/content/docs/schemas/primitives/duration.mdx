@@ -1,0 +1,67 @@
+---
+title: Duration
+description: A time period in ISO 8601 format
+---
+
+A time period expressed as an ISO 8601 duration string. Can represent years, months, days, hours, minutes, and seconds.
+
+## Format
+
+A duration is a string following the ISO 8601 duration format:
+
+```
+P[n]Y[n]M[n]DT[n]H[n]M[n]S
+```
+
+| Component | Description |
+|-----------|-------------|
+| `P` | Duration designator (required prefix) |
+| `[n]Y` | Number of years |
+| `[n]M` | Number of months |
+| `[n]D` | Number of days |
+| `T` | Time designator (separates date and time) |
+| `[n]H` | Number of hours |
+| `[n]M` | Number of minutes |
+| `[n]S` | Number of seconds |
+
+## Examples
+
+
+
+```yaml tab="YAML"
+# Common durations
+oneYear: P1Y
+sixMonths: P6M
+thirtyDays: P30D
+oneHour: PT1H
+thirtyMinutes: PT30M
+ninetySeconds: PT90S
+```
+
+
+```json tab="JSON"
+{
+  "oneYear": "P1Y",
+  "sixMonths": "P6M",
+  "thirtyDays": "P30D",
+  "oneHour": "PT1H",
+  "thirtyMinutes": "PT30M",
+  "ninetySeconds": "PT90S"
+}
+```
+
+## Common patterns
+
+| Duration | String | Description |
+|----------|--------|-------------|
+| 1 year | `P1Y` | Annual subscription |
+| 6 months | `P6M` | Semi-annual period |
+| 30 days | `P30D` | Monthly period |
+| 1 week | `P7D` | Weekly period |
+| 24 hours | `PT24H` | Full day |
+| 1 hour | `PT1H` | Hourly period |
+| 30 minutes | `PT30M` | Half hour |
+
+## Related
+
+- [Duration Field](/docs/schemas/blocks/fields#duration-field) — Field type for capturing durations

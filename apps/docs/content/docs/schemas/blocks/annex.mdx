@@ -1,0 +1,94 @@
+---
+title: Annex
+description: Supplementary document slots
+---
+
+An Annex defines a slot for supplementary documents attached to a form, allowing forms to collect supporting documentation alongside structured field data.
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | Yes | Unique annex identifier (slug format) |
+| `title` | `string` | Yes | Title or heading for the annex slot |
+| `description` | `string` | No | Description of what document should be attached |
+| `required` | `boolean \| string` | No | Whether this annex slot must be filled. Can be a boolean or expression |
+| `visible` | `boolean \| string` | No | Whether this annex is visible. Can be a boolean or expression. Defaults to true |
+
+## Example
+
+
+
+```yaml tab="YAML"
+annexes:
+  - id: photo-id
+    title: Photo ID
+    description: Upload a government-issued photo ID
+    required: true
+
+  - id: proof-of-address
+    title: Proof of Address
+    description: Upload a utility bill or bank statement dated within 3 months
+```
+
+
+```json tab="JSON"
+{
+  "annexes": [
+    {
+      "id": "photo-id",
+      "title": "Photo ID",
+      "description": "Upload a government-issued photo ID",
+      "required": true
+    },
+    {
+      "id": "proof-of-address",
+      "title": "Proof of Address",
+      "description": "Upload a utility bill or bank statement dated within 3 months"
+    }
+  ]
+}
+```
+
+
+
+### Conditional visibility
+
+
+
+```yaml tab="YAML"
+logic:
+  isBusinessApplication: "fields.applicantType.value == 'business'"
+
+annexes:
+  - id: business-registration
+    title: Business Registration
+    description: Upload your business registration certificate
+    required: isBusinessApplication
+    visible: isBusinessApplication
+```
+
+
+```json tab="JSON"
+{
+  "logic": {
+    "isBusinessApplication": "fields.applicantType.value == 'business'"
+  },
+  "annexes": [
+    {
+      "id": "business-registration",
+      "title": "Business Registration",
+      "description": "Upload your business registration certificate",
+      "required": "isBusinessApplication",
+      "visible": "isBusinessApplication"
+    }
+  ]
+}
+```
+
+
+
+## Related
+
+- [Form](/docs/schemas/artifacts/form) — Form artifact containing annexes
+- [Logic](/docs/schemas/blocks/logic) — Conditional expressions for required/visible

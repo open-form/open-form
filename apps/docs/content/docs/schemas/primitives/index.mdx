@@ -1,0 +1,21 @@
+---
+title: Primitives
+description: Core data types used across OpenForm
+---
+
+Primitives are structured data types used to represent complex values in OpenForm—addresses, phone numbers, monetary amounts, and more.
+
+## Primitive Types
+
+| Primitive | Description |
+|-----------|-------------|
+| [Address](/docs/schemas/primitives/address) | Postal address with street, locality, region, postal code, and country |
+| [Bbox](/docs/schemas/primitives/bbox) | Geographic bounding box defined by southwest and northeast coordinates |
+| [Coordinate](/docs/schemas/primitives/coordinate) | Geographic coordinate in WGS84 with latitude/longitude in decimal degrees |
+| [Duration](/docs/schemas/primitives/duration) | ISO 8601 duration string (e.g., `P1Y`, `PT30M`, `P1DT12H`) |
+| [Identification](/docs/schemas/primitives/identification) | Identification document details (passport, SSN, driver's license) |
+| [Metadata](/docs/schemas/primitives/metadata) | Custom key-value pairs for domain-specific data |
+| [Money](/docs/schemas/primitives/money) | Monetary amount paired with ISO 4217 currency code |
+| [Organization](/docs/schemas/primitives/organization) | Organization identity with legal and registration details |
+| [Person](/docs/schemas/primitives/person) | Person name information with required fullName and optional components |
+| [Phone](/docs/schemas/primitives/phone) | Phone number in E.164 format with optional type/extension |

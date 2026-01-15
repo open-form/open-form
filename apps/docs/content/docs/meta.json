@@ -1,0 +1,5 @@
+{
+  "title": "OpenForm Documentation",
+  "pages": ["index", "quickstart", "concepts", "--- Reference ---", "schemas"],
+  "defaultOpen": true
+}

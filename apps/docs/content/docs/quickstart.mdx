@@ -1,0 +1,210 @@
+---
+title: Quickstart
+description: Build your first form in 5 minutes
+icon: Rocket
+---
+
+# Quickstart
+
+Build a contact form with validation and rendering in 5 minutes.
+
+## Installation
+
+```bash tab="npm"
+npm install @open-form/sdk
+```
+
+```bash tab="pnpm"
+pnpm add @open-form/sdk
+```
+
+```bash tab="yarn"
+yarn add @open-form/sdk
+```
+
+## 1. Define a Form
+
+Create a form with fields and a template:
+
+```typescript
+import { open } from '@open-form/sdk';
+
+const contactForm = open.form()
+  .name('contact-form')
+  .version('1.0.0')
+  .title('Contact Us')
+  .description('Send us a message')
+  .fields({
+    name: {
+      type: 'text',
+      label: 'Your Name',
+      required: true,
+      minLength: 2
+    },
+    email: {
+      type: 'email',
+      label: 'Email Address',
+      required: true
+    },
+    subject: {
+      type: 'enum',
+      label: 'Subject',
+      enum: ['general', 'support', 'sales'],
+      required: true
+    },
+    message: {
+      type: 'text',
+      label: 'Message',
+      required: true,
+      minLength: 10,
+      maxLength: 1000
+    }
+  })
+  .inlineTemplate('html', 'text/html', `
+    <div class="contact">
+      <h2>New Message from {{name}}</h2>
+      <p><strong>Email:</strong> {{email}}</p>
+      <p><strong>Subject:</strong> {{subject}}</p>
+      <p><strong>Message:</strong></p>
+      <p>{{message}}</p>
+    </div>
+  `)
+  .defaultTemplate('html')
+  .build();
+```
+
+Or use the object syntax:
+
+```typescript
+const contactForm = open.form({
+  name: 'contact-form',
+  version: '1.0.0',
+  title: 'Contact Us',
+  fields: {
+    name: { type: 'text', label: 'Your Name', required: true },
+    email: { type: 'email', label: 'Email Address', required: true },
+    subject: { type: 'enum', label: 'Subject', enum: ['general', 'support', 'sales'] },
+    message: { type: 'text', label: 'Message', required: true }
+  },
+  templates: {
+    html: {
+      kind: 'inline',
+      mimeType: 'text/html',
+      text: '<h2>Message from {{name}}</h2><p>{{message}}</p>'
+    }
+  },
+  defaultTemplate: 'html'
+});
+```
+
+## 2. Validate Data
+
+Use `safeParseData` for safe validation:
+
+```typescript
+const result = contactForm.safeParseData({
+  name: 'Alice',
+  email: 'alice@example.com',
+  subject: 'general',
+  message: 'Hello! I have a question about your service.'
+});
+
+if (result.success) {
+  console.log('Valid:', result.data);
+} else {
+  console.error('Errors:', result.errors);
+}
+```
+
+Or use `parseData` which throws on error:
+
+```typescript
+import { FormValidationError } from '@open-form/sdk';
+
+try {
+  const data = contactForm.parseData(userInput);
+  // Use validated data
+} catch (err) {
+  if (err instanceof FormValidationError) {
+    console.error(err.errors);
+  }
+}
+```
+
+## 3. Render Output
+
+Render the form to HTML:
+
+```typescript
+import { textRenderer } from '@open-form/sdk';
+
+const html = await contactForm.render(textRenderer, {
+  data: {
+    name: 'Alice',
+    email: 'alice@example.com',
+    subject: 'general',
+    message: 'Hello! I have a question.'
+  }
+});
+
+console.log(html);
+// <div class="contact">
+//   <h2>New Message from Alice</h2>
+//   <p><strong>Email:</strong> alice@example.com</p>
+//   ...
+// </div>
+```
+
+## 4. Export to YAML
+
+Save your form definition for version control:
+
+```typescript
+const yaml = contactForm.toYAML();
+console.log(yaml);
+```
+
+Output:
+
+```yaml
+kind: form
+name: contact-form
+version: 1.0.0
+title: Contact Us
+description: Send us a message
+fields:
+  name:
+    type: text
+    label: Your Name
+    required: true
+    minLength: 2
+  email:
+    type: email
+    label: Email Address
+    required: true
+  subject:
+    type: enum
+    label: Subject
+    enum:
+      - general
+      - support
+      - sales
+    required: true
+  message:
+    type: text
+    label: Message
+    required: true
+    minLength: 10
+    maxLength: 1000
+templates:
+  html:
+    kind: inline
+    mimeType: text/html
+    text: |
+      <div class="contact">
+        <h2>New Message from {{name}}</h2>
+        ...
+      </div>
+defaultTemplate: html
+```
+
