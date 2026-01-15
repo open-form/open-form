@@ -1,6 +1,6 @@
 {
   "name": "@open-form/renderers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Umbrella package for OpenForm framework renderers - re-exports all renderers from @open-form/renderer-docx, @open-form/renderer-pdf, and @open-form/renderer-text",
   "type": "module",
   "main": "./dist/index.js",
