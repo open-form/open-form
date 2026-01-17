@@ -8,7 +8,7 @@
   <br />
 </p>
 
-<h1 align="center">@open-form/sdk</h1>
+<h1 align="center">@open-form</h1>
 
 <div align="center">
 
