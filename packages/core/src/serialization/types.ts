@@ -1,18 +1,11 @@
-export type SerializationFormat = "json" | "yaml";
+// Re-export types from centralized types.ts
+export type { SerializationFormat, SerializationOptions } from '@/types'
 
 /** Default schema URL for OpenForm artifacts */
 export const OPENFORM_SCHEMA_URL = "https://schema.open-form.dev/schema.json";
 
-export interface SerializationOptions {
-  /** Number of spaces for JSON indentation (default: 2) */
-  indent?: number;
-  /** YAML indentation (default: 2) */
-  yamlIndent?: number;
-  /** Sort object keys alphabetically */
-  sortKeys?: boolean;
-  /** Include $schema reference for IDE validation (default: true) */
-  includeSchema?: boolean;
-}
+// Import for internal use
+import type { SerializationFormat } from '@/types'
 
 export class SerializationError extends Error {
   constructor(

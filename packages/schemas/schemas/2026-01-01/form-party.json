@@ -5,13 +5,6 @@
   "description": "Design-time party role definition. Defines what roles exist and what constraints apply when filling a form.",
   "type": "object",
   "properties": {
-    "id": {
-      "minLength": 1,
-      "maxLength": 50,
-      "pattern": "^[a-z][a-z0-9_-]*$",
-      "description": "Role identifier (e.g., buyer, seller, lessee)",
-      "type": "string"
-    },
     "label": {
       "minLength": 1,
       "maxLength": 100,
@@ -98,7 +91,6 @@
     }
   },
   "required": [
-    "id",
     "label"
   ]
 }

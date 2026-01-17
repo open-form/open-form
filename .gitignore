@@ -12,6 +12,7 @@ out/
 .next/
 .output/
 .turbo/
+*.tgz
 
 # TypeScript
 *.tsbuildinfo

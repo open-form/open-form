@@ -17,12 +17,35 @@ export { FilledForm } from './filled-form'
 // Export load functions
 export { load, safeLoad, loadFromObject, safeLoadFromObject, LoadError, type AnyArtifactInstance } from './load'
 
-// Export instance types
-export type { IArtifactInstance } from './builders/artifacts/base-instance'
-export { FormInstance, FormValidationError, type RenderOptions, type FillOptions, type FormInput } from './builders/artifacts/form'
-export { DocumentInstance, type DocumentInput } from './builders/artifacts/document'
-export { BundleInstance, type BundleInput } from './builders/artifacts/bundle'
-export { ChecklistInstance, type ChecklistInput } from './builders/artifacts/checklist'
+// Export all public types from centralized types.ts
+export type {
+  // Validation types
+  ValidationError,
+  ValidationSuccess,
+  ValidationFailure,
+  ValidationResult,
+  ValidateOptions,
+  // Serialization types
+  SerializationFormat,
+  SerializationOptions,
+  // Instance interface
+  IArtifactInstance,
+  // Render options
+  RenderOptions,
+  FilledFormRenderOptions,
+  FillOptions,
+  // Input types
+  FormInput,
+  DocumentInput,
+  BundleInput,
+  ChecklistInput,
+} from './types'
+
+// Export instance classes
+export { FormInstance, FormValidationError } from './builders/artifacts/form'
+export { DocumentInstance } from './builders/artifacts/document'
+export { BundleInstance } from './builders/artifacts/bundle'
+export { ChecklistInstance } from './builders/artifacts/checklist'
 
 // Import functions for open namespace
 import { validate, toStandardSchema, parse } from './utils'
@@ -108,8 +131,8 @@ import {
 // Import only the useful utils for the open.utils namespace
 import { makeInstanceTemplate, applyDefaults, withDefaults } from './utils'
 
-// Re-export formatter types from types
-export type { FormatterRegistry, FormatterConfig } from '@open-form/types'
+// Re-export serializer types from types
+export type { SerializerRegistry, SerializerConfig } from '@open-form/types'
 
 // Type for the open namespace
 type OpenAPI = {

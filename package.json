@@ -15,9 +15,14 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "docx": "^9.5.1",
     "turbo": "^2.5.0"
   },
   "pnpm": {

@@ -1,0 +1,28 @@
+/**
+ * Party serializer - validator for Party union type (Person | Organization)
+ *
+ * Note: The stringifier is defined in each registry (usa.ts, eu.ts, intl.ts)
+ * because it depends on the person and organization stringifiers from that registry.
+ */
+
+import { isObject } from '../utils'
+
+/**
+ * Validate Party object. Throws error if invalid.
+ * Party is a union of Person | Organization.
+ */
+export function validateParty(value: unknown): void {
+	if (value == null) return // null/undefined handled at stringifier level
+
+	if (!isObject(value)) {
+		throw new TypeError('Invalid party: must be a Party object')
+	}
+
+	// Party is a union, so we check if it matches either Person or Organization pattern
+	const hasPersonFields = 'firstName' in value || 'lastName' in value || 'fullName' in value
+	const hasOrgFields = 'name' in value && !('firstName' in value)
+
+	if (!hasPersonFields && !hasOrgFields) {
+		throw new Error('Invalid party: must be either a Person or Organization')
+	}
+}

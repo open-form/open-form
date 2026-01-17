@@ -143,7 +143,7 @@ describe('Fieldset (Builder Pattern)', () => {
 						numberField: field.number().build(),
 						booleanField: field.boolean().build(),
 						emailField: field.email().build(),
-						enumField: field.enum().enum('a', 'b', 'c').build(),
+						enumField: field.enum().options(['a', 'b', 'c']).build(),
 						moneyField: field.money().build(),
 						addressField: field.address().build(),
 						phoneField: field.phone().build(),
@@ -489,7 +489,7 @@ describe('Fieldset (Builder Pattern)', () => {
 					.fields({
 						newsletter: field.boolean().label('Subscribe to newsletter').build(),
 						notifications: field.boolean().label('Enable notifications').build(),
-						theme: field.enum().label('Theme').enum('light', 'dark').build(),
+						theme: field.enum().label('Theme').options(['light', 'dark']).build(),
 					})
 					.required(false)
 					.order(99)

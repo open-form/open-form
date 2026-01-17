@@ -60,11 +60,19 @@ export const FormSchema = Type.Intersect(
 				}),
 			),
 			parties: Type.Optional(
-				Type.Array(Type.Ref('FormParty'), {
-					minItems: 0,
-					description:
-						'Party role definitions. Each role specifies constraints on who can fill it (person/organization) and signature requirements.',
-				}),
+				Type.Record(
+					Type.String({
+						minLength: 1,
+						maxLength: 50,
+						pattern: '^[a-z][a-z0-9_-]*$',
+						description: 'Party role identifier (e.g., buyer, seller, landlord)',
+					}),
+					Type.Ref('FormParty'),
+					{
+						description:
+							'Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.',
+					},
+				),
 			),
 			witnesses: Type.Optional(Type.Ref('WitnessRequirement')),
 		}),

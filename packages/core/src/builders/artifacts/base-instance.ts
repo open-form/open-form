@@ -8,70 +8,14 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { Artifact } from '@open-form/types'
 import type { Metadata } from '@open-form/types'
-import { validate as validateArtifact, type ValidateOptions } from '@/utils/validate-artifact'
-import { toYAML, type SerializationOptions, OPENFORM_SCHEMA_URL } from '@/serialization'
+import { validate as validateArtifact } from '@/utils/validate-artifact'
+import { toYAML, OPENFORM_SCHEMA_URL } from '@/serialization'
 
-/**
- * Base interface for all artifact instances.
- * Defines the common API that all artifact wrapper classes implement.
- */
-export interface IArtifactInstance<T extends Artifact> {
-  /** The raw artifact data. Use this for serialization or direct access. */
-  readonly schema: T
+// Re-export IArtifactInstance from centralized types.ts
+export type { IArtifactInstance } from '@/types'
 
-  /** Artifact kind discriminator. */
-  readonly kind: T['kind']
-
-  /** Unique identifier/slug. */
-  readonly name: string
-
-  /** Semantic version string. */
-  readonly version: string
-
-  /** Human-friendly title. */
-  readonly title: string
-
-  /** Optional description. */
-  readonly description: string | undefined
-
-  /** Optional internal code. */
-  readonly code: string | undefined
-
-  /** Optional release date (ISO string). */
-  readonly releaseDate: string | undefined
-
-  /** Optional custom metadata. */
-  readonly metadata: Metadata | undefined
-
-  /**
-   * Validates the artifact schema definition.
-   * Returns a Standard Schema result with either `value` or `issues`.
-   */
-  validate(options?: ValidateOptions): StandardSchemaV1.Result<T>
-
-  /**
-   * Checks if the artifact schema definition is valid.
-   * Returns true if valid, false otherwise.
-   */
-  isValid(options?: ValidateOptions): boolean
-
-  /**
-   * Serialize to JSON object. Called by JSON.stringify().
-   * @param options - Serialization options (includeSchema defaults to true)
-   */
-  toJSON(options?: SerializationOptions): T | (T & { $schema: string })
-
-  /**
-   * Serialize to YAML string.
-   * @param options - Serialization options (includeSchema defaults to true)
-   */
-  toYAML(options?: SerializationOptions): string
-
-  /**
-   * Create an exact copy of this instance.
-   */
-  clone(): IArtifactInstance<T>
-}
+// Import types for internal use
+import type { IArtifactInstance, ValidateOptions, SerializationOptions } from '@/types'
 
 /**
  * Abstract base class implementing common artifact instance functionality.
@@ -116,11 +60,11 @@ export abstract class BaseArtifactInstance<T extends Artifact> implements IArtif
     return this.schema.name
   }
 
-  get version(): string {
+  get version(): string | undefined {
     return this.schema.version
   }
 
-  get title(): string {
+  get title(): string | undefined {
     return this.schema.title
   }
 

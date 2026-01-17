@@ -6,28 +6,25 @@
 
 import type {
   OpenFormRenderer,
-  FormTemplate,
-  BinaryContent,
+  RendererLayer,
   OpenFormRendererContext,
 } from "@open-form/types";
 import { renderDocx } from "./render";
+import type { RenderRequest } from "@open-form/types";
 
 export const docxRenderer: OpenFormRenderer<
-  FormTemplate & { type: "docx"; content: BinaryContent },
+  RendererLayer & { type: "docx"; content: Uint8Array },
   Uint8Array,
   unknown
 > = {
   id: "docx",
-  supports: ["docx"],
-  outputExtension: "docx",
-  outputMime:
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  async render(template, form, data, _pdfBindings, ctx?: OpenFormRendererContext) {
-    // template.content is your DOCX buffer
-    // data is your form instance payload
-    const dataRecord = data as Record<string, unknown>;
-    // Pass custom formatters from context if available
-    return await renderDocx(template.content, dataRecord, {}, ctx?.formatters);
+  async render(request: RenderRequest<RendererLayer & { type: "docx"; content: Uint8Array }, unknown>, ctx?: OpenFormRendererContext) {
+    // Extract data as record
+    const dataRecord = request.data as Record<string, unknown>;
+    // Pass custom serializers from context if available
+    // Priority: request bindings > template bindings
+    const activeBindings = request.bindings || request.template.bindings;
+    return await renderDocx(request.template.content, dataRecord, {}, request.form, ctx?.serializers, activeBindings);
   },
 };
 

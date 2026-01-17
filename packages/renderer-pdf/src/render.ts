@@ -3,8 +3,9 @@
  */
 
 import { PDFDocument } from 'pdf-lib'
-import type { Form, Field, BinaryContent, FormatterRegistry } from '@open-form/types'
-import { usaFormatters } from '@open-form/serialization'
+import type { Form, Field, BinaryContent, SerializerRegistry } from '@open-form/types'
+import { usaSerializers, preprocessFieldData } from '@open-form/serialization'
+import { createSerializedFieldWrapper } from './utils/field-serializer.js'
 
 /**
  * Get a value from a nested object using dot notation path.
@@ -26,18 +27,21 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 /**
  * Render PDF template with form data.
  *
+ * Automatically applies serializers to fields based on schema types,
+ * enabling ergonomic field access with automatic formatting.
+ *
  * @param template - PDF template as BinaryContent (Uint8Array)
  * @param form - Form definition containing field schemas
  * @param data - Data object to populate form fields
  * @param bindings - Optional mapping from form field names to PDF AcroForm field names
- * @param formatters - Optional custom formatter registry. Uses USA formatters by default.
+ * @param serializers - Optional custom serializer registry. Uses USA serializers by default.
  * @returns Rendered PDF as BinaryContent
  *
  * @example
  * ```ts
  * const template = fs.readFileSync('template.pdf')
- * const form = { fields: { firstName: { type: 'text' } } }
- * const data = { firstName: 'John' }
+ * const form = { fields: { firstName: { type: 'text' }, salePrice: { type: 'money' } } }
+ * const data = { firstName: 'John', salePrice: { amount: 250000, currency: 'USD' } }
  * const output = await renderPdf(template, form, data)
  * ```
  */
@@ -46,8 +50,12 @@ export async function renderPdf(
   form: Form,
   data: Record<string, unknown>,
   bindings?: Record<string, string>,
-  formatters: FormatterRegistry = usaFormatters
+  serializers: SerializerRegistry = usaSerializers
 ): Promise<BinaryContent> {
+  // Preprocess data to wrap serializable fields
+  const wrapperStrategy = (value: unknown, fieldType: string) =>
+    createSerializedFieldWrapper(value, fieldType, serializers)
+  const preprocessedData = preprocessFieldData(data, form, wrapperStrategy)
   // Load PDF document (ignoreEncryption allows filling encrypted forms)
   const pdfDoc = await PDFDocument.load(template, { ignoreEncryption: true })
 
@@ -69,7 +77,7 @@ export async function renderPdf(
         if (formFieldBinding.includes(',')) {
           // Combined fields: "city,state,zipCode" -> "San Francisco, CA 94105"
           const fieldNames = formFieldBinding.split(',')
-          const values = fieldNames.map((name) => getNestedValue(data, name.trim())).filter(Boolean)
+          const values = fieldNames.map((name) => getNestedValue(preprocessedData, name.trim())).filter(Boolean)
           const combined = values.join(', ')
           if (combined) {
             const textField = acroForm.getTextField(pdfFieldName)
@@ -80,7 +88,7 @@ export async function renderPdf(
           const colonIndex = formFieldBinding.indexOf(':')
           const fieldName = formFieldBinding.slice(0, colonIndex)
           const qualifier = formFieldBinding.slice(colonIndex + 1)
-          const value = getNestedValue(data, fieldName)
+          const value = getNestedValue(preprocessedData, fieldName)
           // For nested paths, get the root field name for field definition lookup
           const rootFieldName = fieldName.split('.')[0] ?? fieldName
           const fieldDef = rootFieldName ? form.fields?.[rootFieldName] : undefined
@@ -114,35 +122,21 @@ export async function renderPdf(
         } else {
           // Simple binding: "fieldName" or "nested.path"
           const fieldName = formFieldBinding
-          const value = getNestedValue(data, fieldName)
+          const value = getNestedValue(preprocessedData, fieldName)
 
           if (value == null) continue
 
-          // Check if this is a nested path (accessing sub-properties of complex types)
-          const isNestedPath = fieldName.includes('.')
-          // For nested paths, get the root field name for field definition lookup
+          // Get the root field name for field definition lookup
           const rootFieldName = fieldName.split('.')[0] ?? fieldName
           const fieldDef = rootFieldName ? form.fields?.[rootFieldName] : undefined
 
-          // Boolean values: always use checkbox (works for nested or non-nested)
+          // Boolean values: always use checkbox
           if (typeof value === 'boolean' || fieldDef?.type === 'boolean') {
             const checkbox = acroForm.getCheckBox(pdfFieldName)
             if (value) checkbox.check()
             else checkbox.uncheck()
-          } else if (!isNestedPath && fieldDef?.type === 'money') {
-            // Money: only format if accessing the full money object (not a sub-property)
-            const textField = acroForm.getTextField(pdfFieldName)
-            textField.setText(formatters.formatMoney(value))
-          } else if (!isNestedPath && fieldDef?.type === 'address') {
-            // Address: only format if accessing the full address object
-            const textField = acroForm.getTextField(pdfFieldName)
-            textField.setText(formatters.formatAddress(value))
-          } else if (!isNestedPath && fieldDef?.type === 'phone') {
-            // Phone: only format if accessing the full phone object
-            const textField = acroForm.getTextField(pdfFieldName)
-            textField.setText(formatters.formatPhone(value))
           } else {
-            // Default: text field (includes nested sub-properties like address.locality)
+            // Text field: includes both simple values and wrapped complex types (via toString())
             const textField = acroForm.getTextField(pdfFieldName)
             textField.setText(String(value))
           }
@@ -156,7 +150,7 @@ export async function renderPdf(
     if (form.fields) {
       const fieldEntries = Object.entries(form.fields) as [string, Field][]
       for (const [fieldName, fieldDef] of fieldEntries) {
-        const value = data[fieldName]
+        const value = preprocessedData[fieldName]
         if (value == null) continue
         if (fieldDef.type === 'fieldset') continue
 

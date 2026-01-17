@@ -226,30 +226,11 @@ describe('Bundle (Object Pattern)', () => {
     })
 
     describe('validation failures', () => {
-      test('throws error when kind is missing', () => {
-        const input = {
-          name: 'test',
-          title: 'Test',
-          contents: [],
-        } as any
-        expect(() => bundle(input)).toThrow()
-      })
-
       test('throws error when name is missing', () => {
         const input = {
           kind: 'bundle',
           version: '1.0.0',
           title: 'Test',
-          contents: [],
-        } as any
-        expect(() => bundle(input)).toThrow()
-      })
-
-      test('throws error when title is missing', () => {
-        const input = {
-          kind: 'bundle',
-          version: '1.0.0',
-          name: 'test',
           contents: [],
         } as any
         expect(() => bundle(input)).toThrow()

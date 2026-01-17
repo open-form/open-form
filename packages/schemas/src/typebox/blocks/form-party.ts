@@ -43,13 +43,6 @@ const SignatureRequirementSchema = Type.Object(
  */
 export const FormPartySchema = Type.Object(
 	{
-		/** Unique party role identifier (slug format). */
-		id: Type.String({
-			minLength: 1,
-			maxLength: 50,
-			pattern: '^[a-z][a-z0-9_-]*$',
-			description: 'Role identifier (e.g., buyer, seller, lessee)',
-		}),
 		/** Human-readable role name. */
 		label: Type.String({
 			minLength: 1,

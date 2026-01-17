@@ -48,6 +48,9 @@ class SignatureRequirementBuilder {
  * Builder for party role definitions (design-time).
  *
  * Defines a role that can be filled at runtime (e.g., buyer, seller).
+ * The role identifier (key) is set when adding the party to a form via .party(roleId, builder)
+ * or .parties({ buyer: builder, seller: builder })
+ *
  * At runtime, use `partyData.person()` or `partyData.organization()` to
  * create the actual party data that fills this role.
  *
@@ -55,11 +58,13 @@ class SignatureRequirementBuilder {
  * ```ts
  * // Definition-time: define the role
  * const buyerRole = party()
- *   .id('buyer')
  *   .label('Buyer')
  *   .partyType('any')
  *   .signature(sig => sig.required().order(2))
  *   .build()
+ *
+ * // Add to form with role identifier
+ * form.party('buyer', buyerRole)
  *
  * // Runtime: fill the role with actual data
  * const buyerData = partyData.person().fullName('John Smith').build()
@@ -71,14 +76,6 @@ class PartyBuilder {
 	from(value: FormParty): this {
 		const parsed = parse(value)
 		this._def = { ...parsed }
-		return this
-	}
-
-	/**
-	 * Set the role identifier (slug format, e.g., 'buyer', 'seller')
-	 */
-	id(value: string): this {
-		this._def.id = value
 		return this
 	}
 

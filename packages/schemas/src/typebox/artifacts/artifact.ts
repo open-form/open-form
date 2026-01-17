@@ -15,17 +15,21 @@ export const ArtifactSchema = Type.Object(
 			minLength: 1,
 			maxLength: 128,
 		}),
-		version: Type.String({
-			description: 'Artifact version.',
-			minLength: 1,
-			maxLength: 200,
-			pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+$',
-		}),
-		title: Type.String({
-			description: 'Human-readable title.',
-			minLength: 1,
-			maxLength: 200,
-		}),
+		version: Type.Optional(
+			Type.String({
+				description: 'Artifact version (semantic versioning). Required for publishing to registry.',
+				minLength: 1,
+				maxLength: 200,
+				pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+$',
+			}),
+		),
+		title: Type.Optional(
+			Type.String({
+				description: 'Human-readable title. Recommended for published/shared artifacts and directory browsing.',
+				minLength: 1,
+				maxLength: 200,
+			}),
+		),
 		description: Type.Optional(
 			Type.String({
 				description: 'Detailed description or context for the artifact.',

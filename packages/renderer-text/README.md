@@ -1,115 +1,149 @@
-# @open-form/renderer-text
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=renderer_text" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> Text renderer for OpenForm framework
+<h1 align="center">@open-form/renderer-text</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/renderer-text.svg)](https://www.npmjs.com/package/@open-form/renderer-text)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
 
-Renders OpenForm documents to plain text format using template-based rendering with Handlebars.
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=renderer_text)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
 
-## Features
+</div>
 
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=renderer_text) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
+
+Renders OpenForm documents to text-based formats including plain text, Markdown, and HTML with automatic field type detection and serialization.
+
+- **Automatic field serialization** - Detects field types (Money, Person, Phone, Address, Organization) from form schema and automatically formats them
+- **Multiple output formats** - Supports any text-based format: plain text, Markdown, HTML, or custom formats
 - **Template-based rendering** - Use Handlebars templates for dynamic text generation
-- **Variable substitution** - Inject form data into text templates
-- **Plain text output** - Returns string for easy file writing or display
+- **Custom serializers** - Use locale-specific or custom serializer registries for formatting
 - **Type-safe** - Full TypeScript support with OpenForm core types
 
 ## Installation
 
 ```bash
 npm install @open-form/renderer-text
-# or
-pnpm add @open-form/renderer-text
-# or
-yarn add @open-form/renderer-text
 ```
 
 ## Usage
 
-```typescript
-import { textRenderer } from "@open-form/renderer-text";
+### Method 1: Direct rendering with renderText()
 
-// Use the renderer with OpenForm
-const result = textRenderer.render(template, form, data);
-
-// Write to file
-await fs.writeFile("output.txt", result);
-```
-
-### Using Templates
+Render templates directly using the exported renderText function:
 
 ```typescript
 import { renderText } from "@open-form/renderer-text";
+import { leaseForm } from "./forms/lease-agreement";
 
-const template = "Hello {{name}}, your order #{{orderId}} is ready!";
-const data = { name: "Alice", orderId: "12345" };
+const output = renderText({
+  template: `
+# Lease Agreement
 
-const result = renderText(template, data);
-// Output: "Hello Alice, your order #12345 is ready!"
+**Tenant:** {{tenantName}}
+**Monthly Rent:** {{monthlyRent}}
+  `,
+  data: {
+    tenantName: {
+      firstName: "Sarah",
+      lastName: "Johnson",
+      fullName: "Sarah Johnson",
+    },
+    monthlyRent: {
+      amount: 1500,
+      currency: "USD",
+    },
+  },
+  form: leaseForm, // Automatic field type detection and serialization
+});
+
+console.log(output);
+// Renders with automatic formatting:
+// **Tenant:** Sarah Johnson
+// **Monthly Rent:** $1,500.00
 ```
 
-## API Reference
+**`renderText()` Parameters:**
 
-### `textRenderer`
+| Parameter     | Type                      | Required | Description                                                      |
+| ------------- | ------------------------- | -------- | ---------------------------------------------------------------- |
+| `template`    | `string`                  | Yes      | Handlebars template string                                       |
+| `data`        | `Record<string, unknown>` | Yes      | Data object to populate the template                             |
+| `form`        | `Form`                    | No       | Form schema for automatic field type detection and serialization |
+| `serializers` | `SerializerRegistry`      | No       | Custom serializer registry (defaults to USA serializers)         |
 
-OpenForm renderer implementation for plain text format.
+**Returns:** `string` - The rendered output
 
-**Properties:**
-- `id: "text"` - Renderer identifier
-- `supports: ["text"]` - Supported template types
-- `outputExtension: "txt"` - Output file extension
-- `outputMime: "text/plain"` - MIME type
+### Method 2: Use textRenderer as plug-in to Form instance render method:
 
-**Methods:**
-- `render(template, form, data): string` - Renders template with data
-
-### `renderText(template, data)`
-
-Low-level rendering function using Handlebars.
-
-**Parameters:**
-- `template: string` - Text template with Handlebars placeholders
-- `data: Record<string, unknown>` - Data to inject into template
-
-**Returns:** `string` - Rendered text
-
-## Error Handling
+Render forms using the OpenForm builder pattern:
 
 ```typescript
+import { open } from "@open-form/sdk";
 import { textRenderer } from "@open-form/renderer-text";
 
-try {
-  const result = textRenderer.render(template, form, data);
+const leaseForm = open.form({
+  // form defnition...
+});
 
-  // result is a string
-  console.log(`Text generated: ${result.length} characters`);
+const output = await leaseForm
+  .fill({
+    fields: {
+      tenantName: {
+        firstName: "Sarah",
+        lastName: "Johnson",
+        fullName: "Sarah Johnson",
+      },
+      monthlyRent: {
+        amount: 1500,
+        currency: "USD",
+      },
+    },
+  })
+  .render({
+    renderer: textRenderer(), // <-- plug in textRenderer
+    layer: "markdown",
+    resolver, // File resolver for loading template layers
+  });
 
-  // Write to file
-  await fs.writeFile("output.txt", result);
-} catch (error) {
-  if (error instanceof Error) {
-    console.error('Text rendering failed:', error.message);
-  } else {
-    console.error('Text rendering failed:', error);
-  }
-}
-
-// Direct template rendering
-try {
-  const result = renderText("Hello {{name}}", { name: "World" });
-  console.log(result); // "Hello World"
-} catch (error) {
-  console.error('Template rendering failed:', error);
-}
+console.log(output);
+// Renders with automatic formatting applied
 ```
 
-## Related Packages
+**`textRenderer()` Options:**
 
-- [`@open-form/sdk`](../sdk) - Complete framework bundle
+| Parameter     | Type                 | Required | Description                                              |
+| ------------- | -------------------- | -------- | -------------------------------------------------------- |
+| `serializers` | `SerializerRegistry` | No       | Custom serializer registry (defaults to USA serializers) |
+
+## Changelog
+
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/renderer-text/CHANGELOG.md) for updates.
+
+## Related packages
+
+- [`@open-form/serialization`](../serialization) - Field type detection and serialization utilities
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
+- [`@open-form/renderers`](../renderers) - All renderers in one package
+
+## Contributing
+
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.
 
 ## Acknowledgments
 

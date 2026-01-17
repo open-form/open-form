@@ -2,7 +2,7 @@
  * Tests for filesystem resolver
  */
 
-import { describe, test, expect, beforeAll, afterAll } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,6 +25,10 @@ describe("createFsResolver", () => {
       path.join(fixturesDir, "test.json"),
       JSON.stringify({ foo: "bar" })
     );
+    fs.writeFileSync(
+      path.join(fixturesDir, "test-file.md"),
+      "# Test File\n\nThis is a test fixture for the resolvers package."
+    );
 
     // Create subdirectory with file
     const subDir = path.join(fixturesDir, "subdir");
@@ -34,10 +38,6 @@ describe("createFsResolver", () => {
     fs.writeFileSync(path.join(subDir, "nested.txt"), "Nested content");
   });
 
-  afterAll(() => {
-    // Cleanup fixtures
-    fs.rmSync(fixturesDir, { recursive: true, force: true });
-  });
 
   test("reads a text file from root", async () => {
     const resolver = createFsResolver({ root: fixturesDir });

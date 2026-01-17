@@ -1,8 +1,25 @@
-# @open-form/docs
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=docs" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> OpenForm documentation site
+<h1 align="center">@open-form/docs</h1>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=docs)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
+
+</div>
+
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=docs) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Overview
 
 Documentation website for the OpenForm framework, available at [docs.open-form.dev](https://docs.open-form.dev).
 
@@ -32,6 +49,12 @@ The documentation server runs on port 3001 by default.
 
 Documentation content is located in the `content/` directory as MDX files.
 
+## Contributing
+
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
+
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.

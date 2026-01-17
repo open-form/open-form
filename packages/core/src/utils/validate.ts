@@ -5,6 +5,12 @@ import { compile, type InferFormPayload } from './compile'
 import type { InstanceTemplate } from './make'
 import { deepClone } from './clone'
 
+// Re-export types from centralized types.ts
+export type { ValidationError, ValidationSuccess, ValidationFailure, ValidationResult } from '@/types'
+
+// Import types for internal use
+import type { ValidationError, ValidationResult } from '@/types'
+
 // Initialize AJV with JSON Schema 2020-12 support and formats
 const ajv = new Ajv({
   strict: false,
@@ -15,26 +21,6 @@ const ajv = new Ajv({
 
 // Add format validators (date, email, uri, uuid, etc.)
 addFormats(ajv)
-
-export interface ValidationError {
-  field: string
-  message: string
-  value?: unknown
-}
-
-export interface ValidationSuccess<T> {
-  success: true
-  data: T
-  errors: null
-}
-
-export interface ValidationFailure {
-  success: false
-  data: null
-  errors: ValidationError[]
-}
-
-export type ValidationResult<T> = ValidationSuccess<T> | ValidationFailure
 
 /**
  * Validate user-submitted data against a form definition

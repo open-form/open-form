@@ -1,13 +1,27 @@
-# @open-form/resolvers
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=resolvers" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> Environment-specific resolvers for OpenForm
+<h1 align="center">@open-form/resolvers</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/resolvers.svg)](https://www.npmjs.com/package/@open-form/resolvers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
 
-Resolvers for loading content from different storage backends. Use these to read layer files, templates, and other assets in your OpenForm applications.
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=resolvers)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
 
-## Features
+</div>
+
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=resolvers) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
+
+Environment-specific resolvers for OpenForm. Use these to read layer files, templates, and other assets in your OpenForm applications.
 
 - 📂 **Filesystem resolver** - Read files from the local filesystem (Node.js)
 - 🌲 **Tree-shakeable** - Import only what you need via subpath exports
@@ -18,15 +32,13 @@ Resolvers for loading content from different storage backends. Use these to read
 
 ```bash
 npm install @open-form/resolvers
-# or
-pnpm add @open-form/resolvers
-# or
-yarn add @open-form/resolvers
 ```
 
 ## Usage
 
-### Filesystem resolver (Node.js)
+### Filesystem resolver
+
+Create a resolver to read files from your filesystem:
 
 ```typescript
 import { createFsResolver } from "@open-form/resolvers/fs";
@@ -37,41 +49,43 @@ const resolver = createFsResolver({ root: process.cwd() });
 const bytes = await resolver.read("/templates/form.md");
 ```
 
-### Umbrella import
+### With form rendering
+
+Pass a resolver when rendering forms with file-based layers:
 
 ```typescript
+import { open } from "@open-form/sdk";
+import { pdfRenderer } from "@open-form/renderer-pdf";
+import { createFsResolver } from "@open-form/resolvers/fs";
+
+const resolver = createFsResolver({ root: "./templates" });
+
+const result = await form
+  .fill({
+    fields: {
+      /* ... */
+    },
+  })
+  .render({
+    renderer: pdfRenderer,
+    resolver,
+    layer: "pdf",
+  });
+```
+
+### Using subpath imports
+
+For better tree-shaking, import directly from subpaths:
+
+```typescript
+// Recommended - direct subpath import
+import { createFsResolver } from "@open-form/resolvers/fs";
+
+// Or use umbrella import
 import { createFsResolver } from "@open-form/resolvers";
-
-const resolver = createFsResolver({ root: "/path/to/project" });
 ```
 
-### With OpenForm core
-
-```typescript
-import { createFsResolver } from "@open-form/resolvers/fs";
-import { resolveFormLayer } from "@open-form/core";
-
-const resolver = createFsResolver({ root: process.cwd() });
-
-// Resolve a file-based layer from a form
-const template = await resolveFormLayer(form, resolver, "default");
-```
-
-## Available Resolvers
-
-### Filesystem (`./fs`)
-
-For Node.js environments. Reads files from the local filesystem.
-
-```typescript
-import { createFsResolver } from "@open-form/resolvers/fs";
-
-const resolver = createFsResolver({
-  root: "/absolute/path/to/project",
-});
-```
-
-### Memory resolver (in core)
+### Memory resolver for testing
 
 For testing and browser environments, use `createMemoryResolver` from `@open-form/core`:
 
@@ -86,20 +100,21 @@ const resolver = createMemoryResolver({
 });
 ```
 
-## Resolver Interface
+## Changelog
 
-All resolvers implement the `Resolver` interface from `@open-form/types`:
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/resolvers/CHANGELOG.md) for updates.
 
-```typescript
-interface Resolver {
-  read(path: string): Promise<Uint8Array>;
-}
-```
+## Related packages
 
-## Related Packages
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
+- [`@open-form/core`](../core) - Core framework with memory resolver for testing
 
-- [`@open-form/sdk`](../sdk) - Complete framework bundle
+## Contributing
+
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.

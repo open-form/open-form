@@ -379,15 +379,6 @@ describe('Checklist (Object Pattern)', () => {
 		});
 
 		describe('validation failures', () => {
-			test('throws error when kind is missing', () => {
-				const input = {
-					name: 'test',
-					title: 'Test',
-					items: [],
-				} as any;
-				expect(() => checklist(input)).toThrow();
-			});
-
 			test('corrects kind when incorrect value is provided', () => {
 				// The builder ensures kind is always 'checklist' regardless of input
 				const input = {
@@ -406,16 +397,6 @@ describe('Checklist (Object Pattern)', () => {
 					kind: 'checklist',
 					version: '1.0.0',
 					title: 'Test',
-					items: [],
-				} as any;
-				expect(() => checklist(input)).toThrow();
-			});
-
-			test('throws error when title is missing', () => {
-				const input = {
-					kind: 'checklist',
-					version: '1.0.0',
-					name: 'test',
 					items: [],
 				} as any;
 				expect(() => checklist(input)).toThrow();
@@ -752,11 +733,6 @@ describe('Checklist (Object Pattern)', () => {
 				expect(() => checklist.parse(input)).toThrow();
 			});
 
-			test('throws error for missing title', () => {
-				const input = { kind: 'checklist', name: 'test', items: [] };
-				expect(() => checklist.parse(input)).toThrow();
-			});
-
 			test('throws error for missing items', () => {
 				const input = { kind: 'checklist', name: 'test', title: 'Test' };
 				expect(() => checklist.parse(input)).toThrow();
@@ -832,12 +808,6 @@ describe('Checklist (Object Pattern)', () => {
 				if (!result.success) {
 					expect(result.error).toBeInstanceOf(Error);
 				}
-			});
-
-			test('returns error for missing title', () => {
-				const input = { kind: 'checklist', name: 'test', items: [] };
-				const result = checklist.safeParse(input);
-				expect(result.success).toBe(false);
 			});
 
 			test('returns error for missing items', () => {

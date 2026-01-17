@@ -127,14 +127,6 @@ describe('Document (Object Pattern)', () => {
     })
 
     describe('validation failures', () => {
-      test('throws error when kind is missing', () => {
-        const input = {
-          name: 'test',
-          title: 'Test',
-        } as any
-        expect(() => document(input)).toThrow()
-      })
-
       test('throws error when name is missing', () => {
         const input = {
           kind: 'document',
@@ -144,11 +136,12 @@ describe('Document (Object Pattern)', () => {
         expect(() => document(input)).toThrow()
       })
 
-      test('throws error when title is missing', () => {
+      test('throws error when name is empty string', () => {
         const input = {
           kind: 'document',
           version: '1.0.0',
-          name: 'test',
+          title: 'Test',
+          name: '',
         } as any
         expect(() => document(input)).toThrow()
       })

@@ -8,19 +8,13 @@ import {
   validateBundle,
 } from '@/validators'
 
-type ArtifactKind = 'form' | 'document' | 'checklist' | 'bundle'
+// Re-export ValidateOptions from centralized types.ts
+export type { ValidateOptions } from '@/types'
 
-/**
- * Options for the validate function
- */
-export interface ValidateOptions {
-  /** Whether to validate schema structure. Default: true */
-  schema?: boolean
-  /** Whether to validate logic expressions. Default: true */
-  logic?: boolean
-  /** Whether to collect all errors or stop at first. Default: true */
-  collectAllErrors?: boolean
-}
+// Import for internal use
+import type { ValidateOptions } from '@/types'
+
+type ArtifactKind = 'form' | 'document' | 'checklist' | 'bundle'
 
 interface AjvError {
   instancePath?: string
