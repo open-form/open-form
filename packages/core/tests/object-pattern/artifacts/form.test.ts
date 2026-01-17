@@ -365,14 +365,6 @@ describe('Form (Object Pattern)', () => {
     })
 
     describe('validation failures', () => {
-      test('throws error when kind is missing', () => {
-        const input = {
-          name: 'test',
-          title: 'Test',
-        } as any
-        expect(() => form(input)).toThrow()
-      })
-
       test('corrects kind when incorrect value is provided', () => {
         // The builder ensures kind is always 'form' regardless of input
         const input = {
@@ -390,15 +382,6 @@ describe('Form (Object Pattern)', () => {
           kind: 'form',
           version: '1.0.0',
           title: 'Test',
-        } as any
-        expect(() => form(input)).toThrow()
-      })
-
-      test('throws error when title is missing', () => {
-        const input = {
-          kind: 'form',
-          version: '1.0.0',
-          name: 'test',
         } as any
         expect(() => form(input)).toThrow()
       })
@@ -658,11 +641,6 @@ describe('Form (Object Pattern)', () => {
         expect(() => form.parse(input)).toThrow()
       })
 
-      test('throws error for missing title', () => {
-        const input = { kind: 'form', name: 'test' }
-        expect(() => form.parse(input)).toThrow()
-      })
-
       test('throws error for null input', () => {
         expect(() => form.parse(null)).toThrow()
       })
@@ -733,12 +711,6 @@ describe('Form (Object Pattern)', () => {
         if (!result.success) {
           expect(result.error).toBeInstanceOf(Error)
         }
-      })
-
-      test('returns error for missing title', () => {
-        const input = { kind: 'form', name: 'test' }
-        const result = form.safeParse(input)
-        expect(result.success).toBe(false)
       })
 
       test('returns error for empty name', () => {

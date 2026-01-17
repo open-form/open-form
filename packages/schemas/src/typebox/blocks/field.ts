@@ -252,7 +252,7 @@ const MultiselectFieldSchema = Type.Intersect([
 	BaseFieldSchema,
 	Type.Object({
 		type: Type.Literal('multiselect'),
-		options: Type.Array(Type.Union([Type.String(), Type.Number()]), {
+		enum: Type.Array(Type.Union([Type.String(), Type.Number()]), {
 			description: 'Available options',
 			minItems: 1,
 		}),

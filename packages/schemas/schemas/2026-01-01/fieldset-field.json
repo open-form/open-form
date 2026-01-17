@@ -1027,7 +1027,7 @@
                               "const": "multiselect",
                               "type": "string"
                             },
-                            "options": {
+                            "enum": {
                               "description": "Available options",
                               "minItems": 1,
                               "type": "array",
@@ -1067,7 +1067,7 @@
                           },
                           "required": [
                             "type",
-                            "options"
+                            "enum"
                           ]
                         }
                       ]

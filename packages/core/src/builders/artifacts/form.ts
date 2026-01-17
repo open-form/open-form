@@ -1,80 +1,133 @@
-import { coerceTypes } from '@/validators/coerce'
-import { validateForm, validateField, validateAnnex, validateLayer, validateFormParty, validateWitnessRequirement } from '@/validators'
-import type { Form, Field, Metadata, Annex, Layer, FormParty, WitnessRequirement, Party } from '@open-form/types'
-import { extractSchema } from '@/schemas/extract'
-import type { LogicSection } from '@/logic'
-import { MetadataBuilder } from '../primitives/metadata'
-import { type Buildable, resolveBuildable } from '../utils/buildable'
+import { coerceTypes } from "@/validators/coerce";
+import {
+  validateForm,
+  validateField,
+  validateAnnex,
+  validateLayer,
+  validateFormParty,
+  validateWitnessRequirement,
+} from "@/validators";
+import type {
+  Form,
+  Field,
+  Metadata,
+  Annex,
+  Layer,
+  FormParty,
+  WitnessRequirement,
+} from "@open-form/types";
+import { extractSchema } from "@/schemas/extract";
+import type { LogicSection } from "@/logic";
+import { MetadataBuilder } from "../primitives/metadata";
+import { type Buildable, resolveBuildable } from "../utils/buildable";
 import {
   validateFormData,
   type ValidationResult,
   type ValidationError,
   type InferFormPayload,
-} from '@/utils'
-import type { OpenFormRenderer, FormTemplate } from '@/runtime/renderer'
-import type { Resolver } from '@open-form/types'
-import { BaseArtifactInstance } from './base-instance'
-import { FilledForm } from '@/filled-form'
+} from "@/utils";
+import type { RendererLayer } from "@/runtime/renderer";
+import { BaseArtifactInstance } from "./base-instance";
+import { FilledForm } from "@/filled-form";
+import type { FileLayerBuilder, InlineLayerBuilder } from "../primitives/layer";
+import { layer as layerBuilder } from "../primitives/layer";
 
-const formSchema = extractSchema('Form') as Record<string, unknown>
-const fieldSchema = extractSchema('Field') as Record<string, unknown>
-const annexSchema = extractSchema('Annex') as Record<string, unknown>
-const layerSchema = extractSchema('Layer') as Record<string, unknown>
-const formPartySchema = extractSchema('FormParty') as Record<string, unknown>
-const witnessRequirementSchema = extractSchema('WitnessRequirement') as Record<string, unknown>
+const formSchema = extractSchema("Form") as Record<string, unknown>;
+const fieldSchema = extractSchema("Field") as Record<string, unknown>;
+const annexSchema = extractSchema("Annex") as Record<string, unknown>;
+const layerSchema = extractSchema("Layer") as Record<string, unknown>;
+const formPartySchema = extractSchema("FormParty") as Record<string, unknown>;
+const witnessRequirementSchema = extractSchema("WitnessRequirement") as Record<
+  string,
+  unknown
+>;
 
 function parseFormSchema(input: unknown): Form {
-  const coerced = coerceTypes(formSchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(formSchema, input) as Record<string, unknown>;
   if (!validateForm(coerced)) {
-    const errors = (validateForm as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid Form: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateForm as unknown as { errors: Array<{ message?: string }> }
+    ).errors;
+    throw new Error(
+      `Invalid Form: ${errors?.[0]?.message || "validation failed"}`
+    );
   }
-  return coerced as unknown as Form
+  return coerced as unknown as Form;
 }
 
 function parseField(input: unknown): Field {
-  const coerced = coerceTypes(fieldSchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(fieldSchema, input) as Record<string, unknown>;
   if (!validateField(coerced)) {
-    const errors = (validateField as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid Field: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateField as unknown as { errors: Array<{ message?: string }> }
+    ).errors;
+    throw new Error(
+      `Invalid Field: ${errors?.[0]?.message || "validation failed"}`
+    );
   }
-  return coerced as unknown as Field
+  return coerced as unknown as Field;
 }
 
 function parseAnnex(input: unknown): Annex {
-  const coerced = coerceTypes(annexSchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(annexSchema, input) as Record<string, unknown>;
   if (!validateAnnex(coerced)) {
-    const errors = (validateAnnex as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid Annex: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateAnnex as unknown as { errors: Array<{ message?: string }> }
+    ).errors;
+    throw new Error(
+      `Invalid Annex: ${errors?.[0]?.message || "validation failed"}`
+    );
   }
-  return coerced as unknown as Annex
+  return coerced as unknown as Annex;
 }
 
 function parseLayer(input: unknown): Layer {
-  const coerced = coerceTypes(layerSchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(layerSchema, input) as Record<string, unknown>;
   if (!validateLayer(coerced)) {
-    const errors = (validateLayer as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid Layer: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateLayer as unknown as { errors: Array<{ message?: string }> }
+    ).errors;
+    throw new Error(
+      `Invalid Layer: ${errors?.[0]?.message || "validation failed"}`
+    );
   }
-  return coerced as unknown as Layer
+  return coerced as unknown as Layer;
 }
 
 function parseFormParty(input: unknown): FormParty {
-  const coerced = coerceTypes(formPartySchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(formPartySchema, input) as Record<
+    string,
+    unknown
+  >;
   if (!validateFormParty(coerced)) {
-    const errors = (validateFormParty as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid FormParty: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateFormParty as unknown as { errors: Array<{ message?: string }> }
+    ).errors;
+    throw new Error(
+      `Invalid FormParty: ${errors?.[0]?.message || "validation failed"}`
+    );
   }
-  return coerced as unknown as FormParty
+  return coerced as unknown as FormParty;
 }
 
 function parseWitnessRequirement(input: unknown): WitnessRequirement {
-  const coerced = coerceTypes(witnessRequirementSchema, input) as Record<string, unknown>
+  const coerced = coerceTypes(witnessRequirementSchema, input) as Record<
+    string,
+    unknown
+  >;
   if (!validateWitnessRequirement(coerced)) {
-    const errors = (validateWitnessRequirement as unknown as { errors: Array<{ message?: string }> }).errors
-    throw new Error(`Invalid WitnessRequirement: ${errors?.[0]?.message || 'validation failed'}`)
+    const errors = (
+      validateWitnessRequirement as unknown as {
+        errors: Array<{ message?: string }>;
+      }
+    ).errors;
+    throw new Error(
+      `Invalid WitnessRequirement: ${
+        errors?.[0]?.message || "validation failed"
+      }`
+    );
   }
-  return coerced as unknown as WitnessRequirement
+  return coerced as unknown as WitnessRequirement;
 }
 
 // ============================================================================
@@ -85,42 +138,22 @@ function parseWitnessRequirement(input: unknown): WitnessRequirement {
  * Custom error class for data validation failures
  */
 export class FormValidationError extends Error {
-  readonly errors: ValidationError[]
+  readonly errors: ValidationError[];
 
   constructor(errors: ValidationError[]) {
-    super(`Form data validation failed: ${errors.map((e) => e.message).join(', ')}`)
-    this.name = 'FormValidationError'
-    this.errors = errors
+    super(
+      `Form data validation failed: ${errors.map((e) => e.message).join(", ")}`
+    );
+    this.name = "FormValidationError";
+    this.errors = errors;
   }
 }
 
-/**
- * Options for the render method
- */
-export interface RenderOptions<Output = unknown> {
-  /** The renderer to use (e.g., textRenderer, pdfRenderer) */
-  renderer: OpenFormRenderer<FormTemplate, Output, Record<string, unknown>>
-  /** Resolver for auto-loading file-backed layers (only needs read method) */
-  resolver?: Resolver
-  /** Field values to populate the layer with */
-  data?: Record<string, unknown>
-  /** Key of the layer to use. If not provided, uses first available or defaultLayer. */
-  layer?: string
-}
+// Re-export types from centralized types.ts
+export type { RenderOptions, FillOptions, FormInput } from "@/types";
 
-/**
- * Options for the fill method
- */
-export interface FillOptions {
-  /** Field values and annexes to populate the form with */
-  fields?: Record<string, unknown>
-  /** Annex data */
-  annexes?: Record<string, unknown>
-  /** Party data indexed by role ID */
-  parties?: Record<string, Party | Party[]>
-  /** Witness data */
-  witnesses?: Party[]
-}
+// Import types for internal use
+import type { RenderOptions, FillOptions, FormInput } from "@/types";
 
 /**
  * FormInstance wraps a Form definition and provides Zod-style methods for
@@ -160,7 +193,7 @@ export interface FillOptions {
  */
 export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
   constructor(form: F) {
-    super(form)
+    super(form);
   }
 
   // ============================================================================
@@ -168,35 +201,35 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
   // ============================================================================
 
   get logic() {
-    return this.schema.logic
+    return this.schema.logic;
   }
 
   get fields() {
-    return this.schema.fields
+    return this.schema.fields;
   }
 
   get layers() {
-    return this.schema.layers
+    return this.schema.layers;
   }
 
   get defaultLayer() {
-    return this.schema.defaultLayer
+    return this.schema.defaultLayer;
   }
 
   get annexes() {
-    return this.schema.annexes
+    return this.schema.annexes;
   }
 
   get allowAnnexes() {
-    return this.schema.allowAnnexes
+    return this.schema.allowAnnexes;
   }
 
   get parties() {
-    return this.schema.parties
+    return this.schema.parties;
   }
 
   get witnesses() {
-    return this.schema.witnesses
+    return this.schema.witnesses;
   }
 
   // ============================================================================
@@ -224,11 +257,11 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * ```
    */
   parseData(data: Record<string, unknown>): InferFormPayload<F> {
-    const result = this.safeParseData(data)
+    const result = this.safeParseData(data);
     if (!result.success) {
-      throw new FormValidationError(result.errors)
+      throw new FormValidationError(result.errors);
     }
-    return result.data
+    return result.data;
   }
 
   /**
@@ -248,8 +281,10 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * }
    * ```
    */
-  safeParseData(data: Record<string, unknown>): ValidationResult<InferFormPayload<F>> {
-    return validateFormData(this.schema, data)
+  safeParseData(
+    data: Record<string, unknown>
+  ): ValidationResult<InferFormPayload<F>> {
+    return validateFormData(this.schema, data);
   }
 
   // ============================================================================
@@ -260,14 +295,16 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * @deprecated Use `parseData()` instead. Will be removed in next major version.
    */
   parse(data: Record<string, unknown>): InferFormPayload<F> {
-    return this.parseData(data)
+    return this.parseData(data);
   }
 
   /**
    * @deprecated Use `safeParseData()` instead. Will be removed in next major version.
    */
-  safeParse(data: Record<string, unknown>): ValidationResult<InferFormPayload<F>> {
-    return this.safeParseData(data)
+  safeParse(
+    data: Record<string, unknown>
+  ): ValidationResult<InferFormPayload<F>> {
+    return this.safeParseData(data);
   }
 
   // ============================================================================
@@ -299,69 +336,87 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * ```
    */
   async render<Output>(options: RenderOptions<Output>): Promise<Output> {
-    const { renderer, resolver, data = {}, layer: layerKey } = options
+    const { renderer, resolver, data = {}, layer: layerKey } = options;
 
     if (!this.schema.layers) {
-      throw new Error('Form has no layers defined')
+      throw new Error("Form has no layers defined");
     }
 
     // Determine which layer to use
-    const key = layerKey || this.schema.defaultLayer || Object.keys(this.schema.layers)[0]
+    const key =
+      layerKey ||
+      this.schema.defaultLayer ||
+      Object.keys(this.schema.layers)[0];
     if (!key) {
       throw new Error(
-        'No layer key provided and no defaultLayer set. ' +
-          'Either pass a layer option or set defaultLayer on the form.'
-      )
+        "No layer key provided and no defaultLayer set. " +
+          "Either pass a layer option or set defaultLayer on the form."
+      );
     }
 
-    const layerSpec = this.schema.layers[key]
+    const layerSpec = this.schema.layers[key];
     if (!layerSpec) {
       throw new Error(
-        `Layer "${key}" not found. Available layers: ${Object.keys(this.schema.layers).join(', ')}`
-      )
+        `Layer "${key}" not found. Available layers: ${Object.keys(
+          this.schema.layers
+        ).join(", ")}`
+      );
     }
 
     // Determine content based on layer spec type
-    let layerContent: string | Uint8Array | Buffer
-    let bindings: Record<string, string> | undefined
+    let layerContent: string | Uint8Array | Buffer;
+    let bindings: Record<string, string> | undefined;
 
-    if (layerSpec.kind === 'inline') {
-      layerContent = layerSpec.text
-    } else if (layerSpec.kind === 'file') {
+    if (layerSpec.kind === "inline") {
+      layerContent = layerSpec.text;
+      bindings = layerSpec.bindings;
+    } else if (layerSpec.kind === "file") {
       if (resolver) {
         // Auto-load file-backed layer via resolver
-        const bytes = await resolver.read(layerSpec.path)
+        const bytes = await resolver.read(layerSpec.path);
         // Convert Uint8Array to string for text layers
-        if (layerSpec.mimeType.startsWith('text/') || layerSpec.mimeType === 'application/json') {
-          layerContent = new TextDecoder().decode(bytes)
+        if (
+          layerSpec.mimeType.startsWith("text/") ||
+          layerSpec.mimeType === "application/json"
+        ) {
+          layerContent = new TextDecoder().decode(bytes);
         } else {
-          layerContent = bytes
+          layerContent = bytes;
         }
       } else {
         throw new Error(
           `Layer "${key}" is file-backed but no resolver was provided. ` +
-            'Pass a resolver in the options object to auto-load file layers.'
-        )
+            "Pass a resolver in the options object to auto-load file layers."
+        );
       }
-      bindings = layerSpec.bindings
+      bindings = layerSpec.bindings;
     } else {
-      throw new Error(`Unknown layer spec kind`)
+      throw new Error(`Unknown layer spec kind`);
     }
 
     // Build template for renderer
-    const template: FormTemplate = {
-      type: renderer.supports[0] || 'text',
+    const template: RendererLayer = {
+      type: "text",
       content: layerContent,
-      mediaType: layerSpec.mimeType,
+      mimeType: layerSpec.mimeType,
       ...(bindings && { bindings }),
-    }
+    };
 
     // Extract fields from data payload if present (supports both { fields: {...} } and flat field objects)
-    const renderData = (data && typeof data === 'object' && 'fields' in data && typeof data.fields === 'object')
-      ? (data.fields as Record<string, unknown>)
-      : data
+    const renderData =
+      data &&
+      typeof data === "object" &&
+      "fields" in data &&
+      typeof data.fields === "object"
+        ? (data.fields as Record<string, unknown>)
+        : data;
 
-    return await renderer.render(template, this.schema, renderData, bindings)
+    return await renderer.render({
+      template,
+      form: this.schema,
+      data: renderData,
+      bindings,
+    });
   }
 
   // ============================================================================
@@ -380,7 +435,7 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * ```
    */
   clone(): FormInstance<F> {
-    return new FormInstance(structuredClone(this.schema))
+    return new FormInstance(structuredClone(this.schema));
   }
 
   /**
@@ -397,9 +452,9 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * ```
    */
   with(partial: Partial<FormInput>): FormInstance<Form> {
-    const merged = { ...this.schema, ...partial }
-    const parsed = parseFormSchema(merged)
-    return new FormInstance(parsed)
+    const merged = { ...this.schema, ...partial };
+    const parsed = parseFormSchema(merged);
+    return new FormInstance(parsed);
   }
 
   // ============================================================================
@@ -446,16 +501,16 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    */
   fill(data: FillOptions | Record<string, unknown>): FilledForm<F> {
     // Normalize to FillOptions format
-    const options = this.normalizeFillData(data)
+    const options = this.normalizeFillData(data);
 
     // Validate field data
     const fieldData = {
       fields: options.fields ?? {},
       ...(options.annexes ? { annexes: options.annexes } : {}),
-    }
-    const validated = this.parseData(fieldData)
+    };
+    const validated = this.parseData(fieldData);
 
-    return new FilledForm(this, validated, options.parties, options.witnesses)
+    return new FilledForm(this, validated, options.parties, options.witnesses);
   }
 
   /**
@@ -477,55 +532,64 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
    * }
    * ```
    */
-  safeFill(data: FillOptions | Record<string, unknown>): { success: true; data: FilledForm<F> } | { success: false; error: Error } {
+  safeFill(
+    data: FillOptions | Record<string, unknown>
+  ): { success: true; data: FilledForm<F> } | { success: false; error: Error } {
     // Normalize to FillOptions format
-    const options = this.normalizeFillData(data)
+    const options = this.normalizeFillData(data);
 
     // Validate field data
     const fieldData = {
       fields: options.fields ?? {},
       ...(options.annexes ? { annexes: options.annexes } : {}),
-    }
-    const result = this.safeParseData(fieldData)
+    };
+    const result = this.safeParseData(fieldData);
 
     if (result.success) {
       return {
         success: true,
-        data: new FilledForm(this, result.data, options.parties, options.witnesses),
-      }
+        data: new FilledForm(
+          this,
+          result.data,
+          options.parties,
+          options.witnesses
+        ),
+      };
     }
     return {
       success: false,
       error: new FormValidationError(result.errors),
-    }
+    };
   }
 
   /**
    * Normalize fill data to FillOptions format.
    * Handles both new FillOptions format and legacy { fields: {...} } format.
    */
-  private normalizeFillData(data: FillOptions | Record<string, unknown>): Required<Pick<FillOptions, 'fields'>> & Omit<FillOptions, 'fields'> {
+  private normalizeFillData(
+    data: FillOptions | Record<string, unknown>
+  ): Required<Pick<FillOptions, "fields">> & Omit<FillOptions, "fields"> {
     // If data has 'parties' or 'witnesses' at top level, it's FillOptions format
-    if ('parties' in data || 'witnesses' in data) {
-      const opts = data as FillOptions
+    if ("parties" in data || "witnesses" in data) {
+      const opts = data as FillOptions;
       return {
         fields: opts.fields ?? {},
         annexes: opts.annexes,
         parties: opts.parties,
         witnesses: opts.witnesses,
-      }
+      };
     }
 
     // If data has 'fields' at top level, it's the legacy format
-    if ('fields' in data && typeof data.fields === 'object') {
+    if ("fields" in data && typeof data.fields === "object") {
       return {
         fields: data.fields as Record<string, unknown>,
         annexes: (data.annexes as Record<string, unknown>) ?? undefined,
-      }
+      };
     }
 
     // Otherwise, treat the entire object as field data (backwards compatibility)
-    return { fields: data as Record<string, unknown> }
+    return { fields: data as Record<string, unknown> };
   }
 }
 
@@ -533,12 +597,14 @@ export class FormInstance<F extends Form> extends BaseArtifactInstance<F> {
 // FormBuilder - Fluent builder for creating forms
 // ============================================================================
 
-class FormBuilder<TFields extends Record<string, Field> = Record<string, never>> {
+class FormBuilder<
+  TFields extends Record<string, Field> = Record<string, never>
+> {
   private _def: Record<string, unknown> = {
-    kind: 'form',
-    name: '',
-    version: '',
-    title: '',
+    kind: "form",
+    name: "",
+    version: undefined,
+    title: undefined,
     description: undefined,
     code: undefined,
     releaseDate: undefined,
@@ -551,12 +617,12 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
     allowAnnexes: undefined,
     parties: undefined,
     witnesses: undefined,
-  }
+  };
 
   from(formValue: Form): this {
-    const parsed = parseFormSchema(formValue)
+    const parsed = parseFormSchema(formValue);
     this._def = {
-      kind: 'form',
+      kind: "form",
       name: parsed.name,
       version: parsed.version,
       title: parsed.title,
@@ -567,51 +633,68 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
       logic: parsed.logic ? { ...parsed.logic } : undefined,
       fields: parsed.fields
         ? Object.fromEntries(
-            Object.entries(parsed.fields).map(([id, field]) => [id, parseField(field)])
+            Object.entries(parsed.fields).map(([id, field]) => [
+              id,
+              parseField(field),
+            ])
           )
         : undefined,
       layers: parsed.layers
         ? Object.fromEntries(
-            Object.entries(parsed.layers).map(([key, layer]) => [key, parseLayer(layer)])
+            Object.entries(parsed.layers).map(([key, layer]) => [
+              key,
+              parseLayer(layer),
+            ])
           )
         : undefined,
       defaultLayer: parsed.defaultLayer,
-      annexes: parsed.annexes ? parsed.annexes.map((annexItem) => parseAnnex(annexItem)) : undefined,
+      annexes: parsed.annexes
+        ? parsed.annexes.map((annexItem) => parseAnnex(annexItem))
+        : undefined,
       allowAnnexes: parsed.allowAnnexes,
-      parties: parsed.parties ? parsed.parties.map((p) => parseFormParty(p)) : undefined,
-      witnesses: parsed.witnesses ? parseWitnessRequirement(parsed.witnesses) : undefined,
-    }
-    return this
+      parties: parsed.parties
+        ? Object.fromEntries(
+            Object.entries(parsed.parties).map(([roleId, p]) => [
+              roleId,
+              parseFormParty(p),
+            ])
+          )
+        : undefined,
+      witnesses: parsed.witnesses
+        ? parseWitnessRequirement(parsed.witnesses)
+        : undefined,
+    };
+    return this;
   }
 
   name(value: string): this {
-    this._def.name = value
-    return this
+    this._def.name = value;
+    return this;
   }
 
-  version(value: string): this {
-    this._def.version = value
-    return this
+  version(value?: string): this {
+    this._def.version = value;
+    return this;
   }
 
-  title(value: string): this {
-    this._def.title = value
-    return this
+  title(value?: string): this {
+    this._def.title = value;
+    return this;
   }
 
   description(value: string): this {
-    this._def.description = value
-    return this
+    this._def.description = value;
+    return this;
   }
 
   code(value: string): this {
-    this._def.code = value
-    return this
+    this._def.code = value;
+    return this;
   }
 
   releaseDate(value: string): this {
-    this._def.releaseDate = value
-    return this
+    this._def.releaseDate = value;
+    return this;
   }
 
   /**
@@ -619,61 +702,84 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
    * Logic contains named expressions that can be referenced in field/annex conditions.
    */
   logic(logicDef: LogicSection): this {
-    this._def.logic = logicDef
-    return this
+    this._def.logic = logicDef;
+    return this;
   }
 
   /**
    * Adds a single named expression to the logic section.
    */
   expr(name: string, expression: string): this {
-    const logic = (this._def.logic as LogicSection) || {}
-    logic[name] = expression
-    this._def.logic = logic
-    return this
+    const logic = (this._def.logic as LogicSection) || {};
+    logic[name] = expression;
+    this._def.logic = logic;
+    return this;
   }
 
   field(id: string, fieldDef: Buildable<Field>): this {
-    const fields = (this._def.fields as Record<string, Field>) || {}
-    const resolved = resolveBuildable(fieldDef)
-    fields[id] = parseField(resolved)
-    this._def.fields = fields
-    return this
+    const fields = (this._def.fields as Record<string, Field>) || {};
+    const resolved = resolveBuildable(fieldDef);
+    fields[id] = parseField(resolved);
+    this._def.fields = fields;
+    return this;
   }
 
-  fields<const F extends Record<string, Buildable<Field>>>(fieldsObj: F): FormBuilder<{
-    [K in keyof F]: F[K] extends Buildable<infer T extends Field> ? T : F[K] extends Field ? F[K] : Field
+  fields<const F extends Record<string, Buildable<Field>>>(
+    fieldsObj: F
+  ): FormBuilder<{
+    [K in keyof F]: F[K] extends Buildable<infer T extends Field>
+      ? T
+      : F[K] extends Field
+      ? F[K]
+      : Field;
   }> {
-    const parsed: Record<string, Field> = {}
+    const parsed: Record<string, Field> = {};
     for (const [id, fieldDef] of Object.entries(fieldsObj)) {
-      parsed[id] = parseField(resolveBuildable(fieldDef as Buildable<Field>))
+      parsed[id] = parseField(resolveBuildable(fieldDef as Buildable<Field>));
     }
-    this._def.fields = parsed
+    this._def.fields = parsed;
     return this as unknown as FormBuilder<{
-      [K in keyof F]: F[K] extends Buildable<infer T extends Field> ? T : F[K] extends Field ? F[K] : Field
-    }>
+      [K in keyof F]: F[K] extends Buildable<infer T extends Field>
+        ? T
+        : F[K] extends Field
+        ? F[K]
+        : Field;
+    }>;
   }
 
   /**
    * Sets the layers record for this form.
+   * Accepts Layer objects or layer builders (FileLayerBuilder/InlineLayerBuilder).
    */
-  layers(value: Record<string, Layer>): this {
-    const parsed: Record<string, Layer> = {}
-    for (const [key, layer] of Object.entries(value)) {
-      parsed[key] = parseLayer(layer)
+  layers(
+    value: Record<string, Layer | FileLayerBuilder | InlineLayerBuilder>
+  ): this {
+    const parsed: Record<string, Layer> = {};
+    for (const [key, layerValue] of Object.entries(value)) {
+      const resolved = layerBuilder.isBuilder(layerValue)
+        ? layerBuilder.resolve(layerValue)
+        : layerValue;
+      parsed[key] = parseLayer(resolved);
     }
-    this._def.layers = parsed
-    return this
+    this._def.layers = parsed;
+    return this;
   }
 
   /**
    * Adds a single layer to the layers record.
+   * Accepts a Layer object or layer builder (FileLayerBuilder/InlineLayerBuilder).
    */
-  layer(key: string, layerDef: Layer): this {
-    const layers = (this._def.layers as Record<string, Layer>) || {}
-    layers[key] = parseLayer(layerDef)
-    this._def.layers = layers
-    return this
+  layer(
+    key: string,
+    layerDef: Layer | FileLayerBuilder | InlineLayerBuilder
+  ): this {
+    const layers = (this._def.layers as Record<string, Layer>) || {};
+    const resolved = layerBuilder.isBuilder(layerDef)
+      ? layerBuilder.resolve(layerDef)
+      : layerDef;
+    layers[key] = parseLayer(resolved);
+    this._def.layers = layers;
+    return this;
   }
 
   /**
@@ -683,9 +789,14 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
     key: string,
     mimeType: string,
     text: string,
-    options?: { title?: string; description?: string; checksum?: string; bindings?: Record<string, string> }
+    options?: {
+      title?: string;
+      description?: string;
+      checksum?: string;
+      bindings?: Record<string, string>;
+    }
   ): this {
-    return this.layer(key, { kind: 'inline', mimeType, text, ...options })
+    return this.layer(key, { kind: "inline", mimeType, text, ...options });
   }
 
   /**
@@ -695,121 +806,130 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
     key: string,
     mimeType: string,
     path: string,
-    options?: { title?: string; description?: string; checksum?: string; bindings?: Record<string, string> }
+    options?: {
+      title?: string;
+      description?: string;
+      checksum?: string;
+      bindings?: Record<string, string>;
+    }
   ): this {
     return this.layer(key, {
-      kind: 'file',
+      kind: "file",
       mimeType,
       path,
       ...options,
-    })
+    });
   }
 
   /**
    * Sets the default layer key.
    */
   defaultLayer(key: string): this {
-    this._def.defaultLayer = key
-    return this
+    this._def.defaultLayer = key;
+    return this;
   }
 
   annex(annexDef: Buildable<Annex>): this {
-    const annexes = (this._def.annexes as Annex[]) || []
-    annexes.push(parseAnnex(resolveBuildable(annexDef)))
-    this._def.annexes = annexes
-    return this
+    const annexes = (this._def.annexes as Annex[]) || [];
+    annexes.push(parseAnnex(resolveBuildable(annexDef)));
+    this._def.annexes = annexes;
+    return this;
   }
 
   annexes(annexesArray: Array<Buildable<Annex>>): this {
-    const parsed: Annex[] = []
+    const parsed: Annex[] = [];
     for (const annexDef of annexesArray) {
-      parsed.push(parseAnnex(resolveBuildable(annexDef)))
+      parsed.push(parseAnnex(resolveBuildable(annexDef)));
     }
-    this._def.annexes = parsed
-    return this
+    this._def.annexes = parsed;
+    return this;
   }
 
   metadata(value: Metadata | MetadataBuilder): this {
-    const metadataValue = value instanceof MetadataBuilder ? value.build() : value
-    this._def.metadata = metadataValue
-    return this
+    const metadataValue =
+      value instanceof MetadataBuilder ? value.build() : value;
+    this._def.metadata = metadataValue;
+    return this;
   }
 
   allowAnnexes(value: boolean): this {
-    this._def.allowAnnexes = value
-    return this
+    this._def.allowAnnexes = value;
+    return this;
   }
 
   /**
    * Add a single party role definition.
    * Party roles define who can be involved in the form and their signature requirements.
    */
-  party(partyDef: Buildable<FormParty>): this {
-    const parties = (this._def.parties as FormParty[]) || []
-    parties.push(parseFormParty(resolveBuildable(partyDef)))
-    this._def.parties = parties
-    return this
+  party(roleId: string, partyDef: Buildable<FormParty>): this {
+    const parties = (this._def.parties as Record<string, FormParty>) || {};
+    parties[roleId] = parseFormParty(resolveBuildable(partyDef));
+    this._def.parties = parties;
+    return this;
   }
 
   /**
    * Set all party role definitions at once.
    * Party roles define who can be involved in the form and their signature requirements.
+   * Roles are keyed by their role identifier (e.g., "landlord", "tenant").
    */
-  parties(partiesArray: Array<Buildable<FormParty>>): this {
-    const parsed: FormParty[] = []
-    for (const partyDef of partiesArray) {
-      parsed.push(parseFormParty(resolveBuildable(partyDef)))
+  parties(partiesObj: Record<string, Buildable<FormParty>>): this {
+    const parsed: Record<string, FormParty> = {};
+    for (const [roleId, partyDef] of Object.entries(partiesObj)) {
+      parsed[roleId] = parseFormParty(resolveBuildable(partyDef));
     }
-    this._def.parties = parsed
-    return this
+    this._def.parties = parsed;
+    return this;
   }
 
   /**
    * Set witness requirements for form execution.
    */
   witnesses(witnessReq: Buildable<WitnessRequirement>): this {
-    this._def.witnesses = parseWitnessRequirement(resolveBuildable(witnessReq))
-    return this
+    this._def.witnesses = parseWitnessRequirement(resolveBuildable(witnessReq));
+    return this;
   }
 
-  build(): FormInstance<Omit<Form, 'fields'> & { fields: TFields }> {
+  build(): FormInstance<Omit<Form, "fields"> & { fields: TFields }> {
     // Clean up undefined optional fields before parsing
-    const cleaned: Record<string, unknown> = { ...this._def }
+    const cleaned: Record<string, unknown> = { ...this._def };
     if (cleaned.fields === undefined) {
-      delete cleaned.fields
+      delete cleaned.fields;
     }
     if (cleaned.annexes === undefined) {
-      delete cleaned.annexes
+      delete cleaned.annexes;
     }
     if (cleaned.layers === undefined) {
-      delete cleaned.layers
+      delete cleaned.layers;
     }
     if (cleaned.defaultLayer === undefined) {
-      delete cleaned.defaultLayer
+      delete cleaned.defaultLayer;
     }
     if (cleaned.description === undefined) {
-      delete cleaned.description
+      delete cleaned.description;
     }
     if (cleaned.code === undefined) {
-      delete cleaned.code
+      delete cleaned.code;
     }
     if (cleaned.releaseDate === undefined) {
-      delete cleaned.releaseDate
+      delete cleaned.releaseDate;
     }
     if (cleaned.allowAnnexes === undefined) {
-      delete cleaned.allowAnnexes
+      delete cleaned.allowAnnexes;
     }
     if (cleaned.logic === undefined) {
-      delete cleaned.logic
+      delete cleaned.logic;
     }
     if (cleaned.parties === undefined) {
-      delete cleaned.parties
+      delete cleaned.parties;
     }
     if (cleaned.witnesses === undefined) {
-      delete cleaned.witnesses
+      delete cleaned.witnesses;
     }
-    const result = parseFormSchema(cleaned)
-    return new FormInstance(result as Omit<Form, 'fields'> & { fields: TFields })
+    const result = parseFormSchema(cleaned);
+    return new FormInstance(
+      result as Omit<Form, "fields"> & { fields: TFields }
+    );
   }
 }
 
@@ -820,68 +940,82 @@ class FormBuilder<TFields extends Record<string, Field> = Record<string, never>>
 /**
  * Input type for open.form() - kind is optional since it's automatically added
  */
-export type FormInput = Omit<Form, 'kind'> & { kind?: 'form' }
+// FormInput is exported from @/types
 
 type FormAPI = {
   /** Start a fluent builder for creating a form */
-  (): FormBuilder
+  (): FormBuilder;
   /** Create a FormInstance from a form definition object */
-  <const T extends FormInput>(input: T): FormInstance<T & { kind: 'form' }>
+  <const T extends FormInput>(input: T): FormInstance<T & { kind: "form" }>;
   /** Parse unknown input into a FormInstance (throws on error) */
-  from(input: unknown): FormInstance<Form>
+  from(input: unknown): FormInstance<Form>;
   /** Safely parse unknown input into a FormInstance */
-  safeFrom(input: unknown): { success: true; data: FormInstance<Form> } | { success: false; error: Error }
+  safeFrom(
+    input: unknown
+  ):
+    | { success: true; data: FormInstance<Form> }
+    | { success: false; error: Error };
   /**
    * @deprecated Use `from()` instead. Will be removed in next major version.
    */
-  parse(input: unknown): Form
+  parse(input: unknown): Form;
   /**
    * @deprecated Use `safeFrom()` instead. Will be removed in next major version.
    */
-  safeParse(input: unknown): { success: true; data: Form } | { success: false; error: Error }
-}
+  safeParse(
+    input: unknown
+  ): { success: true; data: Form } | { success: false; error: Error };
+};
 
-function formImpl(): FormBuilder
-function formImpl<const T extends FormInput>(input: T): FormInstance<T & { kind: 'form' }>
+function formImpl(): FormBuilder;
+function formImpl<const T extends FormInput>(
+  input: T
+): FormInstance<T & { kind: "form" }>;
 function formImpl<const T extends FormInput>(
   input?: T
-): FormBuilder | FormInstance<T & { kind: 'form' }> {
+): FormBuilder | FormInstance<T & { kind: "form" }> {
   if (input !== undefined) {
     // Ensure kind is always 'form' (placed last to prevent override from input)
-    const withKind = { ...input, kind: 'form' as const }
-    const parsed = parseFormSchema(withKind) as T & { kind: 'form' }
-    return new FormInstance(parsed)
+    const withKind = { ...input, kind: "form" as const };
+    const parsed = parseFormSchema(withKind) as T & { kind: "form" };
+    return new FormInstance(parsed);
   }
-  return new FormBuilder()
+  return new FormBuilder();
 }
 
 export const form: FormAPI = Object.assign(formImpl, {
   // New API
   from: (input: unknown): FormInstance<Form> => {
-    const parsed = parseFormSchema(input) as Form
-    return new FormInstance(parsed)
+    const parsed = parseFormSchema(input) as Form;
+    return new FormInstance(parsed);
   },
-  safeFrom: (input: unknown): { success: true; data: FormInstance<Form> } | { success: false; error: Error } => {
+  safeFrom: (
+    input: unknown
+  ):
+    | { success: true; data: FormInstance<Form> }
+    | { success: false; error: Error } => {
     try {
-      const parsed = parseFormSchema(input) as Form
+      const parsed = parseFormSchema(input) as Form;
       return {
         success: true,
         data: new FormInstance(parsed),
-      }
+      };
     } catch (err) {
-      return { success: false, error: err as Error }
+      return { success: false, error: err as Error };
     }
   },
   // Deprecated API (for backwards compatibility)
   parse: (input: unknown): Form => parseFormSchema(input) as Form,
-  safeParse: (input: unknown): { success: true; data: Form } | { success: false; error: Error } => {
+  safeParse: (
+    input: unknown
+  ): { success: true; data: Form } | { success: false; error: Error } => {
     try {
       return {
         success: true,
         data: parseFormSchema(input) as Form,
-      }
+      };
     } catch (err) {
-      return { success: false, error: err as Error }
+      return { success: false, error: err as Error };
     }
   },
-})
+});

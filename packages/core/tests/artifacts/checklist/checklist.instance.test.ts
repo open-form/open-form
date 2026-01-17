@@ -29,6 +29,17 @@ describe('ChecklistInstance', () => {
       .item({ id: 'item2', title: 'Second Item' })
       .build()
 
+  const createChecklistWithLayers = () =>
+    checklist()
+      .name('checklist-with-layers')
+      .version('1.0.0')
+      .title('Checklist With Layers')
+      .item({ id: 'item1', title: 'First Item' })
+      .inlineLayer('default', 'text/plain', 'Item 1\nItem 2')
+      .inlineLayer('html', 'text/html', '<ul><li>Item 1</li><li>Item 2</li></ul>')
+      .defaultLayer('default')
+      .build()
+
   // ============================================================================
   // Property Getters
   // ============================================================================
@@ -247,6 +258,118 @@ describe('ChecklistInstance', () => {
     test('returns error for invalid input', () => {
       const result = checklist.safeFrom({})
       expect(result.success).toBe(false)
+    })
+  })
+
+  // ============================================================================
+  // render() Method
+  // ============================================================================
+
+  describe('render()', () => {
+    const mockRenderer = {
+      id: 'test-renderer',
+      render: async (request: any) => {
+        return {
+          type: request.template.type,
+          content: request.template.content,
+          mimeType: request.template.mimeType,
+        }
+      },
+    }
+
+    test('renders with inline layer using defaultLayer', async () => {
+      const instance = createChecklistWithLayers()
+      const output = await instance.render({ renderer: mockRenderer })
+      expect(output.content).toBe('Item 1\nItem 2')
+      expect(output.mimeType).toBe('text/plain')
+    })
+
+    test('renders with explicit layer parameter', async () => {
+      const instance = createChecklistWithLayers()
+      const output = await instance.render({ renderer: mockRenderer, layer: 'html' })
+      expect(output.content).toBe('<ul><li>Item 1</li><li>Item 2</li></ul>')
+      expect(output.mimeType).toBe('text/html')
+    })
+
+    test('throws error when checklist has no layers', async () => {
+      const instance = createMinimalChecklist()
+      await expect(instance.render({ renderer: mockRenderer })).rejects.toThrow(
+        'Checklist has no layers defined'
+      )
+    })
+
+    test('throws error when specified layer not found', async () => {
+      const instance = createChecklistWithLayers()
+      await expect(instance.render({ renderer: mockRenderer, layer: 'nonexistent' })).rejects.toThrow(
+        'Layer "nonexistent" not found'
+      )
+    })
+
+    test('uses first available layer when no defaultLayer set', async () => {
+      const instance = checklist()
+        .name('checklist')
+        .version('1.0.0')
+        .title('Checklist')
+        .item({ id: 'item1', title: 'Item' })
+        .inlineLayer('first', 'text/plain', 'First')
+        .inlineLayer('second', 'text/html', '<p>Second</p>')
+        .build()
+
+      const output = await instance.render({ renderer: mockRenderer })
+      expect(output).toBeDefined()
+    })
+
+    test('throws error when file layer but no resolver', async () => {
+      const instance = checklist()
+        .name('checklist')
+        .version('1.0.0')
+        .title('Checklist')
+        .item({ id: 'item1', title: 'Item' })
+        .fileLayer('html', 'text/html', '/templates/checklist.html')
+        .defaultLayer('html')
+        .build()
+
+      await expect(instance.render({ renderer: mockRenderer })).rejects.toThrow(
+        'no resolver was provided'
+      )
+    })
+
+    test('passes empty data object to renderer', async () => {
+      let capturedData: any = undefined
+      const trackingRenderer = {
+        id: 'tracking-renderer',
+        render: async (request: any) => {
+          capturedData = request.data
+          return { success: true }
+        },
+      }
+
+      const instance = createChecklistWithLayers()
+      await instance.render({ renderer: trackingRenderer })
+      expect(capturedData).toEqual({})
+    })
+
+    test('includes bindings in template when present', async () => {
+      let capturedTemplate: any = undefined
+      const trackingRenderer = {
+        id: 'tracking-renderer',
+        render: async (request: any) => {
+          capturedTemplate = request.template
+          return { success: true }
+        },
+      }
+
+      const instance = checklist()
+        .name('checklist')
+        .version('1.0.0')
+        .title('Checklist')
+        .item({ id: 'item1', title: 'Item' })
+        .inlineLayer('main', 'text/plain', 'Content', { bindings: { status: 'active' } })
+        .defaultLayer('main')
+        .build()
+
+      await instance.render({ renderer: trackingRenderer })
+      expect(capturedTemplate.bindings).toEqual({ status: 'active' })
     })
   })
 })

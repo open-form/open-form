@@ -98,7 +98,7 @@ export type FieldToDataType<F> = F extends { type: 'text' }
                                           issueDate?: string
                                           expiryDate?: string
                                         }
-                                      : F extends { type: 'multiselect'; options: infer E }
+                                      : F extends { type: 'multiselect'; enum: infer E }
                                         ? E extends readonly (infer U)[]
                                           ? U[]
                                           : (string | number)[]
@@ -521,9 +521,9 @@ function compileField(field: Field): JsonSchema {
 
     // New field types: Selection
     case 'multiselect':
-      if ('options' in field && Array.isArray(field.options) && field.options.length > 0) {
+      if ('enum' in field && Array.isArray(field.enum) && field.enum.length > 0) {
         const itemSchema: JsonSchema = {
-          anyOf: field.options.map((val: string | number) => ({ const: val })),
+          anyOf: field.enum.map((val: string | number) => ({ const: val })),
         }
         const schema: JsonSchema = {
           type: 'array',

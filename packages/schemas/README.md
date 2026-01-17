@@ -1,36 +1,68 @@
-# @open-form/schemas
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=schemas" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> JSON Schema definitions for the OpenForm framework
+<h1 align="center">@open-form/schemas</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/schemas.svg)](https://www.npmjs.com/package/@open-form/schemas)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
 
-This package provides the complete JSON Schema definition for OpenForm artifacts, blocks, and primitives. Use it with any JSON Schema validator to validate OpenForm documents.
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=schemas)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.intent/follow?screen_name=OpenFormHQ)
+
+</div>
+
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=schemas) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
+
+JSON Schema definitions for OpenForm artifacts.
 
 ## Installation
 
 ```bash
 npm install @open-form/schemas
-# or
-pnpm add @open-form/schemas
-# or
-yarn add @open-form/schemas
 ```
 
 ## Usage
 
 ```typescript
 import jsonSchema from "@open-form/schemas/schema.json";
-import manifestSchema from "@open-form/schemas/manifest.json";
+
+// Use with any JSON Schema validator
+import Ajv from "ajv";
+
+const ajv = new Ajv();
+const validate = ajv.compile(jsonSchema);
+
+const isValid = validate(myOpenFormDocument);
+if (!isValid) {
+  console.log(validate.errors);
+}
 ```
 
-## Related Packages
+## Changelog
 
-- [`@open-form/sdk`](../sdk) - Complete framework bundle
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/schemas/CHANGELOG.md) for updates.
+
+## Related packages
+
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
+
+## Contributing
+
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.
 
 ## Acknowledgments
 

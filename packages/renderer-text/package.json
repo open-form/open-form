@@ -1,6 +1,6 @@
 {
   "name": "@open-form/renderer-text",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Text renderer package for OpenForm framework",
   "type": "module",
   "main": "./dist/index.js",
@@ -66,8 +66,8 @@
     "handlebars": "^4.7.8"
   },
   "peerDependencies": {
-    "@open-form/types": ">=0.1.0",
-    "@open-form/serialization": ">=0.1.0"
+    "@open-form/types": ">=0.1.3",
+    "@open-form/serialization": ">=0.1.3"
   },
   "peerDependenciesMeta": {
     "@open-form/types": {
@@ -78,6 +78,8 @@
     }
   },
   "devDependencies": {
+    "@open-form/core": "workspace:*",
+    "@open-form/resolvers": "workspace:*",
     "@open-form/types": "workspace:^",
     "@open-form/serialization": "workspace:^",
     "@open-form/eslint-config": "workspace:*",

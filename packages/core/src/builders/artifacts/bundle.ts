@@ -122,8 +122,8 @@ class BundleBuilder<TContents extends BundleContentItem[] = []> {
   private _def: Record<string, unknown> = {
     kind: 'bundle',
     name: '',
-    version: '',
-    title: '',
+    version: undefined,
+    title: undefined,
     description: undefined,
     code: undefined,
     releaseDate: undefined,
@@ -154,12 +154,12 @@ class BundleBuilder<TContents extends BundleContentItem[] = []> {
     return this
   }
 
-  version(value: string): this {
+  version(value?: string): this {
     this._def.version = value
     return this
   }
 
-  title(value: string): this {
+  title(value?: string): this {
     this._def.title = value
     return this
   }
@@ -292,7 +292,11 @@ class BundleBuilder<TContents extends BundleContentItem[] = []> {
 // Bundle API
 // ============================================================================
 
-export type BundleInput = Omit<Bundle, 'kind'> & { kind?: 'bundle' }
+// Re-export BundleInput from centralized types.ts
+export type { BundleInput } from '@/types'
+
+// Import for internal use
+import type { BundleInput } from '@/types'
 
 type BundleAPI = {
   (): BundleBuilder

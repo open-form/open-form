@@ -58,14 +58,14 @@
               "type": "string"
             },
             "version": {
-              "description": "Artifact version.",
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
               "minLength": 1,
               "maxLength": 200,
               "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
               "type": "string"
             },
             "title": {
-              "description": "Human-readable title.",
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -92,9 +92,7 @@
             }
           },
           "required": [
-            "name",
-            "version",
-            "title"
+            "name"
           ]
         },
         {
@@ -145,11 +143,12 @@
               }
             },
             "parties": {
-              "minItems": 0,
-              "description": "Party role definitions. Each role specifies constraints on who can fill it (person/organization) and signature requirements.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/FormParty"
+              "description": "Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.",
+              "type": "object",
+              "patternProperties": {
+                "^[a-z][a-z0-9_-]*$": {
+                  "$ref": "#/$defs/FormParty"
+                }
               }
             },
             "witnesses": {
@@ -186,14 +185,14 @@
               "type": "string"
             },
             "version": {
-              "description": "Artifact version.",
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
               "minLength": 1,
               "maxLength": 200,
               "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
               "type": "string"
             },
             "title": {
-              "description": "Human-readable title.",
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -220,9 +219,7 @@
             }
           },
           "required": [
-            "name",
-            "version",
-            "title"
+            "name"
           ]
         },
         {
@@ -278,14 +275,14 @@
               "type": "string"
             },
             "version": {
-              "description": "Artifact version.",
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
               "minLength": 1,
               "maxLength": 200,
               "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
               "type": "string"
             },
             "title": {
-              "description": "Human-readable title.",
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -312,9 +309,7 @@
             }
           },
           "required": [
-            "name",
-            "version",
-            "title"
+            "name"
           ]
         },
         {
@@ -620,14 +615,14 @@
               "type": "string"
             },
             "version": {
-              "description": "Artifact version.",
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
               "minLength": 1,
               "maxLength": 200,
               "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
               "type": "string"
             },
             "title": {
-              "description": "Human-readable title.",
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -654,9 +649,7 @@
             }
           },
           "required": [
-            "name",
-            "version",
-            "title"
+            "name"
           ]
         },
         {
@@ -1797,7 +1790,7 @@
                       "const": "multiselect",
                       "type": "string"
                     },
-                    "options": {
+                    "enum": {
                       "description": "Available options",
                       "minItems": 1,
                       "type": "array",
@@ -1837,7 +1830,7 @@
                   },
                   "required": [
                     "type",
-                    "options"
+                    "enum"
                   ]
                 }
               ]
@@ -2063,13 +2056,6 @@
       "description": "Design-time party role definition. Defines what roles exist and what constraints apply when filling a form.",
       "type": "object",
       "properties": {
-        "id": {
-          "minLength": 1,
-          "maxLength": 50,
-          "pattern": "^[a-z][a-z0-9_-]*$",
-          "description": "Role identifier (e.g., buyer, seller, lessee)",
-          "type": "string"
-        },
         "label": {
           "minLength": 1,
           "maxLength": 100,
@@ -2156,7 +2142,6 @@
         }
       },
       "required": [
-        "id",
         "label"
       ]
     },
@@ -3751,7 +3736,7 @@
                                   "const": "multiselect",
                                   "type": "string"
                                 },
-                                "options": {
+                                "enum": {
                                   "description": "Available options",
                                   "minItems": 1,
                                   "type": "array",
@@ -3791,7 +3776,7 @@
                               },
                               "required": [
                                 "type",
-                                "options"
+                                "enum"
                               ]
                             }
                           ]

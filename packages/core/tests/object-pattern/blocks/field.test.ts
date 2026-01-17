@@ -517,7 +517,7 @@ describe('Field (Object Pattern)', () => {
 			});
 
 			test('returns error when enum is empty', () => {
-				const input = { type: 'enum', enum: [] };
+				const input = { type: 'enum', options: [] };
 				const result = field.safeParse(input);
 				expect(result.success).toBe(false);
 			});

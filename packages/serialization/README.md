@@ -1,44 +1,53 @@
-# @open-form/serialization
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=serialization" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> Primitive serialization for OpenForm framework
+<h1 align="center">@open-form/serialization</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/serialization.svg)](https://www.npmjs.com/package/@open-form/serialization)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=serialization)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
+
+</div>
+
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=serialization) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
 
 Locale and region-aware serialization of OpenForm primitive types (Money, Address, Phone, Person, Organization) into human-readable string representations.
 
-## Features
-
-- 🌍 **Multi-locale support** - USA, EU, and international formatters built-in
-- 🔧 **Pluggable architecture** - Implement custom serializers via `FormatterRegistry` interface
-- 💱 **Currency formatting** - Locale-specific money formatting with proper symbols and grouping
-- 📍 **Address formatting** - Regional address format support (US, EU, flexible international)
-- ☎️ **Phone formatting** - E.164 and locale-specific phone number formats
-- ♿ **Accessibility-ready** - Simple patterns for screen reader and accessibility-focused formatting
-- ✅ **Type-safe** - Full TypeScript support
+- **Multi-locale support** - USA, EU, and international serializers built-in
+- **Pluggable architecture** - Implement custom serializers via `SerializerRegistry` interface
+- **Accessibility-ready** - Simple patterns for screen reader and accessibility-focused formatting
+- **Type-safe** - Full TypeScript support
 
 ## Installation
 
 ```bash
 npm install @open-form/serialization
-# or
-pnpm add @open-form/serialization
-# or
-yarn add @open-form/serialization
 ```
 
 ## Usage
 
-### Default Formatters
+### Using Pre-built Serializers
+
+Import a pre-configured serializer and use them directly:
 
 ```typescript
-import { usaFormatters, euFormatters, intlFormatters } from "@open-form/serialization";
+import { usaSerializers } from "@open-form/serialization";
 
-// USA formatters (default)
-usaFormatters.formatMoney({ amount: 1500, currency: "USD" });
+// USA serializers (default - uses USD, US address format, formatted phone)
+usaSerializers.money.stringify({ amount: 1500, currency: "USD" });
 // → "$1,500.00"
 
-usaFormatters.formatAddress({
+usaSerializers.address.stringify({
   line1: "123 Main St",
   locality: "New York",
   region: "NY",
@@ -46,141 +55,138 @@ usaFormatters.formatAddress({
   country: "USA",
 });
 // → "123 Main St, New York, NY, 10001, USA"
+```
 
-// EU formatters
-euFormatters.formatMoney({ amount: 1500, currency: "EUR" });
-// → "1.500,00 €" (German locale with EUR)
+### Using the factory function
 
-euFormatters.formatAddress({
-  line1: "10 Downing St",
-  locality: "London",
-  postalCode: "SW1A 2AA",
-  country: "UK",
+Create serializer instances with specific regional configurations:
+
+```typescript
+import { createSerializer } from "@open-form/serialization";
+
+// Create serializers for different regions
+const usaSerializers = createSerializer({ regionFormat: "us" });
+
+// Use them to serialize data
+const price = usaSerializers.money.stringify({
+  amount: 99.99,
+  currency: "USD",
 });
-// → "10 Downing St, SW1A 2AA, London, UK"
-
-// International formatters
-intlFormatters.formatMoney({ amount: 1500, currency: "GBP" });
-// → "GBP 1,500.00"
+// -> "$99.99"
 ```
 
-### Factory Pattern
+### Configuring Fallbacks
+
+Configure fallback values that are used when serialization fails (e.g., when data is null or invalid). The default is an empty string ("").
 
 ```typescript
-import { createFormatters } from "@open-form/serialization";
+import { createSerializer } from "@open-form/serialization";
 
-// Create USA formatters
-const usa = createFormatters({ regionFormat: "US" });
+const serializers = createSerializer({
+  regionFormat: "us",
+  fallbacks: {
+    money: "N/A",
+    address: "Address not available",
+    phone: "–",
+    person: "Unknown person",
+    organization: "Unnamed organization",
+    party: "Unknown party",
+    coordinate: "No coordinates",
+    bbox: "No bounds",
+    duration: "No duration",
+    identification: "No ID",
+  },
+});
 
-// Create EU formatters
-const eu = createFormatters({ regionFormat: "EU" });
+// When serialization fails, the configured fallback is returned
+serializers.money.stringify(null);
+// → "N/A"
 
-// Create international formatters
-const intl = createFormatters({ regionFormat: "intl" });
+serializers.address.stringify(null);
+// → "Address not available"
 ```
 
-### Custom Formatters
+If no fallback is configured for a serializer type, an empty string is used by default:
 
 ```typescript
-import type { FormatterRegistry } from "@open-form/serialization";
+const serializers = createSerializer({ regionFormat: "us" });
 
-const customFormatters: FormatterRegistry = {
-  formatMoney: (value) => {
-    const amount = typeof value === "number" ? value : value.amount ?? 0;
-    return `💰 ${amount.toFixed(2)}`;
+serializers.money.stringify(null);
+// → ""
+```
+
+### Serializer Registry API
+
+Each serializer registry provides these stringifiers:
+
+| Type             | Stringifier Signature                                          | Returns  | Description                                                                   |
+| ---------------- | -------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------- |
+| `money`          | `stringify(Money \| number \| Partial<Money>): string`         | `string` | Serializes monetary amounts with currency symbol and locale-specific grouping |
+| `address`        | `stringify(Address \| Partial<Address>): string`               | `string` | Serializes addresses with region-appropriate ordering and punctuation         |
+| `phone`          | `stringify(Phone \| string \| Partial<Phone>): string`         | `string` | Serializes phone numbers in E.164 format                                      |
+| `person`         | `stringify(Person \| Partial<Person>): string`                 | `string` | Serializes person names from full name or name components                     |
+| `organization`   | `stringify(Organization \| Partial<Organization>): string`     | `string` | Serializes organization names with optional tax ID or identifier              |
+| `party`          | `stringify(Party \| Partial<Party>): string`                   | `string` | Serializes either a person or organization (automatically detects type)       |
+| `coordinate`     | `stringify(Coordinate \| Partial<Coordinate>): string`         | `string` | Serializes geographic coordinates as "lat,lon"                                |
+| `bbox`           | `stringify(Bbox \| Partial<Bbox>): string`                     | `string` | Serializes bounding boxes as "swLat,swLon,neLat,neLon"                        |
+| `duration`       | `stringify(Duration \| string): string`                        | `string` | Serializes ISO 8601 durations (e.g., "P1Y", "PT30M")                          |
+| `identification` | `stringify(Identification \| Partial<Identification>): string` | `string` | Serializes identification documents with type, number, and issuer info        |
+
+### Custom Serializers
+
+Implement the `SerializerRegistry` interface to create custom serializers:
+
+```typescript
+import type { SerializerRegistry } from "@open-form/serialization";
+
+const customSerializers: SerializerRegistry = {
+  money: {
+    stringify: (value) => {
+      const amount = typeof value === "number" ? value : value.amount ?? 0;
+      return `$${amount.toFixed(2)}`;
+    },
   },
-  formatAddress: (value) => {
-    // Custom address formatting logic
-    return `📍 ${value.line1}`;
+
+  address: {
+    stringify: (value) => {
+      const addr = value as Record<string, unknown>;
+      return [addr.line1, addr.locality, addr.country]
+        .filter(Boolean)
+        .join(", ");
+    },
   },
-  formatPhone: (value) => {
-    // Custom phone formatting logic
-    return `☎️ ${value.number || ""}`;
-  },
-  formatPerson: (value) => {
-    return `👤 ${value.firstName} ${value.lastName}`;
-  },
-  formatOrganization: (value) => {
-    return `🏢 ${value.name}`;
-  },
-  formatParty: (value) => {
-    if ("firstName" in value) {
-      return customFormatters.formatPerson(value as any);
-    }
-    return customFormatters.formatOrganization(value as any);
-  },
+
+  // ... other serializers (phone, person, organization, party, coordinate, bbox, duration, identification)
 };
 
-// Use with renderers
-const result = await form.render({
-  renderer: textRenderer,
-  ctx: { formatters: customFormatters },
+// Use custom serializers
+customSerializers.money.stringify(100);
+// → "$100.00"
+
+customSerializers.address.stringify({
+  line1: "123 Main St",
+  locality: "Boston",
+  country: "USA",
 });
+// → "123 Main St, Boston, USA"
 ```
 
-## API Reference
+**Note:** Stringifiers do not accept a fallback parameter. Fallback handling is configured at factory creation time using the `createSerializer()` function with the `fallbacks` option.
 
-### FormatterRegistry
+## Changelog
 
-Interface defining the serialization contract.
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/serialization/CHANGELOG.md) for updates.
 
-```typescript
-interface FormatterRegistry {
-  formatMoney(value: Money | number | Partial<Money>): string;
-  formatAddress(value: Address | Partial<Address>): string;
-  formatPhone(value: Phone | string | Partial<Phone>): string;
-  formatPerson(value: Person | Partial<Person>): string;
-  formatOrganization(value: Organization | Partial<Organization>): string;
-  formatParty(value: Party | Partial<Party>): string;
-}
-```
+## Related packages
 
-### FormatterConfig
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
 
-Configuration options for creating formatters.
+## Contributing
 
-```typescript
-interface FormatterConfig {
-  locale?: string; // Locale code (e.g., 'en-US', 'fr-FR')
-  regionFormat?: "US" | "EU" | "intl"; // Regional format preference
-}
-```
-
-### `createFormatters(config)`
-
-Factory function to create formatter registry instances.
-
-```typescript
-const formatters = createFormatters({ regionFormat: "EU" });
-```
-
-### Pre-built Formatters
-
-- `usaFormatters` - USA locale with USD currency, US address format, US phone format
-- `euFormatters` - EU locale with EUR currency, EU address format, E.164 phone format
-- `intlFormatters` - International generic formatting with E.164 phone format
-
-## Integration with Renderers
-
-Serializers are used by OpenForm renderers to format primitive values in rendered output.
-
-```typescript
-import { textRenderer } from "@open-form/renderer-text";
-import { euFormatters } from "@open-form/serialization";
-
-// Render form with custom formatters
-const result = await form.render({
-  renderer: textRenderer,
-  resolver,
-  layer: "html",
-  ctx: { formatters: euFormatters },
-});
-```
-
-## Related Packages
-
-- [`@open-form/sdk`](https://www.npmjs.com/package/@open-form/sdk) - Complete OpenForm framework bundle
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.

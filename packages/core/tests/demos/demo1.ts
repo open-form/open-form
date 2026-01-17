@@ -18,7 +18,7 @@ const myForm = open
       .build(),
     type: open.field
       .enum()
-      .enum("dog", "cat", "bird", "turtle")
+      .options(["dog", "cat", "bird", "turtle"])
       .label("Species")
       .description("The species of the pet")
       .required(true)

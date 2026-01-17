@@ -141,12 +141,12 @@ describe('Field (Builder Pattern)', () => {
 
 		describe('EnumField builder - success cases', () => {
 			test('builds enum field with string values', () => {
-				const result = field.enum().enum('red', 'green', 'blue').build();
+				const result = field.enum().options(['red', 'green', 'blue']).build();
 				expect(result.enum).toEqual(['red', 'green', 'blue']);
 			});
 
 			test('builds enum field with number values', () => {
-				const result = field.enum().enum(1, 2, 3, 4, 5).build();
+				const result = field.enum().options([1, 2, 3, 4, 5]).build();
 				expect(result.enum).toEqual([1, 2, 3, 4, 5]);
 			});
 
@@ -154,18 +154,18 @@ describe('Field (Builder Pattern)', () => {
 				const result = field
 					.enum()
 					.label('Priority')
-					.enum('low', 1, 'medium', 2, 'high', 3)
+					.options(['low', 1, 'medium', 2, 'high', 3])
 					.build();
 				expect(result.enum).toEqual(['low', 1, 'medium', 2, 'high', 3]);
 			});
 
 			test('builds enum field with single value', () => {
-				const result = field.enum().enum('single').build();
+				const result = field.enum().options(['single']).build();
 				expect(result.enum).toHaveLength(1);
 			});
 
 			test('allows overwriting enum values', () => {
-				const result = field.enum().enum('a', 'b').enum('x', 'y', 'z').build();
+				const result = field.enum().options(['a', 'b']).options(['x', 'y', 'z']).build();
 				expect(result.enum).toEqual(['x', 'y', 'z']);
 			});
 		});
@@ -425,7 +425,7 @@ describe('Field (Builder Pattern)', () => {
 				expect(() => builder.build()).toThrow();
 
 				// Object - error immediately
-				expect(() => field({ type: 'enum', enum: [] } as any)).toThrow();
+				expect(() => field({ type: 'enum', options: [] } as any)).toThrow();
 			});
 		});
 
@@ -462,7 +462,7 @@ describe('Field (Builder Pattern)', () => {
 				const result = field
 					.enum()
 					.label('Country')
-					.enum('US', 'CA', 'MX', 'UK')
+					.options(['US', 'CA', 'MX', 'UK'])
 					.build();
 				expect(result.enum).toHaveLength(4);
 			});

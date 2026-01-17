@@ -5,6 +5,8 @@ import { extractSchema } from '@/schemas/extract'
 import { MetadataBuilder } from '../primitives/metadata'
 import { type Buildable, resolveBuildable } from '../utils/buildable'
 import { BaseArtifactInstance } from './base-instance'
+import type { RenderOptions } from '@/types'
+import type { RendererLayer } from '@/runtime/renderer'
 
 const checklistSchema = extractSchema('Checklist') as Record<string, unknown>
 const checklistItemSchema = extractSchema('ChecklistItem') as Record<string, unknown>
@@ -79,6 +81,104 @@ export class ChecklistInstance<C extends Checklist> extends BaseArtifactInstance
     const parsed = parseChecklistSchema(merged)
     return new ChecklistInstance(parsed)
   }
+
+  // ============================================================================
+  // Rendering
+  // ============================================================================
+
+  /**
+   * Render this checklist to an output format.
+   *
+   * The checklist must have at least one layer defined. Layer resolution priority:
+   * 1. Explicit `layer` parameter
+   * 2. `defaultLayer` property
+   * 3. First available layer (if only one exists)
+   *
+   * @param options - Render options including renderer and optional resolver for file layers
+   * @returns Promise resolving to rendered output
+   *
+   * @throws {Error} If checklist has no layers or specified layer is not found
+   * @throws {Error} If file layer specified but no resolver provided
+   *
+   * @example
+   * ```typescript
+   * const checklist = open.checklist()
+   *   .name('my-checklist')
+   *   .items([...])
+   *   .inlineLayer('html', 'text/html', htmlContent)
+   *   .defaultLayer('html')
+   *   .build()
+   *
+   * const output = await checklist.render({ renderer: htmlRenderer })
+   * ```
+   */
+  async render<Output>(options: RenderOptions<Output>): Promise<Output> {
+    const { renderer, resolver, layer: layerKey } = options
+
+    if (!this.schema.layers) {
+      throw new Error('Checklist has no layers defined')
+    }
+
+    // Resolve which layer to use
+    const key = layerKey || this.schema.defaultLayer || Object.keys(this.schema.layers)[0]
+    if (!key) {
+      throw new Error(
+        'No layer key provided and no defaultLayer set. ' +
+          'Either pass a layer option or set defaultLayer on the checklist.'
+      )
+    }
+
+    const layerSpec = this.schema.layers[key]
+    if (!layerSpec) {
+      throw new Error(
+        `Layer "${key}" not found. Available layers: ${Object.keys(this.schema.layers).join(', ')}`
+      )
+    }
+
+    // Extract layer content (inline or file)
+    let layerContent: string | Uint8Array | Buffer
+    const bindings = layerSpec.bindings
+
+    if (layerSpec.kind === 'inline') {
+      layerContent = layerSpec.text
+    } else if (layerSpec.kind === 'file') {
+      if (resolver) {
+        const bytes = await resolver.read(layerSpec.path)
+        // Decode text layers, keep binary layers as-is
+        if (
+          layerSpec.mimeType.startsWith('text/') ||
+          layerSpec.mimeType === 'application/json'
+        ) {
+          layerContent = new TextDecoder().decode(bytes)
+        } else {
+          layerContent = bytes
+        }
+      } else {
+        throw new Error(
+          `Layer "${key}" is file-backed but no resolver was provided. ` +
+            'Pass a resolver in the options object to auto-load file layers.'
+        )
+      }
+    } else {
+      throw new Error(`Unknown layer spec kind`)
+    }
+
+    // Build template and render
+    const template: RendererLayer = {
+      type: 'text',
+      content: layerContent,
+      mimeType: layerSpec.mimeType,
+      ...(bindings && { bindings }),
+    }
+
+    const renderRequest = {
+      template,
+      form: this.schema,
+      data: {},
+      ...(bindings && { bindings }),
+    }
+    return await renderer.render(renderRequest as unknown as Parameters<typeof renderer.render>[0])
+  }
 }
 
 // ============================================================================
@@ -89,8 +189,8 @@ class ChecklistBuilder<TItems extends ChecklistItem[] = []> {
   private _def: Record<string, unknown> = {
     kind: 'checklist',
     name: '',
-    version: '',
-    title: '',
+    version: undefined,
+    title: undefined,
     description: undefined,
     code: undefined,
     releaseDate: undefined,
@@ -126,12 +226,12 @@ class ChecklistBuilder<TItems extends ChecklistItem[] = []> {
     return this
   }
 
-  version(value: string): this {
+  version(value?: string): this {
     this._def.version = value
     return this
   }
 
-  title(value: string): this {
+  title(value?: string): this {
     this._def.title = value
     return this
   }
@@ -296,7 +396,11 @@ class ChecklistBuilder<TItems extends ChecklistItem[] = []> {
 // Checklist API
 // ============================================================================
 
-export type ChecklistInput = Omit<Checklist, 'kind'> & { kind?: 'checklist' }
+// Re-export ChecklistInput from centralized types.ts
+export type { ChecklistInput } from '@/types'
+
+// Import for internal use
+import type { ChecklistInput } from '@/types'
 
 type ChecklistAPI = {
   (): ChecklistBuilder

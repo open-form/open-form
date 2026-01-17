@@ -316,7 +316,7 @@ class EnumFieldBuilder extends AbstractFieldBuilder<EnumField> {
 		super('enum');
 	}
 
-	enum(...values: (string | number)[]): this {
+	options(values: (string | number)[]): this {
 		this._def.enum = values;
 		return this;
 	}
@@ -437,8 +437,8 @@ class MultiselectFieldBuilder extends AbstractFieldBuilder<MultiselectField> {
 		super('multiselect');
 	}
 
-	options(...values: (string | number)[]): this {
-		this._def.options = values;
+	options(values: (string | number)[]): this {
+		this._def.enum = values;
 		return this;
 	}
 

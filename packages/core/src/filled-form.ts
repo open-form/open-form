@@ -1,5 +1,6 @@
 import type { Form, Party } from '@open-form/types'
-import type { FormInstance, RenderOptions } from './builders/artifacts/form'
+import type { FormInstance } from './builders/artifacts/form'
+import type { FilledFormRenderOptions, RenderOptions } from './types'
 import type { InferFormPayload } from './utils'
 import type { FormRuntimeState, FieldRuntimeState, AnnexRuntimeState } from './logic/evaluation'
 import { evaluateFormLogic } from './logic/evaluation'
@@ -220,11 +221,11 @@ export class FilledForm<F extends Form> {
    */
   isFullySigned(): boolean {
     const formParties = this.form.schema.parties
-    if (!formParties || formParties.length === 0) return true
+    if (!formParties || Object.keys(formParties).length === 0) return true
 
-    for (const formParty of formParties) {
+    for (const [roleId, formParty] of Object.entries(formParties)) {
       if (formParty.signature?.required) {
-        if (!this.allSigned(formParty.id)) {
+        if (!this.allSigned(roleId)) {
           return false
         }
       }
@@ -242,11 +243,11 @@ export class FilledForm<F extends Form> {
     if (!formParties) return {}
 
     const status: Record<string, { required: number; signed: number }> = {}
-    for (const formParty of formParties) {
-      const parties = this.getParties(formParty.id)
-      status[formParty.id] = {
+    for (const [roleId, formParty] of Object.entries(formParties)) {
+      const parties = this.getParties(roleId)
+      status[roleId] = {
         required: formParty.signature?.required ? parties.length : 0,
-        signed: this.getSignedCount(formParty.id),
+        signed: this.getSignedCount(roleId),
       }
     }
     return status
@@ -490,7 +491,7 @@ export class FilledForm<F extends Form> {
    * })
    * ```
    */
-  async render<Output>(options: Omit<RenderOptions<Output>, 'data'>): Promise<Output> {
+  async render<Output>(options: FilledFormRenderOptions<Output>): Promise<Output> {
     // Pass the whole data payload - form.render() will extract fields as needed
     return this.form.render({
       ...options,

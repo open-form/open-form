@@ -297,4 +297,114 @@ describe('DocumentInstance', () => {
       expect(instance.defaultLayer).toBe('main')
     })
   })
+
+  // ============================================================================
+  // render() Method
+  // ============================================================================
+
+  describe('render()', () => {
+    const mockRenderer = {
+      id: 'test-renderer',
+      render: async (request: any) => {
+        return {
+          type: request.template.type,
+          content: request.template.content,
+          mimeType: request.template.mimeType,
+        }
+      },
+    }
+
+    test('renders with inline layer using defaultLayer', async () => {
+      const instance = createDocumentWithLayers()
+      const output = await instance.render({ renderer: mockRenderer })
+      expect(output.content).toBe('Hello, World!')
+      expect(output.mimeType).toBe('text/plain')
+    })
+
+    test('renders with explicit layer parameter', async () => {
+      const instance = createDocumentWithLayers()
+      const output = await instance.render({ renderer: mockRenderer, layer: 'html' })
+      expect(output.content).toBe('<p>Hello, World!</p>')
+      expect(output.mimeType).toBe('text/html')
+    })
+
+    test('throws error when document has no layers', async () => {
+      const instance = createMinimalDocument()
+      await expect(instance.render({ renderer: mockRenderer })).rejects.toThrow(
+        'Document has no layers defined'
+      )
+    })
+
+    test('throws error when specified layer not found', async () => {
+      const instance = createDocumentWithLayers()
+      await expect(instance.render({ renderer: mockRenderer, layer: 'nonexistent' })).rejects.toThrow(
+        'Layer "nonexistent" not found'
+      )
+    })
+
+    test('uses first available layer when no defaultLayer set', async () => {
+      const instance = document()
+        .name('doc')
+        .version('1.0.0')
+        .title('Doc')
+        .inlineLayer('first', 'text/plain', 'First content')
+        .inlineLayer('second', 'text/html', '<p>Second</p>')
+        .build()
+
+      const output = await instance.render({ renderer: mockRenderer })
+      // Should use first available layer
+      expect(output).toBeDefined()
+    })
+
+    test('throws error when file layer but no resolver', async () => {
+      const instance = document()
+        .name('doc')
+        .version('1.0.0')
+        .title('Doc')
+        .fileLayer('pdf', 'application/pdf', '/templates/doc.pdf')
+        .defaultLayer('pdf')
+        .build()
+
+      await expect(instance.render({ renderer: mockRenderer })).rejects.toThrow(
+        'no resolver was provided'
+      )
+    })
+
+    test('passes empty data object to renderer', async () => {
+      let capturedData: any = undefined
+      const trackingRenderer = {
+        id: 'tracking-renderer',
+        render: async (request: any) => {
+          capturedData = request.data
+          return { success: true }
+        },
+      }
+
+      const instance = createDocumentWithLayers()
+      await instance.render({ renderer: trackingRenderer })
+      expect(capturedData).toEqual({})
+    })
+
+    test('includes bindings in template when present', async () => {
+      let capturedTemplate: any = undefined
+      const trackingRenderer = {
+        id: 'tracking-renderer',
+        render: async (request: any) => {
+          capturedTemplate = request.template
+          return { success: true }
+        },
+      }
+
+      const instance = document()
+        .name('doc')
+        .version('1.0.0')
+        .title('Doc')
+        .inlineLayer('main', 'text/plain', 'Content', { bindings: { key: 'value' } })
+        .defaultLayer('main')
+        .build()
+
+      await instance.render({ renderer: trackingRenderer })
+      expect(capturedTemplate.bindings).toEqual({ key: 'value' })
+    })
+  })
 })

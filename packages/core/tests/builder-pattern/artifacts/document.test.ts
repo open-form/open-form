@@ -4,7 +4,28 @@ import { document } from '@/builders/artifacts/document'
 describe('Document (Builder Pattern)', () => {
   describe('fluent builder API', () => {
     describe('success cases', () => {
-      test('builds valid document with minimal required properties', () => {
+      test('builds valid document with only name (minimal)', () => {
+        const result = document()
+          .name('privacy-policy')
+          .build()
+        expect(result.kind).toBe('document')
+        expect(result.name).toBe('privacy-policy')
+        expect(result.version).toBeUndefined()
+        expect(result.title).toBeUndefined()
+      })
+
+      test('builds valid document with name and version', () => {
+        const result = document()
+          .name('terms-doc')
+          .version('1.0.0')
+          .build()
+        expect(result.kind).toBe('document')
+        expect(result.name).toBe('terms-doc')
+        expect(result.version).toBe('1.0.0')
+        expect(result.title).toBeUndefined()
+      })
+
+      test('builds valid document with name, version, and title', () => {
         const result = document()
           .name('privacy-policy')
           .version('1.0.0')
@@ -12,6 +33,7 @@ describe('Document (Builder Pattern)', () => {
           .build()
         expect(result.kind).toBe('document')
         expect(result.name).toBe('privacy-policy')
+        expect(result.version).toBe('1.0.0')
         expect(result.title).toBe('Privacy Policy')
       })
 

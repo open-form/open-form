@@ -1,98 +1,90 @@
-# @open-form/renderers
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=renderers" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> All OpenForm renderers in one package
+<h1 align="center">@open-form/renderers</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/renderers.svg)](https://www.npmjs.com/package/@open-form/renderers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=renderers)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
+
+</div>
+
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=renderers) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
 
 Umbrella package that re-exports all OpenForm renderers for convenient installation and usage.
 
-## Features
-
 - **All-in-one** - Single package containing all renderers
-- **DOCX rendering** - Microsoft Word document generation
-- **PDF rendering** - PDF form filling and generation
-- **Text rendering** - Plain text template rendering
+- **Batteries included** - support for text, HTML, Markdown, DOCX, PDF
 - **Type-safe** - Full TypeScript support
 
 ## Installation
 
 ```bash
 npm install @open-form/renderers
-# or
-pnpm add @open-form/renderers
-# or
-yarn add @open-form/renderers
 ```
 
 ## Usage
 
-### Import all renderers
+Import desired renderer and pass to the render method's `renderer` configuration. Included renderers are `textRenderer`, `docxRenderer`, and `pdfRenderer`.
 
 ```typescript
-import {
-  docxRenderer,
-  pdfRenderer,
-  textRenderer
-} from "@open-form/renderers";
+import { open } from "@open-form/sdk";
+import { textRenderer } from "@open-form/renderers";
 
-// Use any renderer
-const docxResult = await docxRenderer.render(template, form, data);
-const pdfResult = await pdfRenderer.render(template, form, data);
-const textResult = textRenderer.render(template, form, data);
+const textString = await open
+  .form({
+    name: "my-form",
+    title: "My Form",
+    // ...
+    fields: {
+      name: { type: "string", required: true },
+    },
+    layers: {
+      markdown: {
+        kind: "inline",
+        mimeType: "text/markdown",
+        text: "Hello {{fields.name}}",
+      },
+    },
+  })
+  .fill({
+    fields: { name: "Alice" },
+  })
+  .render({
+    renderer: textRenderer, // Plug in renderer
+    layer: "markdown", // Specify target layer
+  });
+
+console.log(textString); // => "Hello Alice"
 ```
 
-### Import specific renderers (recommended for smaller bundles)
+## Changelog
 
-Use subpath exports to import only what you need:
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/renderers/CHANGELOG.md) for updates.
 
-```typescript
-// Only PDF
-import { pdfRenderer } from "@open-form/renderers/pdf";
+## Related packages
 
-// Only DOCX
-import { docxRenderer } from "@open-form/renderers/docx";
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
+- [`@open-form/renderer-text`](../renderer-text) - Text Renderer
+- [`@open-form/renderer-docx`](../renderer-docx) - DOCX Renderer
+- [`@open-form/renderer-pdf`](../renderer-pdf) - PDF Renderer
 
-// Only Text
-import { textRenderer } from "@open-form/renderers/text";
-```
+## Contributing
 
-This helps bundlers tree-shake unused renderers from your final build.
-
-## Included Renderers
-
-This package re-exports the following renderers:
-
-### DOCX Renderer
-- Template-based DOCX generation
-- Dynamic data injection
-- From [`@open-form/renderer-docx`](../renderer-docx)
-
-### PDF Renderer
-- PDF form field filling
-- Field inspection utilities
-- From [`@open-form/renderer-pdf`](../renderer-pdf)
-
-### Text Renderer
-- Handlebars template rendering
-- Plain text output
-- From [`@open-form/renderer-text`](../renderer-text)
-
-## Individual Packages
-
-If you only need specific renderers, you can install them individually:
-
-```bash
-# Install only what you need
-npm install @open-form/renderer-docx
-npm install @open-form/renderer-pdf
-npm install @open-form/renderer-text
-```
-
-## Related Packages
-
-- [`@open-form/sdk`](../sdk) - Complete framework bundle
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.

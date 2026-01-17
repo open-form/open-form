@@ -1,16 +1,30 @@
-# @open-form/renderer-docx
+<p align="center">
+  <a href="https://open-form.dev?utm_source=github&utm_medium=renderer_docx" target="_blank" rel="noopener noreferrer">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.open-form.dev/logo-400x400.png" type="image/png">
+      <img src="https://assets.open-form.dev/logo-400x400.png" height="64" alt="OpenForm logo">
+    </picture>
+  </a>
+  <br />
+</p>
 
-> DOCX renderer for OpenForm framework
+<h1 align="center">@open-form/renderer-docx</h1>
 
-[![npm version](https://img.shields.io/npm/v/@open-form/renderer-docx.svg)](https://www.npmjs.com/package/@open-form/renderer-docx)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
 
-Renders OpenForm documents to DOCX (Microsoft Word) format using template-based rendering.
+[![OpenForm documentation](https://img.shields.io/badge/Documentation-OpenForm-red.svg)](https://docs.open-form.dev?utm_source=github&utm_medium=renderer_docx)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/OpenFormHQ?style=social)](https://twitter.com/intent/follow?screen_name=OpenFormHQ)
 
-## Features
+</div>
 
-- **Template-based rendering** - Use DOCX files as templates with placeholders
-- **Dynamic data injection** - Populate templates with form data
+[OpenForm](https://open-form.dev?utm_source=github&utm_medium=renderer_docx) is **documents as code**. It lets developers and AI agents define, validate, and render business documents using typed, composable schemas. This eliminates template drift, broken mappings, and brittle glue code — while giving AI systems a reliable document layer they can safely read, reason over, and generate against in production workflows.
+
+## Package overview
+
+Renders OpenForm documents to DOCX (Microsoft Word) format with automatic field type detection and serialization.
+
+- **Automatic field serialization** - Detects field types (Money, Person, Phone, Address, Organization) from form schema and automatically formats them
+- **Template-based rendering** - Use DOCX files as templates with Handlebars-style placeholders
 - **Binary output** - Returns Uint8Array for direct file writing or streaming
 - **Type-safe** - Full TypeScript support with OpenForm core types
 
@@ -18,78 +32,123 @@ Renders OpenForm documents to DOCX (Microsoft Word) format using template-based 
 
 ```bash
 npm install @open-form/renderer-docx
-# or
-pnpm add @open-form/renderer-docx
-# or
-yarn add @open-form/renderer-docx
 ```
 
 ## Usage
 
-```typescript
-import { docxRenderer } from "@open-form/renderer-docx";
+### Direct Rendering with renderDocx()
 
-// Use the renderer with OpenForm
-const result = await docxRenderer.render(template, form, data);
-
-// Write to file
-await fs.writeFile("output.docx", result);
-```
-
-## API Reference
-
-### `docxRenderer`
-
-OpenForm renderer implementation for DOCX format.
-
-**Properties:**
-- `id: "docx"` - Renderer identifier
-- `supports: ["docx"]` - Supported template types
-- `outputExtension: "docx"` - Output file extension
-- `outputMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"` - MIME type
-
-**Methods:**
-- `render(template, form, data): Promise<Uint8Array>` - Renders template with data
-
-### `renderDocx(template, data)`
-
-Low-level rendering function.
-
-**Parameters:**
-- `template: BinaryContent` - DOCX template buffer
-- `data: Record<string, unknown>` - Data to inject into template
-
-**Returns:** `Promise<Uint8Array>` - Rendered DOCX document
-
-## Error Handling
+Render DOCX templates directly with automatic field serialization:
 
 ```typescript
-import { docxRenderer } from "@open-form/renderer-docx";
+import { renderDocx } from "@open-form/renderer-docx";
+import fs from "node:fs";
+import { petAddendumForm } from "./forms/pet-addendum";
 
-try {
-  const result = await docxRenderer.render(template, form, data);
+const template = fs.readFileSync("pet-addendum.docx");
 
-  // result is Uint8Array
-  console.log(`DOCX generated: ${result.byteLength} bytes`);
+const output = await renderDocx(
+  new Uint8Array(template),
+  {
+    petName: {
+      firstName: "Fluffy",
+      lastName: "Whiskers",
+      fullName: "Fluffy Whiskers",
+    },
+    monthlyFee: {
+      amount: 100,
+      currency: "USD",
+    },
+  },
+  {},
+  petAddendumForm // Automatic field type detection and serialization
+);
 
-  // Write to file
-  await fs.writeFile("output.docx", result);
-} catch (error) {
-  if (error instanceof Error) {
-    console.error('DOCX rendering failed:', error.message);
-  } else {
-    console.error('DOCX rendering failed:', error);
-  }
-}
+// output is Uint8Array - write to file
+fs.writeFileSync("output.docx", output);
 ```
 
-## Related Packages
+**`renderDocx()` Parameters:**
 
-- [`@open-form/sdk`](../sdk) - Complete framework bundle
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `template` | `Uint8Array` | Yes | DOCX template as binary |
+| `data` | `Record<string, unknown>` | Yes | Data object to populate template |
+| `options` | `DocxRenderOptions` | No | DOCX-specific rendering options (cmdDelimiter, failFast, processLineBreaks) |
+| `form` | `Form` | No | Form schema for automatic field type detection and serialization |
+| `serializers` | `SerializerRegistry` | No | Custom serializer registry (defaults to USA serializers) |
+
+**Returns:** `Promise<Uint8Array>` - Rendered DOCX as binary
+
+### Using the Form Builder API
+
+Render DOCX using the OpenForm builder pattern with method chaining:
+
+```typescript
+import { docxRenderer } from "@open-form/renderer-docx";
+import { createFsResolver } from "@open-form/resolvers/fs";
+import { petAddendumForm } from "./forms/pet-addendum";
+
+const resolver = createFsResolver({ root: "./templates" });
+
+const output = await petAddendumForm
+  .fill({
+    fields: {
+      petName: {
+        firstName: "Fluffy",
+        lastName: "Whiskers",
+        fullName: "Fluffy Whiskers",
+      },
+      monthlyFee: {
+        amount: 100,
+        currency: "USD",
+      },
+    },
+  })
+  .render({
+    renderer: docxRenderer,
+    layer: "docx",
+    resolver,
+  });
+
+// output is Uint8Array
+```
+
+**`docxRenderer` Instance:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Renderer identifier: "docx" |
+| `render()` | `function` | Async render function accepting RenderRequest |
+
+**Form `.render()` Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `renderer` | `OpenFormRenderer` | Yes | Renderer instance (`docxRenderer`) |
+| `layer` | `string` | Yes | Name of the template layer to render |
+| `resolver` | `FileResolver` | No | File resolver for loading template files |
+
+**Returns:** `Promise<Uint8Array>` - Rendered DOCX as binary
+
+## Changelog
+
+View the [Changelog](https://github.com/open-form/open-form/blob/main/packages/renderer-docx/CHANGELOG.md) for updates.
+
+## Related packages
+
+- [`@open-form/sdk`](../sdk) - OpenForm framework SDK
+- [`@open-form/renderers`](../renderers) - All renderers in one package
+
+## Contributing
+
+We're open to all community contributions! If you'd like to contribute in any way, please read our [contribution guidelines](https://github.com/open-form/open-form/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/open-form/open-form/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT © [OpenForm](https://github.com/open-form)
+This project is licensed under the MIT license.
+
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.
 
 ## Acknowledgments
 
