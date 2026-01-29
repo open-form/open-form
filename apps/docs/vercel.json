@@ -1,6 +1,0 @@
-{
-  "outputDirectory": "dist/client",
-  "rewrites": [
-    { "source": "/:path([a-f0-9]{20,}.*)", "destination": "/index.html" }
-  ]
-}

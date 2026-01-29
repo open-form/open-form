@@ -17,9 +17,10 @@ import takumiPackageJson from "@takumi-rs/core/package.json" with {
 
 const config = defineConfig({
   nitro: {
+    preset: 'vercel',
     externals: {
-      external: ["@takumi-rs/core"], 
-      traceInclude: Object.keys(takumiPackageJson.optionalDependencies), 
+      external: ["@takumi-rs/core"],
+      traceInclude: Object.keys(takumiPackageJson.optionalDependencies),
     }
 	},
   plugins: [
