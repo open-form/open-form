@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "open-form-docs",
-  "compatibility_date": "2025-01-29",
+  "compatibility_date": "2025-10-30",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
   "routes": [

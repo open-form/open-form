@@ -1,5 +1,6 @@
-import { defineDocs, defineConfig } from "fumadocs-mdx/config";
+import { defineDocs, defineConfig, frontmatterSchema } from "fumadocs-mdx/config";
 import lastModified from "fumadocs-mdx/plugins/last-modified";
+import { z } from "zod";
 
 // Typescript (for AutoTypeTable)
 import {
@@ -16,6 +17,10 @@ const generator = createGenerator({
 export const docs = defineDocs({
   dir: "content/docs",
   docs: {
+    schema: frontmatterSchema.extend({
+      ogTitle: z.string().optional(),
+      ogDescription: z.string().optional(),
+    }),
     postprocess: {
       includeProcessedMarkdown: true,
     },

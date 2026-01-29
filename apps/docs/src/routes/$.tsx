@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { createServerFn } from "@tanstack/react-start";
-import { source } from "@/lib/source";
+import { source, getPageImage } from "@/lib/source";
 import browserCollections from "fumadocs-mdx:collections/browser";
 import {
   DocsBody,
@@ -22,6 +22,53 @@ export const Route = createFileRoute("/$")({
     await clientLoader.preload(data.path);
     return data;
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: loaderData?.title
+          ? `${loaderData.title} | OpenForm Docs`
+          : "OpenForm Docs",
+      },
+      {
+        name: "description",
+        content: loaderData?.description ?? "Documents as code for developers and AI agents",
+      },
+      {
+        property: "og:title",
+        content: loaderData?.title ?? "OpenForm Documentation",
+      },
+      {
+        property: "og:description",
+        content: loaderData?.description ?? "Documents as code for developers and AI agents",
+      },
+      {
+        property: "og:image",
+        content: loaderData?.ogImageUrl
+          ? `https://docs.open-form.dev${loaderData.ogImageUrl}`
+          : "https://assets.open-form.dev/open-form-og-docs.png",
+      },
+      {
+        property: "og:url",
+        content: loaderData?.url
+          ? `https://docs.open-form.dev${loaderData.url}`
+          : "https://docs.open-form.dev",
+      },
+      {
+        name: "twitter:title",
+        content: loaderData?.title ?? "OpenForm Documentation",
+      },
+      {
+        name: "twitter:description",
+        content: loaderData?.description ?? "Documents as code for developers and AI agents",
+      },
+      {
+        name: "twitter:image",
+        content: loaderData?.ogImageUrl
+          ? `https://docs.open-form.dev${loaderData.ogImageUrl}`
+          : "https://assets.open-form.dev/open-form-og-docs.png",
+      },
+    ],
+  }),
   notFoundComponent: () => {
     return (
       <main className="flex flex-col items-center justify-center h-screen">
@@ -45,10 +92,15 @@ const serverLoader = createServerFn({
     const page = source.getPage(slugs);
     if (!page) throw notFound();
 
+    const ogImage = getPageImage(page);
+
     return {
       path: page.path,
       url: page.url,
       pageTree: await source.serializePageTree(source.getPageTree()),
+      title: page.data.title,
+      description: page.data.description,
+      ogImageUrl: ogImage.url,
     };
   });
 

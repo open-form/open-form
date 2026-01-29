@@ -35,6 +35,8 @@ import { createElement } from "react";
 
 import { docs } from "fumadocs-mdx:collections/server";
 import { loader } from "fumadocs-core/source";
+import type { InferPageType } from "fumadocs-core/source";
+
 export const source = loader({
   baseUrl: "/",
   source: docs.toFumadocsSource(),
@@ -46,3 +48,11 @@ export const source = loader({
     if (icon in icons) return createElement(icons[icon as keyof typeof icons]);
   },
 });
+
+export function getPageImage(page: InferPageType<typeof source>) {
+  const segments = [...page.slugs, "image.png"];
+  return {
+    segments,
+    url: `/api/og/docs/${segments.join("/")}`,
+  };
+}

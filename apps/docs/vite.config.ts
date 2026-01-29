@@ -19,6 +19,7 @@ const config = defineConfig({
       prerender: {
         enabled: true,
         crawlLinks: true, // Discovers all linkable pages
+        // OG images are generated at runtime by the Worker with caching
       },
       router: {
         routeFileIgnorePrefix: "components",
