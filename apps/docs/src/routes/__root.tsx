@@ -20,6 +20,48 @@ const meta = () => ({
     {
       title: "OpenForm Docs",
     },
+    {
+      name: "description",
+      content: "Documents as code for developers and AI agents",
+    },
+    // Open Graph
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      property: "og:title",
+      content: "OpenForm Documentation",
+    },
+    {
+      property: "og:description",
+      content: "Documents as code for developers and AI agents",
+    },
+    {
+      property: "og:image",
+      content: "https://assets.open-form.dev/open-form-og-docs.png",
+    },
+    {
+      property: "og:url",
+      content: "https://docs.open-form.dev",
+    },
+    // Twitter
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+    {
+      name: "twitter:title",
+      content: "OpenForm Documentation",
+    },
+    {
+      name: "twitter:description",
+      content: "Documents as code for developers and AI agents",
+    },
+    {
+      name: "twitter:image",
+      content: "https://assets.open-form.dev/open-form-og-docs.png",
+    },
   ],
   links: [
     {
