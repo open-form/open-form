@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite dev --port 3001",
     "build": "vite build",
-    "start": "vite preview --port 3001",
+    "preview": "vite preview --port 3001",
+    "deploy": "pnpm build && wrangler deploy",
+    "cf-typegen": "wrangler types",
     "lint": "biome lint",
     "check-types": "tsc --noEmit",
     "check": "pnpm lint && pnpm check-types && echo \"✅ All checks passed\" || echo \"❌ Checks failed\"",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.5",
+    "@cloudflare/vite-plugin": "^1.22.0",
     "@open-form/core": "workspace:*",
     "@open-form/renderer-pdf": "workspace:*",
     "@open-form/renderer-text": "workspace:*",
@@ -54,6 +57,7 @@
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
     "vite": "^7.1.7",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wrangler": "^4.61.0"
   }
 }

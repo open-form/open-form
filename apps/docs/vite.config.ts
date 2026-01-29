@@ -1,29 +1,15 @@
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import mdx from "fumadocs-mdx/vite";
 import * as MdxConfig from "./source.config";
 
-
-// @ts-expect-error: nitro import is intentionally unused
-import { nitro } from 'nitro/vite'
-
-
-import takumiPackageJson from "@takumi-rs/core/package.json" with {
-  type: "json",
-};
-
 const config = defineConfig({
-  nitro: {
-    preset: 'vercel',
-    externals: {
-      external: ["@takumi-rs/core"],
-      traceInclude: Object.keys(takumiPackageJson.optionalDependencies),
-    }
-	},
   plugins: [
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
