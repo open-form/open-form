@@ -3,7 +3,7 @@ import { ImageResponse } from "workers-og";
 import { source } from "@/lib/source";
 
 const BACKGROUND_URL = "https://assets.open-form.dev/open-form-og-docs-background.png";
-const GEIST_FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-600-normal.woff";
+const GEIST_FONT_URL = "https://docs.open-form.dev/fonts/geist-sans-latin-600-normal.woff";
 
 export const Route = createFileRoute("/api/og/docs/$")({
   server: {
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/og/docs/$")({
           </div>
         `;
 
-        return new ImageResponse(html, {
+        const response = new ImageResponse(html, {
           width: 1200,
           height: 630,
           format: "png",
@@ -51,6 +51,11 @@ export const Route = createFileRoute("/api/og/docs/$")({
             },
           ],
         });
+
+        // Cache for 1 week at edge, 1 day in browser
+        response.headers.set("Cache-Control", "public, s-maxage=604800, max-age=86400");
+
+        return response;
       },
     },
   },
