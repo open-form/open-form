@@ -3,20 +3,45 @@ title: Address
 description: A postal address
 ---
 
-A postal address with structured components for street, city, region, postal code, and country.
+An Address is a structured primitive that represents a postal address.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `line1` | `string` | Yes | Primary address line (street address, PO box, company name) |
-| `line2` | `string` | No | Secondary address line (apartment, suite, unit, building) |
-| `locality` | `string` | Yes | City, town, or locality |
-| `region` | `string` | Yes | State, province, or region |
-| `postalCode` | `string` | Yes | Postal or ZIP code |
-| `country` | `string` | Yes | ISO country code or full country name |
+<PropertiesTable properties={[
+  {
+    name: 'line1',
+    type: 'string',
+    description: 'Primary address line (street address, PO box, company name).',
+  },
+  {
+    name: 'line2',
+    type: 'string',
+    description: 'Secondary address line (apartment, suite, unit, building).',
+    isOptional: true,
+  },
+  {
+    name: 'locality',
+    type: 'string',
+    description: 'City, town, or locality.',
+  },
+  {
+    name: 'region',
+    type: 'string',
+    description: 'State, province, or region.',
+  },
+  {
+    name: 'postalCode',
+    type: 'string',
+    description: 'Postal or ZIP code.',
+  },
+  {
+    name: 'country',
+    type: 'string',
+    description: 'ISO country code or full country name.',
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

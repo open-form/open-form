@@ -1,12 +1,45 @@
-// Main exports
-export { parse, parseAs, detectFormat } from "./parser";
-export { serialize, convert, jsonToYaml, yamlToJson } from "./converter";
-export { toJSON, fromJSON, isJSON } from "./json";
-export { toYAML, fromYAML, isYAML } from "./yaml";
+/**
+ * Serialization & Loading
+ * 
+ * This module handles:
+ * - YAML/JSON serialization (toYAML, fromYAML, parse)
+ * - Artifact loading from strings/objects (load, loadFromObject)
+ * - Error handling (SerializationError, LoadError)
+ */
 
-// Types
-export type { SerializationFormat, SerializationOptions } from "./types";
-export { SerializationError, OPENFORM_SCHEMA_URL } from "./types";
+// ============================================================================
+// Serialization - YAML/JSON conversion
+// ============================================================================
 
-// Re-export for convenience
-export { stringify as stringifyYaml, parse as parseYaml } from "yaml";
+export {
+  toYAML,
+  fromYAML,
+  parse,
+  SerializationError,
+} from './serialization'
+
+export type {
+  SerializationFormat,
+  SerializationOptions,
+} from './serialization'
+
+// ============================================================================
+// Loading - Artifact instantiation from strings/objects
+// ============================================================================
+
+export {
+  load,
+  loadFromObject,
+  safeLoad,
+  safeLoadFromObject,
+  LoadError,
+  // Type guards for artifact instances
+  isFormInstance,
+  isDocumentInstance,
+  isBundleInstance,
+  isChecklistInstance,
+} from './load'
+
+export type {
+  AnyArtifactInstance,
+} from './load'

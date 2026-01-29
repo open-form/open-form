@@ -3,15 +3,19 @@ title: Metadata
 description: Custom key-value pairs
 ---
 
-Custom key-value pairs for storing domain-specific or organizational data on artifacts.
+A Metadata is a collection of custom key-value pairs for storing domain-specific or organizational data. All [Artifacts](/schemas/artifacts) can have metadata associated with them.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `[key]` | `string \| number \| boolean \| null` | - | Any alphanumeric key with hyphens, values can be strings, numbers, booleans, or null |
+<PropertiesTable properties={[
+  {
+    name: '[key: string]',
+    type: 'string | number | boolean | null',
+    description: 'Keys must be alphanumeric with hyphens. Values can be strings, numbers, booleans, or null',
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

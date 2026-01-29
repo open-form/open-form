@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { topologicalSortLogicKeys } from '@/logic/types/build-type-environment'
+import { topologicalSortLogicKeys } from '@/logic/design-time/type-checking/build-type-environment'
 
 /**
  * Tests for topological sort and circular dependency detection.

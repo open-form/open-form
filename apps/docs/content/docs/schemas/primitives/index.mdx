@@ -1,21 +1,23 @@
 ---
 title: Primitives
-description: Core data types used across OpenForm
+description: Reusable schemas for common data types
 ---
 
-Primitives are structured data types used to represent complex values in OpenForm—addresses, phone numbers, monetary amounts, and more.
+Primitives are schemas that are used to represent common data types such as people or addresses.
 
-## Primitive Types
+These are defined in OpenForm as schemas to encourage re-use and consistency across library implementations.
 
 | Primitive | Description |
 |-----------|-------------|
-| [Address](/docs/schemas/primitives/address) | Postal address with street, locality, region, postal code, and country |
-| [Bbox](/docs/schemas/primitives/bbox) | Geographic bounding box defined by southwest and northeast coordinates |
-| [Coordinate](/docs/schemas/primitives/coordinate) | Geographic coordinate in WGS84 with latitude/longitude in decimal degrees |
-| [Duration](/docs/schemas/primitives/duration) | ISO 8601 duration string (e.g., `P1Y`, `PT30M`, `P1DT12H`) |
-| [Identification](/docs/schemas/primitives/identification) | Identification document details (passport, SSN, driver's license) |
-| [Metadata](/docs/schemas/primitives/metadata) | Custom key-value pairs for domain-specific data |
-| [Money](/docs/schemas/primitives/money) | Monetary amount paired with ISO 4217 currency code |
-| [Organization](/docs/schemas/primitives/organization) | Organization identity with legal and registration details |
-| [Person](/docs/schemas/primitives/person) | Person name information with required fullName and optional components |
-| [Phone](/docs/schemas/primitives/phone) | Phone number in E.164 format with optional type/extension |
+| [Address](/schemas/primitives/address) | Postal address with street, locality, region, postal code, and country |
+| [Attachment](/schemas/primitives/attachment) | Attached document data (file name, MIME type, checksum) |
+| [Bbox](/schemas/primitives/bbox) | Geographic bounding box defined by southwest and northeast coordinates |
+| [Coordinate](/schemas/primitives/coordinate) | Geographic coordinate in WGS84 with latitude/longitude in decimal degrees |
+| [Duration](/schemas/primitives/duration) | ISO 8601 duration string (e.g., `P1Y`, `PT30M`, `P1DT12H`) |
+| [Identification](/schemas/primitives/identification) | Identification document details (passport, SSN, driver's license) |
+| [Metadata](/schemas/primitives/metadata) | Custom key-value pairs for domain-specific data |
+| [Money](/schemas/primitives/money) | Monetary amount paired with ISO 4217 currency code |
+| [Organization](/schemas/primitives/organization) | Organization identity with legal and registration details |
+| [Person](/schemas/primitives/person) | Person name information with required fullName and optional components |
+| [Phone](/schemas/primitives/phone) | Phone number in E.164 format with optional type/extension |
+| [Signature](/schemas/primitives/signature) | Captured signature data (image, timestamp, method) |

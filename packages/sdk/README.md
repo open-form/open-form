@@ -41,9 +41,8 @@ npm install @open-form/sdk
 Define forms with parties, fields, and output layers:
 
 ```typescript
-import { open } from "@open-form/sdk";
-import { textRenderer } from "@open-form/sdk";
-import { createFsResolver } from "@open-form/resolvers/fs";
+import { open, textRenderer } from "@open-form/sdk";
+import { createFsResolver } from "@open-form/resolvers";
 
 const leaseAgreement = open
   .form()
@@ -67,14 +66,14 @@ const leaseAgreement = open
     landlord: open
       .party()
       .label("Landlord")
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
     tenant: open
       .party()
       .label("Tenant")
       .multiple(true)
       .min(1)
       .max(4)
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
   })
   .fields({
     leaseId: { type: "uuid", label: "Lease ID" },
@@ -90,27 +89,29 @@ const leaseAgreement = open
 
 // Fill with data (automatic validation)
 const filledLease = leaseAgreement.fill({
-  leaseId: "550e8400-e29b-41d4-a716-446655440000",
-  propertyAddress: {
-    line1: "123 Main St",
-    locality: "Portland",
-    region: "OR",
-    postalCode: "97201",
-    country: "USA",
+  fields: {
+    leaseId: "550e8400-e29b-41d4-a716-446655440000",
+    propertyAddress: {
+      line1: "123 Main St",
+      locality: "Portland",
+      region: "OR",
+      postalCode: "97201",
+      country: "USA",
+    },
+    monthlyRent: { amount: 1500, currency: "USD" },
+    leaseStartDate: "2024-02-01",
   },
-  monthlyRent: { amount: 1500, currency: "USD" },
-  leaseStartDate: new Date("2024-02-01"),
 });
 
 // Render to multiple formats
 const resolver = createFsResolver({ root: process.cwd() });
 const markdown = await filledLease.render({
-  renderer: textRenderer,
+  renderer: textRenderer(),
   resolver,
   layer: "markdown",
 });
 const html = await filledLease.render({
-  renderer: textRenderer,
+  renderer: textRenderer(),
   resolver,
   layer: "html",
 });
@@ -132,25 +133,21 @@ const advancedLease = open
       mimeType: "text/markdown",
     },
   })
-  .allowAnnexes(true)
-  .annexes([
-    open.annex().id("photoId").title("Photo ID").required(true),
-    open
-      .annex()
-      .id("proofOfIncome")
-      .title("Proof of Income")
-      .required(true),
-  ])
+  .allowAdditionalAnnexes(true)
+  .annexes({
+    photoId: open.annex().title("Photo ID").required(true),
+    proofOfIncome: open.annex().title("Proof of Income").required(true),
+  })
   .parties({
     landlord: open
       .party()
       .label("Landlord")
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
     tenant: open
       .party()
       .label("Tenant")
       .multiple(true)
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
   })
   .fields({
     leaseId: { type: "uuid", label: "Lease ID", required: true },
@@ -214,47 +211,51 @@ const leaseBundle = open
   .version("1.0.0")
   .title("Residential Lease Bundle")
   .contents([
-    { type: "inline", key: "leaseAgreement", artifact: leaseAgreement.schema },
-    {
-      type: "inline",
-      key: "leadPaintDisclosure",
-      artifact: leadPaintDisclosure.schema,
-    },
-    { type: "inline", key: "checklist", artifact: leaseChecklist.schema },
+    { type: "inline", key: "leaseAgreement", artifact: leaseAgreement.toJSON({ includeSchema: false }) },
+    { type: "inline", key: "leadPaintDisclosure", artifact: leadPaintDisclosure.toJSON({ includeSchema: false }) },
+    { type: "inline", key: "checklist", artifact: leaseChecklist.toJSON({ includeSchema: false }) },
   ])
   .build();
-
-const assembled = await leaseBundle.assemble({ resolver });
 ```
 
 Get automatic TypeScript types from your form definitions:
 
 ```typescript
-import { type InferFormData } from "@open-form/sdk";
+import { type InferFormPayload } from "@open-form/sdk";
 
-type LeaseData = InferFormData<typeof leaseAgreement>;
+type LeaseData = InferFormPayload<typeof leaseAgreement>;
 
 const data: LeaseData = {
-  leaseId: "550e8400-e29b-41d4-a716-446655440000",
-  propertyAddress: {
-    line1: "123 Main St",
-    locality: "Portland",
-    region: "OR",
-    postalCode: "97201",
-    country: "USA",
+  fields: {
+    leaseId: "550e8400-e29b-41d4-a716-446655440000",
+    propertyAddress: {
+      line1: "123 Main St",
+      locality: "Portland",
+      region: "OR",
+      postalCode: "97201",
+      country: "USA",
+    },
+    monthlyRent: { amount: 1500, currency: "USD" },
+    leaseStartDate: "2024-02-01",
   },
-  monthlyRent: { amount: 1500, currency: "USD" },
-  leaseStartDate: new Date("2024-02-01"),
 };
 ```
 
-Forms validate automatically on `.fill()`, or check validity explicitly:
+Validate and fill forms with data:
 
 ```typescript
+// Check if the form schema itself is valid
+if (!form.isValid()) {
+  console.log("Form schema is invalid");
+}
+
+// Fill the form with data (validates during fill)
 const filled = form.fill(data); // throws if validation fails
 
-if (!form.isValid(data)) {
-  console.log("Data doesn't match form schema");
+// Or use safeFill to avoid exceptions
+const result = form.safeFill(data);
+if (result.success) {
+  const filled = result.data;
 }
 ```
 

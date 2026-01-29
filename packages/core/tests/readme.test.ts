@@ -6,7 +6,7 @@
 import { describe, test, expect } from "vitest";
 import {
   open,
-  type InferFormData,
+  type InferFormPayload,
   type MoneyField,
   type AddressField,
   type UuidField,
@@ -32,14 +32,14 @@ describe("@open-form/core - README Examples", () => {
           landlord: open
             .party()
             .label("Landlord")
-            .signature((sig) => sig.required()),
+            .signature({ required: true }),
           tenant: open
             .party()
             .label("Tenant")
             .multiple(true)
             .min(1)
             .max(4)
-            .signature((sig) => sig.required()),
+            .signature({ required: true }),
         })
         .fields({
           leaseId: { type: "uuid", label: "Lease ID" },
@@ -54,11 +54,11 @@ describe("@open-form/core - README Examples", () => {
         .build();
 
       expect(leaseAgreement).toBeDefined();
-      expect(leaseAgreement.schema.name).toBe("residential-lease-agreement");
-      expect(leaseAgreement.schema.version).toBe("1.0.0");
-      expect(leaseAgreement.schema.title).toBe("Residential Lease Agreement");
-      expect(Object.keys(leaseAgreement.schema.parties || {})).toHaveLength(2);
-      expect(leaseAgreement.schema.fields).toBeDefined();
+      expect(leaseAgreement.name).toBe("residential-lease-agreement");
+      expect(leaseAgreement.version).toBe("1.0.0");
+      expect(leaseAgreement.title).toBe("Residential Lease Agreement");
+      expect(Object.keys(leaseAgreement.parties || {})).toHaveLength(2);
+      expect(leaseAgreement.fields).toBeDefined();
     });
   });
 
@@ -69,25 +69,21 @@ describe("@open-form/core - README Examples", () => {
         .name("commercial-lease")
         .version("1.0.0")
         .title("Commercial Lease Agreement")
-        .allowAnnexes(true)
-        .annexes([
-          open.annex().id("photoId").title("Photo ID").required(true),
-          open
-            .annex()
-            .id("proofOfIncome")
-            .title("Proof of Income")
-            .required(true),
-        ])
+        .allowAdditionalAnnexes(true)
+        .annexes({
+          photoId: open.annex().title("Photo ID").required(true),
+          proofOfIncome: open.annex().title("Proof of Income").required(true),
+        })
         .parties({
           landlord: open
             .party()
             .label("Landlord")
-            .signature((sig) => sig.required()),
+            .signature({ required: true }),
           tenant: open
             .party()
             .label("Tenant")
             .multiple(true)
-            .signature((sig) => sig.required()),
+            .signature({ required: true }),
         })
         .fields({
           leaseId: { type: "uuid", label: "Lease ID", required: true },
@@ -107,9 +103,9 @@ describe("@open-form/core - README Examples", () => {
         .build();
 
       expect(advancedLease).toBeDefined();
-      expect(advancedLease.schema.name).toBe("commercial-lease");
-      expect(advancedLease.schema.annexes).toHaveLength(2);
-      expect(advancedLease.schema.fields?.petPolicy.type).toBe("enum");
+      expect(advancedLease.name).toBe("commercial-lease");
+      expect(Object.keys(advancedLease.annexes || {})).toHaveLength(2);
+      expect(advancedLease.fields?.petPolicy.type).toBe("enum");
     });
   });
 
@@ -134,11 +130,11 @@ describe("@open-form/core - README Examples", () => {
         .build();
 
       expect(leadPaintDisclosure).toBeDefined();
-      expect(leadPaintDisclosure.schema.name).toBe("lead-paint-disclosure");
-      expect(leadPaintDisclosure.schema.kind).toBe("document");
-      expect(leadPaintDisclosure.schema.code).toBe("EPA-747-K-12-001");
-      expect(leadPaintDisclosure.schema.releaseDate).toBe("2025-12-01");
-      expect(leadPaintDisclosure.schema.metadata).toEqual({
+      expect(leadPaintDisclosure.name).toBe("lead-paint-disclosure");
+      expect(leadPaintDisclosure.kind).toBe("document");
+      expect(leadPaintDisclosure.code).toBe("EPA-747-K-12-001");
+      expect(leadPaintDisclosure.releaseDate).toBe("2025-12-01");
+      expect(leadPaintDisclosure.metadata).toEqual({
         agency: "EPA/HUD",
         cfr: "40 CFR 745",
       });
@@ -177,9 +173,9 @@ describe("@open-form/core - README Examples", () => {
         .build();
 
       expect(leaseChecklist).toBeDefined();
-      expect(leaseChecklist.schema.kind).toBe("checklist");
-      expect(leaseChecklist.schema.items).toHaveLength(4);
-      expect(leaseChecklist.schema.items[0].id).toBe("application_received");
+      expect(leaseChecklist.kind).toBe("checklist");
+      expect(leaseChecklist.items).toHaveLength(4);
+      expect(leaseChecklist.items[0].id).toBe("application_received");
     });
   });
 
@@ -251,25 +247,25 @@ describe("@open-form/core - README Examples", () => {
           {
             type: "inline",
             key: "residential",
-            artifact: residentialLease.schema,
+            artifact: residentialLease.toJSON({ includeSchema: false }),
           },
           {
             type: "inline",
             key: "commercial",
-            artifact: commercialLease.schema,
+            artifact: commercialLease.toJSON({ includeSchema: false }),
           },
           {
             type: "inline",
             key: "disclosure",
-            artifact: leadPaintDisclosure.schema,
+            artifact: leadPaintDisclosure.toJSON({ includeSchema: false }),
           },
-          { type: "inline", key: "checklist", artifact: leaseChecklist.schema },
+          { type: "inline", key: "checklist", artifact: leaseChecklist.toJSON({ includeSchema: false }) },
         ])
         .build();
 
       expect(leaseBundle).toBeDefined();
-      expect(leaseBundle.schema.kind).toBe("bundle");
-      expect(leaseBundle.schema.contents).toHaveLength(4);
+      expect(leaseBundle.kind).toBe("bundle");
+      expect(leaseBundle.contents).toHaveLength(4);
     });
   });
 
@@ -292,7 +288,7 @@ describe("@open-form/core - README Examples", () => {
         })
         .build();
 
-      type LeaseData = InferFormData<typeof leaseAgreement>;
+      type LeaseData = InferFormPayload<typeof leaseAgreement>;
 
       const data: LeaseData = {
         fields: {
@@ -307,7 +303,6 @@ describe("@open-form/core - README Examples", () => {
           monthlyRent: { amount: 1500, currency: "USD" },
           leaseStartDate: "2024-02-01",
         },
-        annexes: {},
       };
 
       // Verify form is valid
@@ -316,8 +311,8 @@ describe("@open-form/core - README Examples", () => {
       // Fill form with data
       const filled = leaseAgreement.fill(data);
       expect(filled).toBeDefined();
-      expect(filled.data).toBeDefined();
-      expect(filled.get("leaseId")).toBe(
+      expect(filled.fields).toBeDefined();
+      expect(filled.getField("leaseId")).toBe(
         "550e8400-e29b-41d4-a716-446655440000"
       );
     });

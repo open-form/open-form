@@ -115,14 +115,11 @@ describe("renderDocx with bindings", () => {
     // The template uses {{name}}, {{species}}, etc.
     // But our data uses petName, petSpecies, etc.
     // Bindings map: { name: 'petName', species: 'petSpecies', ... }
-    const output = await renderDocx(
-      new Uint8Array(template),
-      testData,
-      {},
-      undefined,
-      undefined,
-      bindings
-    );
+    const output = await renderDocx({
+      template: new Uint8Array(template),
+      data: testData,
+      bindings,
+    });
 
     expect(output).toBeDefined();
     expect(output.length).toBeGreaterThan(0);
@@ -162,7 +159,10 @@ describe("renderDocx with bindings", () => {
       hasVaccination: false,
     };
 
-    const output = await renderDocx(new Uint8Array(template), directData);
+    const output = await renderDocx({
+      template: new Uint8Array(template),
+      data: directData,
+    });
 
     expect(output).toBeDefined();
     expect(output.length).toBeGreaterThan(0);

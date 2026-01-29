@@ -1,14 +1,16 @@
 {
   "name": "@open-form/schemas",
-  "version": "0.1.3",
+  "version": "0.2.1",
   "description": "JSON Schema definitions for OpenForm framework artifacts, blocks, and primitives",
   "type": "module",
-  "main": "./schemas/schema.json",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./schemas/schema.json",
-      "require": "./schemas/schema.json",
-      "default": "./schemas/schema.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./schema.json": {
       "import": "./schemas/schema.json",
@@ -23,6 +25,7 @@
   },
   "sideEffects": false,
   "files": [
+    "dist",
     "schemas/schema.json",
     "schemas/manifest.json",
     "README.md",
@@ -59,9 +62,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsx scripts/export-root-schema.ts",
-    "dev": "tsx scripts/export-root-schema.ts",
-    "clean": "rm -rf schemas/open-form.schema.json",
+    "build": "tsx scripts/export-root-schema.ts && tsup",
+    "dev": "tsx scripts/export-root-schema.ts && tsup --watch",
+    "clean": "rm -rf schemas/open-form.schema.json dist",
     "pack:dry": "npm pack --dry-run",
     "prepublishOnly": "pnpm run build",
     "lint": "eslint .",

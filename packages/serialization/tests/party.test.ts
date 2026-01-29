@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 describe("party Serializers", () => {
   describe("usaSerializers", () => {
@@ -36,22 +36,6 @@ describe("party Serializers", () => {
     it("party.stringify with organization", () => {
       const result = euSerializers.party.stringify({ name: "Tech Inc" });
       expect(result).toContain("Tech Inc");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("party.stringify with person", () => {
-      const result = intlSerializers.party.stringify({
-        firstName: "Charlie",
-        lastName: "Brown",
-      });
-      expect(result).toContain("Charlie");
-      expect(result).toContain("Brown");
-    });
-
-    it("party.stringify with organization", () => {
-      const result = intlSerializers.party.stringify({ name: "Global Ltd" });
-      expect(result).toContain("Global Ltd");
     });
   });
 

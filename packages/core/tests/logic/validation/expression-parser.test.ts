@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest'
 import {
   parseExpression,
   validateExpressionSyntax,
-} from '@/logic/validation/expression-parser'
+} from '@/logic/design-time/validation/expression-parser'
 
 /**
  * Tests for expression-parser.ts (design-time validation).

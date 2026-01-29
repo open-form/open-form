@@ -52,6 +52,12 @@ describe("Custom SerializerRegistry implementations", () => {
       identification: {
         stringify: (value) => "Custom ID",
       },
+      attachment: {
+        stringify: (value) => "Custom Attachment",
+      },
+      signature: {
+        stringify: (value) => "Custom Signature",
+      },
     };
 
     expect(customSerializers.money.stringify(100)).toBe("$100.00");
@@ -93,6 +99,12 @@ describe("Custom SerializerRegistry implementations", () => {
         stringify: (value) => "",
       },
       identification: {
+        stringify: (value) => "",
+      },
+      attachment: {
+        stringify: (value) => "",
+      },
+      signature: {
         stringify: (value) => "",
       },
     };

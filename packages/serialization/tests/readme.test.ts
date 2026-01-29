@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   usaSerializers,
   euSerializers,
-  intlSerializers,
   createSerializer,
 } from "../src/index";
 
@@ -25,12 +24,12 @@ describe("@open-form/serialization - README Examples", () => {
       expect(result).toContain("€");
     });
 
-    it("should format GBP money with international serializers", () => {
-      const result = intlSerializers.money.stringify({
+    it("should format GBP money with USA serializers", () => {
+      const result = usaSerializers.money.stringify({
         amount: 1500,
         currency: "GBP",
       });
-      // intl serializer uses en-US locale which shows GBP with pound symbol
+      // USA serializer uses en-US locale which shows GBP with pound symbol
       expect(result).toContain("1,500.00");
     });
   });
@@ -83,7 +82,7 @@ describe("@open-form/serialization - README Examples", () => {
 
   describe("Pre-built serializers - Organization", () => {
     it("should format organization with tax ID", () => {
-      const result = intlSerializers.organization.stringify({
+      const result = usaSerializers.organization.stringify({
         name: "Acme Corp",
         taxId: "12-3456789",
       });
@@ -113,8 +112,8 @@ describe("@open-form/serialization - README Examples", () => {
       expect(result).toContain("€");
     });
 
-    it("should create international serializers via factory", () => {
-      const serializers = createSerializer({ regionFormat: "intl" });
+    it("should create USA serializers via factory with default", () => {
+      const serializers = createSerializer({});
       const result = serializers.money.stringify({
         amount: 99.99,
         currency: "GBP",

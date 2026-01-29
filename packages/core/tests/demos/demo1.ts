@@ -32,7 +32,7 @@ const myForm = open
       .max(100)
       .build(),
   })
-  .inlineLayer('default', 'text/plain', `The pet is a {{name}} of type {{type}} and is {{age}} years old.`)
+  .inlineLayer('default', { mimeType: 'text/plain', text: `The pet is a {{name}} of type {{type}} and is {{age}} years old.` })
   .defaultLayer('default')
   .build();
 

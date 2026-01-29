@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/condexpr.json",
+  "title": "CondExpr",
+  "description": "Conditional expression: boolean literal or expression string",
+  "anyOf": [
+    {
+      "description": "Literal boolean value",
+      "type": "boolean"
+    },
+    {
+      "description": "Expression string - either inline expression or reference to a logic key",
+      "minLength": 1,
+      "maxLength": 2000,
+      "type": "string"
+    }
+  ]
+}

@@ -1,11 +1,40 @@
-// Logic schemas
-export * from './schemas';
+/**
+ * Logic Module
+ *
+ * This module is organized into two main areas:
+ *
+ * - **design-time/**: Form authoring tools (validation, type-checking)
+ * - **runtime/**: Form execution tools (expression evaluation)
+ *
+ * ## Design-Time
+ * Use during form authoring to validate logic expressions and check types.
+ * Ensures expressions are syntactically correct and variables exist.
+ *
+ * ## Runtime
+ * Use during form execution to evaluate expressions with actual data.
+ * Determines visibility, required status, and other dynamic behaviors.
+ *
+ * @module logic
+ */
 
-// Validation
-export * from './validation';
+// ============================================================================
+// Design-Time API (Form Authoring)
+// ============================================================================
 
-// Type inference
-export * from './types';
+export {
+  validateLogic,
+  type LogicValidatableArtifact,
+  type CondExpr,
+  type LogicSection,
+} from './design-time'
 
-// Runtime evaluation engine
-export * from './evaluation';
+// ============================================================================
+// Runtime API (Form Execution)
+// ============================================================================
+
+export {
+  evaluateFormLogic,
+  type FormRuntimeState,
+  type FieldRuntimeState,
+  type AnnexRuntimeState,
+} from './runtime'

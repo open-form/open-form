@@ -1,30 +1,73 @@
 ---
 title: Artifacts
-description: Top-level document types in OpenForm
+description: The four artifact types in OpenForm
 ---
 
-Artifacts are the top-level document types in OpenForm. Each artifact represents a complete, self-contained unit that can be versioned, published, and rendered.
+OpenForm has 4 basic artifacts:
 
-## The Four Artifact Types
+| Artifact                                  | Description                                                                                                                                                                               |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Document](/schemas/artifacts/document)   | Static documents (e.g., disclosures, pamphlets)                                                                                 |
+| [Form](/schemas/artifacts/form)           | Dynamic documents that have parties, fields, annexes, and/or logic (e.g., contracts, applications, certificates) |
+| [Checklist](/schemas/artifacts/checklist) | Compliance documents that track the completion of tasks or requirements (e.g., closing checklist)                                                               |
+| [Bundle](/schemas/artifacts/bundle)       | Containers for Documents, Forms, Checklists and even other Bundles (e.g., loan application packet)                                                                                   |
 
-| Artifact | Description |
-|----------|-------------|
-| [Document](/docs/schemas/artifacts/document) | Static content with no inputs |
-| [Form](/docs/schemas/artifacts/form) | Collects structured data via fields |
-| [Checklist](/docs/schemas/artifacts/checklist) | Ordered items with boolean or enum status |
-| [Bundle](/docs/schemas/artifacts/bundle) | Container for documents, forms, checklists, and other bundles |
+# Base properties
 
-## Common Properties
+All artifacts share the same base properties:
 
-All artifacts extend `ArtifactBase` and share these properties:
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `kind` | `'document'` \| `'form'` \| `'checklist'` \| `'bundle'` | Yes | Artifact type discriminator |
-| `name` | `string` | Yes | Unique identifier; must follow slug constraints |
-| `version` | `string` | Yes | Artifact version |
-| `title` | `string` | Yes | Human-friendly name presented to end users |
-| `description` | `string` | No | Optional long-form description or context |
-| `code` | `string` | No | Optional internal code or reference number |
-| `releaseDate` | `string` | No | Optional ISO date string indicating when the artifact was released/published |
-| `metadata` | `Metadata` | No | Optional custom metadata map |
+<PropertiesTable properties={[
+  {
+    name: 'name',
+    type: 'string',
+    description: 'Unique identifier; must follow slug constraints',
+  },
+  {
+    name: 'version',
+    type: 'string',
+    description: 'Artifact version (semantic versioning). Required for publishing to registry',
+    isOptional: true,
+  },
+  {
+    name: 'title',
+    type: 'string',
+    description: 'Human-friendly name presented to end users. Recommended for published/shared artifacts and directory browsing',
+    isOptional: true,
+  },
+  {
+    name: 'description',
+    type: 'string',
+    description: 'Long-form description or context',
+    isOptional: true,
+  },
+  {
+    name: 'code',
+    type: 'string',
+    description: 'Internal code or reference number',
+    isOptional: true,
+  },
+  {
+    name: 'releaseDate',
+    type: 'string',
+    description: 'ISO date string indicating when the artifact was released/published',
+    isOptional: true,
+  },
+  {
+    name: 'metadata',
+    type: 'Metadata',
+    description: 'Custom metadata map',
+    isOptional: true,
+    properties: [
+      {
+        type: 'Metadata',
+        parameters: [
+          {
+            name: '[key: string]',
+            type: 'string | number | boolean | null',
+            description: 'Keys must be alphanumeric with hyphens. Values can be strings, numbers, booleans, or null',
+          },
+        ],
+      },
+    ],
+  },
+]} />

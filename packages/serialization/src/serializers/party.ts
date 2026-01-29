@@ -8,10 +8,10 @@
 import { isObject } from '../utils'
 
 /**
- * Validate Party object. Throws error if invalid.
+ * Assert Party object is valid. Throws error if invalid.
  * Party is a union of Person | Organization.
  */
-export function validateParty(value: unknown): void {
+export function assertParty(value: unknown): void {
 	if (value == null) return // null/undefined handled at stringifier level
 
 	if (!isObject(value)) {

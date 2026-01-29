@@ -4,7 +4,7 @@
 
 import type { Resolver } from '@open-form/types'
 import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { resolve, relative, isAbsolute } from 'node:path'
 
 /**
  * Options for creating a filesystem resolver.
@@ -20,9 +20,12 @@ export interface FsResolverOptions {
 /**
  * Create a filesystem resolver for Node.js environments.
  *
+ * Security: The resolver validates that all resolved paths stay within the root
+ * directory to prevent path traversal attacks.
+ *
  * @example
  * ```typescript
- * import { createFsResolver } from '@open-form/resolvers/fs'
+ * import { createFsResolver } from '@open-form/resolvers'
  *
  * const resolver = createFsResolver({ root: process.cwd() })
  *
@@ -32,10 +35,19 @@ export interface FsResolverOptions {
  */
 export function createFsResolver(options: FsResolverOptions): Resolver {
   const { root } = options
+  // Normalize the root path to absolute
+  const normalizedRoot = resolve(root)
 
   return {
     async read(path: string): Promise<Uint8Array> {
-      const fullPath = join(root, path)
+      const fullPath = resolve(normalizedRoot, path.startsWith('/') ? path.slice(1) : path)
+
+      // Security: Ensure the resolved path is within the root directory
+      const relativePath = relative(normalizedRoot, fullPath)
+      if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
+        throw new Error(`Path traversal detected: "${path}" resolves outside root directory`)
+      }
+
       const buffer = await readFile(fullPath)
       return new Uint8Array(buffer)
     },

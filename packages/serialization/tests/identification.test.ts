@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testIdentification = {
   type: "PASSPORT",
@@ -59,14 +59,6 @@ describe("identification Serializers", () => {
       const result = euSerializers.identification.stringify(testIdentification);
       expect(result).toContain("PASSPORT: AB123456");
       expect(result).toContain("USA");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("identification.stringify (same as USA)", () => {
-      const result =
-        intlSerializers.identification.stringify(testIdentification);
-      expect(result).toContain("PASSPORT: AB123456");
     });
   });
 

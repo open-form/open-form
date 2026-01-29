@@ -1,12 +1,12 @@
 import { describe, test, expect } from 'vitest'
+import { evaluateFormLogic } from '@/logic/runtime/evaluation/form-evaluator'
+import type { Form } from '@open-form/types'
 import {
-  evaluateFormLogic,
   evaluateFieldStates,
   evaluateAnnexStates,
   getFieldRuntimeState,
   getAnnexRuntimeState,
-} from '@/logic/evaluation/form-evaluator'
-import type { Form } from '@open-form/types'
+} from '../helpers/evaluation-helpers'
 
 /**
  * Tests for form-evaluator.ts
@@ -47,7 +47,7 @@ describe('form-evaluator', () => {
       },
     },
     logic: {
-      isAdult: 'fields.age.value >= 18',
+      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
     },
   })
 
@@ -78,39 +78,22 @@ describe('form-evaluator', () => {
       age: { type: 'number' },
     },
     logic: {
-      isAdult: 'fields.age.value >= 18',
+      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
     },
-    annexes: [
-      {
-        id: 'id-proof',
+    annexes: {
+      'id-proof': {
         title: 'ID Proof',
         required: true,
       },
-      {
-        id: 'drivers-license',
+      'drivers-license': {
         title: 'Drivers License',
         visible: 'isAdult',
         required: 'isAdult',
       },
-      {
-        id: 'parent-consent',
+      'parent-consent': {
         title: 'Parent Consent',
         visible: 'not isAdult',
         required: 'not isAdult',
-      },
-    ],
-  })
-
-  const createFormWithDisabled = (): Form => ({
-    kind: 'form',
-    name: 'form-with-disabled',
-    version: '1.0.0',
-    title: 'Form with Disabled',
-    fields: {
-      locked: { type: 'boolean' },
-      editableField: {
-        type: 'text',
-        disabled: 'fields.locked.value',
       },
     },
   })
@@ -135,7 +118,6 @@ describe('form-evaluator', () => {
           expect(nameState).toBeDefined()
           expect(nameState?.visible).toBe(true) // default
           expect(nameState?.required).toBe(true) // explicitly set
-          expect(nameState?.disabled).toBe(false) // default
           expect(nameState?.value).toBe('John')
 
           const ageState = state.fields.get('age')
@@ -205,32 +187,6 @@ describe('form-evaluator', () => {
           // Adult: drivingLicense required via isAdult logic key
           expect(state.fields.get('drivingLicense')?.required).toBe(true)
           expect(state.fields.get('parentConsent')?.required).toBe(false)
-        }
-      })
-    })
-
-    describe('disabled expression', () => {
-      test('evaluates disabled expression to true', () => {
-        const form = createFormWithDisabled()
-        const data = { fields: { locked: true } }
-
-        const result = evaluateFormLogic(form, data)
-
-        expect('value' in result).toBe(true)
-        if ('value' in result) {
-          expect(result.value.fields.get('editableField')?.disabled).toBe(true)
-        }
-      })
-
-      test('evaluates disabled expression to false', () => {
-        const form = createFormWithDisabled()
-        const data = { fields: { locked: false } }
-
-        const result = evaluateFormLogic(form, data)
-
-        expect('value' in result).toBe(true)
-        if ('value' in result) {
-          expect(result.value.fields.get('editableField')?.disabled).toBe(false)
         }
       })
     })

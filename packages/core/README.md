@@ -59,14 +59,14 @@ const leaseAgreement = open
     landlord: open
       .party()
       .label("Landlord")
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
     tenant: open
       .party()
       .label("Tenant")
       .multiple(true)
       .min(1)
       .max(4)
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
   })
   .fields({
     leaseId: { type: "uuid", label: "Lease ID" },
@@ -89,21 +89,21 @@ const advancedLease = open
   .name("commercial-lease")
   .version("1.0.0")
   .title("Commercial Lease Agreement")
-  .allowAnnexes(true)
-  .annexes([
-    open.annex().id("photoId").title("Photo ID").required(true),
-    open.annex().id("proofOfIncome").title("Proof of Income").required(true),
-  ])
+  .allowAdditionalAnnexes(true)
+  .annexes({
+    photoId: open.annex().title("Photo ID").required(true),
+    proofOfIncome: open.annex().title("Proof of Income").required(true),
+  })
   .parties({
     landlord: open
       .party()
       .label("Landlord")
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
     tenant: open
       .party()
       .label("Tenant")
       .multiple(true)
-      .signature((sig) => sig.required()),
+      .signature({ required: true }),
   })
   .fields({
     leaseId: { type: "uuid", label: "Lease ID", required: true },
@@ -203,10 +203,10 @@ const leaseBundle = open
   .name("residential-lease-bundle")
   .version("1.0.0")
   .contents([
-    { type: "inline", key: "residential", artifact: residentialLease.schema },
-    { type: "inline", key: "commercial", artifact: commercialLease.schema },
-    { type: "inline", key: "disclosure", artifact: leadPaintDisclosure.schema },
-    { type: "inline", key: "checklist", artifact: leaseChecklist.schema },
+    { type: "inline", key: "residential", artifact: residentialLease.toJSON({ includeSchema: false }) },
+    { type: "inline", key: "commercial", artifact: commercialLease.toJSON({ includeSchema: false }) },
+    { type: "inline", key: "disclosure", artifact: leadPaintDisclosure.toJSON({ includeSchema: false }) },
+    { type: "inline", key: "checklist", artifact: leaseChecklist.toJSON({ includeSchema: false }) },
   ])
   .build();
 ```
@@ -214,35 +214,48 @@ const leaseBundle = open
 Extract TypeScript types from artifacts:
 
 ```typescript
-import { type InferFormData } from "@open-form/core";
+import { type InferFormPayload } from "@open-form/core";
 
-type LeaseData = InferFormData<typeof leaseAgreement>;
+type LeaseData = InferFormPayload<typeof leaseAgreement>;
 
 const data: LeaseData = {
-  leaseId: "550e8400-e29b-41d4-a716-446655440000",
-  propertyAddress: {
-    line1: "123 Main St",
-    locality: "Portland",
-    region: "OR",
-    postalCode: "97201",
-    country: "USA",
+  fields: {
+    leaseId: "550e8400-e29b-41d4-a716-446655440000",
+    propertyAddress: {
+      line1: "123 Main St",
+      locality: "Portland",
+      region: "OR",
+      postalCode: "97201",
+      country: "USA",
+    },
+    monthlyRent: { amount: 1500, currency: "USD" },
+    leaseStartDate: "2024-02-01",
   },
-  monthlyRent: { amount: 1500, currency: "USD" },
-  leaseStartDate: new Date("2024-02-01"),
 };
 ```
 
-Validate data against form schemas:
+Validate and fill forms with data:
 
 ```typescript
-if (!leaseAgreement.isValid(data)) {
-  console.log("Data does not match form schema");
+// Check if the form schema itself is valid
+if (!leaseAgreement.isValid()) {
+  console.log("Form schema is invalid");
 }
 
+// Fill the form with data (validates during fill)
 try {
   const filled = leaseAgreement.fill(data);
+  console.log("Form filled successfully");
 } catch (error) {
   console.error("Validation failed:", error);
+}
+
+// Or use safeFill to avoid exceptions
+const result = leaseAgreement.safeFill(data);
+if (result.success) {
+  const filled = result.data;
+} else {
+  console.error("Validation failed:", result.error);
 }
 ```
 

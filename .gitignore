@@ -41,12 +41,6 @@ coverage/
 *.swp
 *.swo
 
-# AI Tools
-.claude/
-.cursor/
-CLAUDE.md
-.mcp.json
-
 # OS
 .DS_Store
 
@@ -57,3 +51,15 @@ CLAUDE.md
 
 # Misc
 .cache/
+
+# Tools
+CLAUDE.md
+.agents/
+.obsidian/
+.goose/
+.cursor/
+.codex/
+.claude/
+.cursor/
+.vscode/
+.mcp.json

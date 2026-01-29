@@ -1,229 +1,81 @@
 ---
-title: Overview
-description: Understanding OpenForm's mental model
+title: Artifacts
+description: The core abstraction in OpenForm
 ---
-OpenForm has 4 artifacts:
 
-| Artifact    | Description                                              | Example                     |
-|-------------|----------------------------------------------------------|-----------------------------|
-| **Document**   | A static (fixed) document                               | EPA/HUD lead pamphlet   |
-| **Form**       | A dynamic document containing fields and/or annexes     | Home purchase agreement                    |
-| **Checklist**  | A document of items with constrained states             | Closing checklist      |
-| **Bundle**     | A collection of the above artifacts or other bundles | Closing documents bundle         |
+# About Artifacts
 
-## 1. Document
+At the heart of OpenForm is the **artifact**.
 
-A Document is the simplest artifact. It defines static content. Its useful for defining disclosures, pamphlets, and other static content that doesn't change based on user input.
+An artifact is a structured definition of a document (or a collection of documents) that describes its origin, metadata, parties, fields, logic, and/or content(s).
 
-```typescript tab="Object pattern"
-import { open } from "@open-form/sdk";
+OpenForm defines four artifact types:
 
-const hudDisclosure = open.document({
-  name: "lead-paint-disclosure",
-  version: "1.0.0",
-  title: "Lead Paint Disclosure",
-  layers: {
-    pdf: {
-      kind: "file",
-      mimeType: "application/pdf",
-      path: "fixtures/lead-paint.pdf",
-    },
-  },
-});
-```
+| Artifact   | Description                                                                                                                         |
+|------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| Document   | Static documents (e.g., disclosures, pamphlets)                                                                                    |
+| Form       | Dynamic documents that have parties, fields, annexes, and/or logic (e.g., contracts, applications, certificates)                   |
+| Checklist  | Compliance documents that track the completion of tasks or requirements (e.g., closing checklist)                                  |
+| Bundle     | Containers for Documents, Forms, Checklists and even other Bundles (e.g., loan application packet)                                 |
 
-```typescript tab="Builder pattern"
-import { open } from "@open-form/sdk";
 
-const hudDisclosure = open
-  .document()
-  .name("lead-paint-disclosure")
-  .version("1.0.0")
-  .title("Lead Paint Disclosure")
-  .layers({
-    pdf: open
-      .layer()
-      .file()
-      .path("fixtures/lead-paint.pdf")
-      .mimeType("application/pdf")
-      .build(),
+Each type serves a different purpose, but all share the same foundational properties: they're typed, immutable, and machine-readable.
+
+---
+
+# Design Time vs Runtime
+
+OpenForm draws a hard line between **design time** and **runtime**.
+
+**Design time** is when you define artifacts—what fields exist, what rules apply, what layers are available. **Runtime** is when you use those definitions—fill fields, validate inputs, render outputs, collect signatures.
+
+```ts
+// Design time: define the form
+const lease = open.form()
+  .name("lease")
+  .fields({
+    tenant: { type: "text", required: true },
+    rent: { type: "money", required: true },
   })
-  .build();
+  .build()
+
+// Runtime: fill and render
+const filled = lease.fill({ fields: { tenant: "Jane Doe", rent: { amount: 1500, currency: "USD" } } })
+const output = await filled.render({ renderer: pdfRenderer() })
 ```
 
-## 2. Form
+Runtime never mutates the artifact. The definition remains stable while runtime operations execute against it.
 
-A Form is dynamic content derived from structured inputs. It defines fields, parties (signatories), and annexes (attachments that can be appended at runtime).
+---
 
-Use a Form when the rendered output depends on user-provided data: applications, agreements, tax forms, intake questionnaires.
+# Immutability
 
-```typescript tab="Object pattern"
-const lease = open.form({
-  name: "lease-agreement",
-  version: "1.0.0",
-  title: "Lease Agreement",
-  fields: {
-    propertyAddress: { type: "address", required: true },
-    monthlyRent: { type: "money", required: true },
-    leaseStart: { type: "date", required: true },
-  },
-  layers: {
-    pdf: {
-      kind: "file",
-      mimeType: "application/pdf",
-      path: "fixtures/lease.pdf",
-    },
-  },
-});
+Artifacts are **immutable**. Once defined, they don't change.
+
+This enables versioning (artifacts can be stored, diffed, and audited), determinism (same artifact + same input = same output), and trust (downstream systems can rely on stable definitions).
+
+Because artifacts are plain JSON, they integrate naturally with version control, compliance systems, and AI agents.
+
+---
+
+# Schema-Driven
+
+Artifacts follow the OpenForm JSON Schema specification. This means:
+- Artifacts can be validated with any JSON Schema validator
+- Tooling can provide autocomplete and type checking
+- AI agents can read the schema to generate valid artifacts or validate outputs
+
+```json
+{
+  "$schema": "https://schemas.open-form.dev/schema.json",
+  "kind": "form",
+  "name": "residential-lease",
+  "version": "1.0.0",
+  "fields": {
+    "propertyAddress": { "type": "address", "required": true },
+    "monthlyRent": { "type": "money", "required": true }
+  }
+}
 ```
 
-```typescript tab="Builder pattern"
-import { open, field } from "@open-form/sdk";
-
-const lease = open
-  .form()
-  .name("lease-agreement")
-  .version("1.0.0")
-  .title("Lease Agreement")
-  .field("propertyAddress", field.address().required().build())
-  .field("monthlyRent", field.money().required().build())
-  .field("leaseStart", field.date().required().build())
-  .layers({
-    pdf: open
-      .layer()
-      .file()
-      .path("fixtures/lease.pdf")
-      .mimeType("application/pdf")
-      .build(),
-  })
-  .annexes([
-    open
-      .annex()
-      .id("photo-id")
-      .title("Photo ID")
-      .description("Upload a government-issued photo ID")
-      .required()
-      .build(),
-    open
-      .annex()
-      .id("proof-of-address")
-      .title("Proof of Address")
-      .description("Upload a utility bill or bank statement dated within 3 months")
-      .required()
-      .build(),
-  ])
-  .build();
-```
-
-## 3. Checklist
-
-A Checklist defines items with constrained states — typically boolean (done/not done) or multiselect. Unlike a Form, which accepts arbitrary typed inputs, a Checklist's items can only be in a fixed set of states.
-
-Use a Checklist for compliance requirements, prerequisites, or verification steps: loan closing requirements, inspection checklists, onboarding tasks.
-
-```typescript tab="Object pattern"
-const closingChecklist = open.checklist({
-  name: "loan-closing",
-  version: "1.0.0",
-  title: "Loan Closing Checklist",
-  items: [
-    {
-      id: "title-search",
-      title: "Title Search Complete",
-      status: { kind: "boolean" },
-    },
-    {
-      id: "appraisal",
-      title: "Appraisal Received",
-      status: { kind: "boolean" },
-    },
-    {
-      id: "insurance",
-      title: "Insurance Verified",
-      status: { kind: "boolean" },
-    },
-  ],
-});
-```
-
-```typescript tab="Builder pattern"
-import { open } from "@open-form/sdk";
-
-const closingChecklist = open
-  .checklist()
-  .name("loan-closing")
-  .version("1.0.0")
-  .title("Loan Closing Checklist")
-  .item({
-    id: "title-search",
-    title: "Title Search Complete",
-    status: { kind: "boolean" },
-  })
-  .item({
-    id: "appraisal",
-    title: "Appraisal Received",
-    status: { kind: "boolean" },
-  })
-  .item({
-    id: "insurance",
-    title: "Insurance Verified",
-    status: { kind: "boolean" },
-  })
-  .build();
-```
-
-<Callout type="info">
-Checklists define what items must be satisfied. State is maintained outside OpenForm — the checklist renders, your application tracks completion.
-</Callout>
-
-## 4. Bundle
-
-A Bundle groups content primitives and/or other bundles. It defines references, not content. Bundles can nest to arbitrary depth.
-
-Use a Bundle for document packages: loan application packets, new hire paperwork, compliance submissions.
-
-```typescript tab="Object pattern"
-const loanBundle = open.bundle({
-  name: "loan-application",
-  version: "1.0.0",
-  title: "Loan Application",
-  contents: [
-    { type: "path", key: "borrower-info", path: "forms/borrower-info.yaml" },
-    {
-      type: "path",
-      key: "income-verification",
-      path: "forms/income-verification.yaml",
-    },
-  ],
-});
-```
-
-```typescript tab="Builder pattern"
-const loanBundle = open
-  .bundle()
-  .name("loan-application")
-  .version("1.0.0")
-  .title("Loan Application")
-  .contents([
-    { type: "path", key: "borrower-info", path: "forms/borrower-info.yaml" },
-    {
-      type: "path",
-      key: "income-verification",
-      path: "forms/income-verification.yaml",
-    },
-  ])
-  .build();
-```
-
-## Content vs Container
-
-**Content primitives** (Document, Form, Checklist) define layers and are rendered to output formats. **Container primitives** (Bundle) define membership and are compiled by assembling their contents.
-
-## Choosing a Primitive
-
-| If you need... | Use |
-|----------------|-----|
-| Static content with no inputs | Document |
-| Dynamic content from structured data | Form |
-| Items that must be satisfied | Checklist |
-| A collection of artifacts | Bundle |
+You can author artifacts in JSON, YAML, or using the TypeScript SDK.

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { validateFormLogic } from '@/logic/validation/validate-form-logic'
+import { validateFormLogic } from '@/logic/design-time/validation/validate-form-logic'
 import type { Form } from '@open-form/types'
 
 /**
@@ -20,7 +20,7 @@ describe('validateFormLogic', () => {
       name: { type: 'text' },
     },
     logic: {
-      isAdult: 'fields.age.value >= 18',
+      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
     },
   })
 
@@ -86,7 +86,7 @@ describe('validateFormLogic', () => {
           },
         },
         logic: {
-          isAdult: 'fields.age.value >= 18',
+          isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
         },
       }
 
@@ -111,7 +111,7 @@ describe('validateFormLogic', () => {
           },
         },
         logic: {
-          hasAddress: 'fields.address.street.value != ""',
+          hasAddress: { type: 'boolean', value: 'fields.address.street.value != ""' },
         },
       }
 
@@ -129,21 +129,19 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
         },
         logic: {
-          isAdult: 'fields.age.value >= 18',
+          isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
         },
-        annexes: [
-          {
-            id: 'proof',
+        annexes: {
+          proof: {
             title: 'Proof',
             required: true,
           },
-          {
-            id: 'license',
+          license: {
             title: 'License',
             visible: 'isAdult',
             required: 'isAdult',
           },
-        ],
+        },
       }
 
       const result = validateFormLogic(form)
@@ -166,7 +164,7 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
         },
         logic: {
-          broken: 'fields.age.value >=', // Missing operand
+          broken: { type: 'boolean', value: 'fields.age.value >=' }, // Missing operand
         },
       }
 
@@ -203,13 +201,12 @@ describe('validateFormLogic', () => {
         version: '1.0.0',
         title: 'Annex Syntax Error Form',
         fields: {},
-        annexes: [
-          {
-            id: 'test',
+        annexes: {
+          test: {
             title: 'Test',
             required: 'broken syntax ))',
           },
-        ],
+        },
       }
 
       const result = validateFormLogic(form)
@@ -232,7 +229,7 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
         },
         logic: {
-          broken: 'fields.nonexistent.value >= 18', // nonexistent field
+          broken: { type: 'boolean', value: 'fields.nonexistent.value >= 18' }, // nonexistent field
         },
       }
 
@@ -277,7 +274,7 @@ describe('validateFormLogic', () => {
           },
         },
         logic: {
-          hasStreet: 'fields.address.street.value != ""',
+          hasStreet: { type: 'boolean', value: 'fields.address.street.value != ""' },
         },
       }
 
@@ -299,7 +296,7 @@ describe('validateFormLogic', () => {
         title: 'Self Ref Form',
         fields: {},
         logic: {
-          selfRef: 'selfRef', // references itself
+          selfRef: { type: 'boolean', value: 'selfRef' }, // references itself
         },
       }
 
@@ -319,8 +316,8 @@ describe('validateFormLogic', () => {
         title: 'Cycle Form',
         fields: {},
         logic: {
-          a: 'b',
-          b: 'a',
+          a: { type: 'boolean', value: 'b' },
+          b: { type: 'boolean', value: 'a' },
         },
       }
 
@@ -491,7 +488,7 @@ describe('validateFormLogic', () => {
         title: 'Expr Test Form',
         fields: {},
         logic: {
-          broken: 'syntax error ((',
+          broken: { type: 'boolean', value: 'syntax error ((' },
         },
       }
 

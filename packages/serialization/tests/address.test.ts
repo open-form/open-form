@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testAddress = {
   line1: "123 Main St",
@@ -40,27 +40,6 @@ describe("address serializers", () => {
       expect(result).toContain("10001");
       expect(result).toContain("New York");
       expect(result).toContain("USA");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("address.stringify all fields", () => {
-      const result = intlSerializers.address.stringify(testAddress);
-      expect(result).toContain("123 Main St");
-      expect(result).toContain("Apt 4B");
-      expect(result).toContain("New York");
-      expect(result).toContain("NY");
-      expect(result).toContain("10001");
-      expect(result).toContain("USA");
-    });
-
-    it("address.stringify filters out empty fields", () => {
-      const result = intlSerializers.address.stringify({
-        line1: "789 Elm Rd",
-        locality: "London",
-        country: "UK",
-      });
-      expect(result).toBe("789 Elm Rd, London, UK");
     });
   });
 

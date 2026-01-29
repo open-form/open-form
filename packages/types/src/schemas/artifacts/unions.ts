@@ -9,11 +9,6 @@ import type { Bundle } from "./bundle";
 
 /**
  * Any supported artifact type.
+ * Union of all concrete artifact types.
  */
 export type Artifact = Form | Document | Checklist | Bundle;
-
-/**
- * Root OpenForm payload type - union of all artifact types.
- * This represents the top-level structure of any OpenForm document.
- */
-export type OpenFormPayload = Form | Document | Checklist | Bundle;

@@ -27,7 +27,7 @@ const SCHEMAS_PKG_DIR = join(__dirname, "..");
 const MONOREPO_ROOT = join(SCHEMAS_PKG_DIR, "..", "..");
 const TYPEBOX_SRC_DIR = join(SCHEMAS_PKG_DIR, "src", "typebox");
 const OUTPUT_DIR = join(SCHEMAS_PKG_DIR, "schemas");
-const BUNDLE_SCHEMA_PATH = join(TYPEBOX_SRC_DIR, "bundle.ts");
+const BUNDLE_SCHEMA_PATH = join(TYPEBOX_SRC_DIR, "module.ts");
 
 // No longer copying to app public folders - schemas will be uploaded to R2
 

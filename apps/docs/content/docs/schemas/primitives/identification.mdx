@@ -3,19 +3,42 @@ title: Identification
 description: An identity document
 ---
 
-Details for an identity document such as a passport, driver's license, or Social Security number.
+An Identification is a structured primitive that represents an identity record such as a passport, driver's license, or Social Security number.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `type` | `string` | Yes | Identification type (passport, ssn, license, etc.) |
-| `number` | `string` | Yes | Document/identifier number |
-| `issuer` | `string` | No | Issuing authority, country, or state |
-| `issueDate` | `string` | No | Issue date in ISO 8601 format (YYYY-MM-DD) |
-| `expiryDate` | `string` | No | Expiration date in ISO 8601 format (YYYY-MM-DD) |
+<PropertiesTable properties={[
+  {
+    name: 'type',
+    type: 'string',
+    description: 'Identification type (passport, ssn, license, etc.).',
+  },
+  {
+    name: 'number',
+    type: 'string',
+    description: 'Document/identifier number.',
+  },
+  {
+    name: 'issuer',
+    type: 'string',
+    description: 'Issuing authority, country, or state.',
+    isOptional: true,
+  },
+  {
+    name: 'issueDate',
+    type: 'string',
+    description: 'Issue date in ISO 8601 format (YYYY-MM-DD).',
+    isOptional: true,
+  },
+  {
+    name: 'expiryDate',
+    type: 'string',
+    description: 'Expiration date in ISO 8601 format (YYYY-MM-DD).',
+    isOptional: true,
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

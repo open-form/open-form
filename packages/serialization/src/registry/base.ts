@@ -12,17 +12,19 @@ import type {
 } from "@open-form/types";
 import type { SerializerRegistry } from "@open-form/types";
 import {
-  validateMoney,
-  validateAddress,
-  validatePerson,
-  validateOrganization,
-  validateParty,
   phoneStringifier,
+  personStringifier,
+  organizationStringifier,
   coordinateStringifier,
   bboxStringifier,
   durationStringifier,
   identificationStringifier,
+  attachmentStringifier,
+  signatureStringifier,
 } from "../serializers";
+import { assertMoney } from "../serializers/money";
+import { assertAddress } from "../serializers/address";
+import { assertParty } from "../serializers/party";
 
 type AddressFormat = "us" | "eu";
 
@@ -42,7 +44,7 @@ const createMoneyStringifier = (locale: string, defaultCurrency: string) => ({
       }).format(value);
     }
 
-    validateMoney(value);
+    assertMoney(value);
 
     const { amount, currency = defaultCurrency } = value as Money;
     return new Intl.NumberFormat(locale, {
@@ -54,7 +56,7 @@ const createMoneyStringifier = (locale: string, defaultCurrency: string) => ({
 
 const createAddressStringifier = (format: AddressFormat) => ({
   stringify(value: Address | Partial<Address>): string {
-    validateAddress(value);
+    assertAddress(value);
 
     const parts: string[] = [];
 
@@ -85,61 +87,9 @@ const createAddressStringifier = (format: AddressFormat) => ({
   },
 });
 
-const personStringifier = {
-  stringify(
-    value:
-      | Person
-      | Partial<Person>
-      | {
-          fullName?: string;
-          title?: string;
-          firstName?: string;
-          middleName?: string;
-          lastName?: string;
-          suffix?: string;
-        }
-  ): string {
-    validatePerson(value);
-
-    if (value.fullName) return value.fullName;
-
-    const nameParts: string[] = [];
-    if (value.title) nameParts.push(value.title);
-    if (value.firstName) nameParts.push(value.firstName);
-    if (value.middleName) nameParts.push(value.middleName);
-    if (value.lastName) nameParts.push(value.lastName);
-    if (value.suffix) nameParts.push(value.suffix);
-
-    const result = nameParts.join(" ");
-    if (!result) throw new Error("At least one name component is required");
-    return result;
-  },
-};
-
-const organizationStringifier = {
-  stringify(
-    value:
-      | Organization
-      | Partial<Organization>
-      | { name?: string; ein?: string; email?: string; phone?: string }
-  ): string {
-    validateOrganization(value);
-
-    const { name, taxId } = value as Organization;
-    const parts: string[] = [];
-
-    if (name) parts.push(name);
-    if (taxId) parts.push(`(Tax ID: ${taxId})`);
-
-    const result = parts.join(" ");
-    if (!result) throw new Error("Organization name is required");
-    return result;
-  },
-};
-
 const createPartyStringifier = (registry: SerializerRegistry) => ({
   stringify(value: Party | Partial<Party>): string {
-    validateParty(value);
+    assertParty(value);
 
     if ("firstName" in value || "lastName" in value) {
       return registry.person.stringify(value as Person | Partial<Person>);
@@ -167,6 +117,8 @@ export function createRegionRegistry(config: RegionConfig): SerializerRegistry {
     bbox: bboxStringifier,
     duration: durationStringifier,
     identification: identificationStringifier,
+    attachment: attachmentStringifier,
+    signature: signatureStringifier,
   };
 
   // Party needs reference to the registry for delegation
@@ -186,10 +138,4 @@ export const euSerializers = createRegionRegistry({
   locale: "de-DE",
   defaultCurrency: "EUR",
   addressFormat: "eu",
-});
-
-export const intlSerializers = createRegionRegistry({
-  locale: "en-US",
-  defaultCurrency: "USD",
-  addressFormat: "us",
 });

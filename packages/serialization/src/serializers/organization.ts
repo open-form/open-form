@@ -6,9 +6,9 @@ import type { Organization } from '@open-form/types'
 import { isObject } from '../utils'
 
 /**
- * Validate Organization object. Throws error if invalid.
+ * Assert Organization object is valid. Throws error if invalid.
  */
-export function validateOrganization(value: unknown): void {
+export function assertOrganization(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid organization: must be an Organization object')
 	}
@@ -29,12 +29,12 @@ export function validateOrganization(value: unknown): void {
  */
 export const organizationStringifier = {
 	stringify(
-		value: Organization | Partial<Organization> | { name?: string; ein?: string; email?: string; phone?: string },
+		value: Organization | Partial<Organization>,
 		fallback = ''
 	): string {
 		if (value == null) return fallback
 
-		validateOrganization(value)
+		assertOrganization(value)
 
 		const parts: string[] = []
 

@@ -1,9 +1,11 @@
 /**
  * Schemas: data structure definitions for OpenForm
+ *
+ * These types correspond to JSON schemas defined in @open-form/schemas.
+ * For runtime types (filled forms, parties, etc.), see ../runtime
  */
 
-export type { CondExpr, LogicSection } from "./logic";
-
+// Primitives (correspond to schemas in @open-form/schemas)
 export type {
   Money,
   Address,
@@ -15,15 +17,74 @@ export type {
   Duration,
   Identification,
   Metadata,
+  Signature,
+  Attachment,
 } from "./primitives";
 
+// Artifact types (includes shared logic types)
 export type {
-  Party,
-  PartyPerson,
-  PartyOrganization,
+  // Logic types
+  CondExpr,
+  BaseLogicExpression,
+  BooleanLogicExpression,
+  StringLogicExpression,
+  NumberLogicExpression,
+  IntegerLogicExpression,
+  PercentageLogicExpression,
+  RatingLogicExpression,
+  DateLogicExpression,
+  TimeLogicExpression,
+  DatetimeLogicExpression,
+  DurationLogicExpression,
+  MoneyLogicExpressionValue,
+  AddressLogicExpressionValue,
+  PhoneLogicExpressionValue,
+  CoordinateLogicExpressionValue,
+  BboxLogicExpressionValue,
+  PersonLogicExpressionValue,
+  OrganizationLogicExpressionValue,
+  IdentificationLogicExpressionValue,
+  MoneyLogicExpression,
+  AddressLogicExpression,
+  PhoneLogicExpression,
+  CoordinateLogicExpression,
+  BboxLogicExpression,
+  PersonLogicExpression,
+  OrganizationLogicExpression,
+  IdentificationLogicExpression,
+  ScalarLogicExpression,
+  ObjectLogicExpression,
+  LogicExpression,
+  ScalarLogicType,
+  ObjectLogicType,
+  LogicExpressionType,
+  LogicSection,
+  // Shared types
+  ArtifactBase,
+  Layer,
+  InlineLayer,
+  FileLayer,
+  Bindings,
+  // Document
+  Document,
+  // Checklist
+  BooleanStatusSpec,
+  EnumStatusOption,
+  EnumStatusSpec,
+  StatusSpec,
+  ChecklistItem,
+  Checklist,
+  // Bundle
+  BundleContentItem,
+  InlineBundleItem,
+  PathBundleItem,
+  RegistryBundleItem,
+  Bundle,
+  // Form
+  Form,
   BaseField,
   FieldsetField,
-  Field,
+  FormField,
   TextField,
   BooleanField,
   NumberField,
@@ -46,29 +107,10 @@ export type {
   MultiselectField,
   PercentageField,
   RatingField,
-} from "./blocks";
-
-export type {
-  ArtifactBase,
-  Layer,
-  InlineLayer,
-  FileLayer,
-  Bindings,
-  Document,
-  BooleanStatusSpec,
-  EnumStatusOption,
-  EnumStatusSpec,
-  StatusSpec,
-  ChecklistItem,
-  Checklist,
-  BundleContentItem,
-  Bundle,
-  Fieldset,
-  Annex,
-  SignatureRequirement,
+  FormFieldset,
+  FormAnnex,
   FormParty,
-  WitnessRequirement,
-  Form,
+  FormSignature,
+  // Unions
   Artifact,
-  OpenFormPayload,
 } from "./artifacts";

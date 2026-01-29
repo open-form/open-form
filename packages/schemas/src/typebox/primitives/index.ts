@@ -1,19 +1,12 @@
-export { CoordinateSchema } from './coordinate';
-
 export { AddressSchema } from './address';
-
-export { PhoneSchema } from './phone';
-
-export { MoneySchema } from './money';
-
-export { DurationSchema } from './duration';
-
-export { PersonSchema } from './person';
-
-export { OrganizationSchema } from './organization';
-
-export { IdentificationSchema } from './identification';
-
+export { AttachmentSchema } from './attachment';
 export { BboxSchema } from './bbox';
-
+export { CoordinateSchema } from './coordinate';
+export { DurationSchema } from './duration';
+export { IdentificationSchema } from './identification';
 export { MetadataSchema } from './metadata';
+export { MoneySchema } from './money';
+export { OrganizationSchema } from './organization';
+export { PersonSchema } from './person';
+export { PhoneSchema } from './phone';
+export { SignatureSchema } from './signature';

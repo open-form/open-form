@@ -38,9 +38,10 @@ interface SchemaExport {
   category: string; // artifacts, blocks, primitives
 }
 
-// Known schema names from the bundle (for $ref transformation)
+// Known schema names from the module (for $ref transformation)
 const KNOWN_SCHEMA_NAMES = new Set([
   "CondExpr",
+  "LogicExpression",
   "LogicSection",
   "Form",
   "Document",
@@ -48,13 +49,18 @@ const KNOWN_SCHEMA_NAMES = new Set([
   "BundleContentItem",
   "Checklist",
   "ChecklistItem",
-  "Field",
-  "Annex",
-  "Party",
+  // Form blocks (design-time) - renamed with Form prefix
+  "FormField",
+  "FieldsetField",
+  "FormFieldset",
+  "FormAnnex",
   "FormParty",
-  "WitnessRequirement",
+  // Note: FormSignature is intentionally NOT here - it's inlined in FormParty
+  // Shared
   "Layer",
-  "Fieldset",
+  // Primitives
+  "Signature",
+  "Attachment",
   "Address",
   "Bbox",
   "Coordinate",
@@ -199,7 +205,7 @@ async function main() {
     "Exporting individual TypeBox schemas to JSON Schema 2020-12...\n"
   );
 
-  const categories = ["artifacts", "blocks", "primitives"];
+  const categories = ["artifacts", "primitives"];
   const allSchemas: SchemaExport[] = [];
 
   // Import schemas from each category

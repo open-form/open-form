@@ -6,7 +6,7 @@ import type { Form } from "@open-form/types";
 import { renderText } from "../src/render";
 import { open } from "@open-form/core";
 import { textRenderer } from "../src/";
-import { createFsResolver } from "@open-form/resolvers/fs";
+import { createFsResolver } from "@open-form/resolvers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

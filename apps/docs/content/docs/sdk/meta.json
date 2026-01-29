@@ -1,0 +1,11 @@
+{
+  "title": "SDK",
+  "pages": [
+    "artifacts",
+    "primitives",
+    "renderers",
+    "serialization",
+    "resolvers"
+  ],
+  "defaultOpen": false
+}

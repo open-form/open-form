@@ -5,8 +5,9 @@
 import Handlebars from "handlebars";
 import type { SerializerRegistry, Form, Bindings } from "@open-form/types";
 import { usaSerializers, preprocessFieldData } from "@open-form/serialization";
-import { createSerializedFieldWrapper } from "./utils/field-serializer.js";
-import { applyBindings } from "./utils/bindings.js";
+import { createSerializedFieldWrapper } from "./utils/field-serializer";
+import { applyBindings } from "./utils/bindings";
+import { registerSignatureHelpers, type TextSignatureOptions } from "./utils/signature-helpers";
 
 /**
  * Render text-based template with Handlebars
@@ -21,6 +22,7 @@ import { applyBindings } from "./utils/bindings.js";
  * @param options.form - Optional form schema for automatic field type detection and serialization
  * @param options.serializers - Optional custom serializer registry. Uses USA serializers by default.
  * @param options.bindings - Optional mapping from template field names to form field names
+ * @param options.signatureOptions - Optional options for signature/initials rendering
  * @returns Rendered output string
  *
  * @example
@@ -32,6 +34,19 @@ import { applyBindings } from "./utils/bindings.js";
  *   form: schema // form schema with fee as Money field
  * })
  * // output: "Hello John, your fee is $100.00"
+ *
+ * // With signature markers
+ * const output = renderText({
+ *   template: 'Signature: {{signature "tenant-0"}}',
+ *   data: {
+ *     _signatures: {
+ *       tenant: {
+ *         'tenant-0': { timestamp: '2024-01-01T00:00:00Z', method: 'drawn' }
+ *       }
+ *     }
+ *   },
+ *   signatureOptions: { format: 'text' }
+ * })
  * ```
  */
 export function renderText(options: {
@@ -40,9 +55,13 @@ export function renderText(options: {
   form?: Form;
   serializers?: SerializerRegistry;
   bindings?: Bindings;
+  signatureOptions?: TextSignatureOptions;
 }): string {
   // Create a new Handlebars instance to avoid global state issues
   const handlebars = Handlebars.create();
+
+  // Register signature and initials helpers
+  registerSignatureHelpers(handlebars, options.signatureOptions);
 
   // Use provided serializers or default to USA serializers
   const serializers = options.serializers || usaSerializers;

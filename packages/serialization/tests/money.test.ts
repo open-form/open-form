@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers, createSerializer } from "../src/index";
+import { usaSerializers, euSerializers, createSerializer } from "../src/index";
 
 const testMoney = { amount: 1500.5, currency: "USD" };
 
@@ -56,26 +56,6 @@ describe("money Serializers", () => {
     it("money.stringify defaults to EUR", () => {
       const result = euSerializers.money.stringify(2500);
       expect(result).toContain("€");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("money.stringify generic number format", () => {
-      const result = intlSerializers.money.stringify(1500.5);
-      expect(result).toContain("1,500.50");
-    });
-
-    it("money.stringify with currency code", () => {
-      const result = intlSerializers.money.stringify({
-        amount: 1000,
-        currency: "GBP",
-      });
-      expect(result).toContain("1,000.00");
-    });
-
-    it("money.stringify without currency", () => {
-      const result = intlSerializers.money.stringify({ amount: 500 });
-      expect(result).toContain("500.00");
     });
   });
 

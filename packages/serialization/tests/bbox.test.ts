@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testBbox = {
   southWest: { lat: 40.7128, lon: -74.006 },
@@ -30,13 +30,6 @@ describe("bbox Serializers", () => {
   describe("euSerializers", () => {
     it("bbox.stringify (same as USA)", () => {
       const result = euSerializers.bbox.stringify(testBbox);
-      expect(result).toBe("40.7128,-74.006,40.8,-73.9");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("bbox.stringify (same as USA)", () => {
-      const result = intlSerializers.bbox.stringify(testBbox);
       expect(result).toBe("40.7128,-74.006,40.8,-73.9");
     });
   });

@@ -39,7 +39,10 @@ describe("renderDocx", () => {
     expect(template.length).toBeGreaterThan(0);
 
     // Render
-    const output = await renderDocx(new Uint8Array(template), testData);
+    const output = await renderDocx({
+      template: new Uint8Array(template),
+      data: testData,
+    });
     expect(output).toBeDefined();
     expect(output.length).toBeGreaterThan(0);
 

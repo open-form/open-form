@@ -1,0 +1,121 @@
+---
+title: Logic
+description: Named expressions and conditional logic
+---
+
+Logic types enable conditional behavior in forms and bundles. Named expressions can control field visibility, required status, and bundle content inclusion.
+
+# LogicSection
+
+A mapping of named logic expressions that can be referenced throughout an artifact.
+
+```typescript
+interface LogicSection {
+  [key: string]: string
+}
+```
+
+# CondExpr
+
+A conditional expression that can be used in `include`, `required`, and `visible` fields.
+
+```typescript
+type CondExpr = boolean | string
+```
+
+When a string is provided, it can reference:
+- Named expressions from the `logic` section
+- Field values using `fields.<fieldName>.value`
+- Comparison operators (`==`, `!=`, `>`, `<`, `>=`, `<=`)
+- Logical operators (`&&`, `||`, `!`)
+
+# Examples
+
+```yaml tab="YAML"
+kind: form
+name: loan-application
+logic:
+  isEmployed: "fields.employmentStatus.value == 'employed'"
+  needsCoSigner: "fields.creditScore.value < 650"
+  showIncomeFields: "isEmployed"
+
+fields:
+  employmentStatus:
+    type: enum
+    label: Employment Status
+    enum: ["employed", "self-employed", "unemployed", "retired"]
+
+  creditScore:
+    type: number
+    label: Credit Score
+    min: 300
+    max: 850
+
+  employer:
+    type: text
+    label: Employer Name
+    visible: showIncomeFields
+    required: showIncomeFields
+
+  monthlyIncome:
+    type: money
+    label: Monthly Income
+    visible: showIncomeFields
+    required: showIncomeFields
+
+  coSignerName:
+    type: person
+    label: Co-Signer
+    visible: needsCoSigner
+    required: needsCoSigner
+```
+
+```json tab="JSON"
+{
+  "kind": "form",
+  "name": "loan-application",
+  "logic": {
+    "isEmployed": "fields.employmentStatus.value == 'employed'",
+    "needsCoSigner": "fields.creditScore.value < 650",
+    "showIncomeFields": "isEmployed"
+  },
+  "fields": {
+    "employmentStatus": {
+      "type": "enum",
+      "label": "Employment Status",
+      "enum": ["employed", "self-employed", "unemployed", "retired"]
+    },
+    "creditScore": {
+      "type": "number",
+      "label": "Credit Score",
+      "min": 300,
+      "max": 850
+    },
+    "employer": {
+      "type": "text",
+      "label": "Employer Name",
+      "visible": "showIncomeFields",
+      "required": "showIncomeFields"
+    },
+    "monthlyIncome": {
+      "type": "money",
+      "label": "Monthly Income",
+      "visible": "showIncomeFields",
+      "required": "showIncomeFields"
+    },
+    "coSignerName": {
+      "type": "person",
+      "label": "Co-Signer",
+      "visible": "needsCoSigner",
+      "required": "needsCoSigner"
+    }
+  }
+}
+```
+
+# Related
+
+- [Form](/schemas/artifacts/form) - Interactive form artifact
+- [Bundle](/schemas/artifacts/bundle) - Container artifact with conditional inclusion
+- [FormField](/schemas/artifacts/form/field) - Field definitions with conditional properties
+- [FormAnnex](/schemas/artifacts/form/annex) - Attachment slots with conditional visibility and requirements

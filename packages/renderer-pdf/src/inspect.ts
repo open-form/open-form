@@ -39,7 +39,7 @@ export interface InspectOptions {
  * @param template - PDF bytes (BinaryContent / Uint8Array)
  * @param options - Optional configuration to include button and signature fields
  */
-export async function inspectPdfFields(
+export async function inspectAcroFormFields(
   template: BinaryContent,
   options: InspectOptions = {}
 ): Promise<PdfFieldInfo[]> {

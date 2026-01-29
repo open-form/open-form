@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testCoordinate = { lat: 40.7128, lon: -74.006 };
 
@@ -39,13 +39,6 @@ describe("coordinate Serializers", () => {
       const result = (euSerializers as any).coordinate.stringify(
         testCoordinate
       );
-      expect(result).toBe("40.7128,-74.006");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("coordinate.stringify (same as USA)", () => {
-      const result = intlSerializers.coordinate.stringify(testCoordinate);
       expect(result).toBe("40.7128,-74.006");
     });
   });

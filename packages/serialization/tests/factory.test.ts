@@ -14,7 +14,6 @@ import type {
 import {
   usaSerializers,
   euSerializers,
-  intlSerializers,
   createSerializer,
   type SerializerRegistry,
 } from "../src/index";
@@ -48,13 +47,6 @@ describe("createSerializer factory", () => {
     expect(result).toContain("€");
   });
 
-  it("creates intl Serializers with intl region", () => {
-    const Serializers = createSerializer({ regionFormat: "intl" });
-    const result = Serializers.address.stringify(testAddress);
-    expect(result).toContain("10001");
-    expect(result).toContain("USA");
-  });
-
   it("ignores unknown regions and defaults to US", () => {
     const Serializers = createSerializer({ regionFormat: "XX" as any });
     const result = Serializers.money.stringify(1000);
@@ -64,12 +56,10 @@ describe("createSerializer factory", () => {
   it("returns different Serializer instances", () => {
     const usa = createSerializer({ regionFormat: "us" });
     const eu = createSerializer({ regionFormat: "eu" });
-    const intl = createSerializer({ regionFormat: "intl" });
 
     const moneyTest = { amount: 100, currency: "USD" };
     const usaResult = usa.money.stringify(moneyTest);
     const euResult = eu.money.stringify(moneyTest);
-    const intlResult = intl.money.stringify(moneyTest);
 
     expect(usaResult).not.toBe(euResult);
   });
@@ -112,6 +102,12 @@ describe("custom Serializers", () => {
       identification: {
         stringify: (value) => `CUSTOM ID: ${JSON.stringify(value)}`,
       },
+      attachment: {
+        stringify: (value) => `CUSTOM ATTACHMENT: ${JSON.stringify(value)}`,
+      },
+      signature: {
+        stringify: (value) => `CUSTOM SIGNATURE: ${JSON.stringify(value)}`,
+      },
     };
 
     expect(
@@ -134,6 +130,8 @@ describe("custom Serializers", () => {
       bbox: { stringify: () => "CUSTOM_BBOX" },
       duration: { stringify: () => "CUSTOM_DURATION" },
       identification: { stringify: () => "CUSTOM_ID" },
+      attachment: { stringify: () => "CUSTOM_ATTACHMENT" },
+      signature: { stringify: () => "CUSTOM_SIGNATURE" },
     };
 
     const result = customSerializers.money.stringify(1000);
@@ -147,7 +145,7 @@ describe("custom Serializers", () => {
       phone: {
         stringify: () => "E.164 Format",
       },
-      person: intlSerializers.person,
+      person: usaSerializers.person,
       organization: usaSerializers.organization,
       party: {
         stringify: (value) => `Party: ${JSON.stringify(value)}`,
@@ -156,6 +154,8 @@ describe("custom Serializers", () => {
       bbox: usaSerializers.bbox,
       duration: usaSerializers.duration,
       identification: usaSerializers.identification,
+      attachment: usaSerializers.attachment,
+      signature: usaSerializers.signature,
     };
 
     expect(hybridSerializers.money.stringify(100)).toContain("$");
@@ -209,6 +209,8 @@ describe("custom Serializers", () => {
       bbox: usaSerializers.bbox,
       duration: usaSerializers.duration,
       identification: usaSerializers.identification,
+      attachment: usaSerializers.attachment,
+      signature: usaSerializers.signature,
     };
 
     const result = ukSerializers.money.stringify(100);
@@ -281,6 +283,8 @@ describe("custom Serializers", () => {
       bbox: usaSerializers.bbox,
       duration: usaSerializers.duration,
       identification: usaSerializers.identification,
+      attachment: usaSerializers.attachment,
+      signature: usaSerializers.signature,
     };
 
     expect(a11ySerializers.money.stringify(50)).toBe("50 USD dollars");

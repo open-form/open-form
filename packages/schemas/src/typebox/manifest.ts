@@ -5,7 +5,7 @@
  * a directory as an OpenForm project.
  */
 
-import { Type, type Static } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox'
 
 /**
  * Manifest schema for open-form.json project files
@@ -50,11 +50,6 @@ export const ManifestSchema = Type.Object(
     additionalProperties: false,
   }
 )
-
-/**
- * Raw TypeBox static type for Manifest
- */
-export type ManifestRaw = Static<typeof ManifestSchema>
 
 /**
  * TypeScript interface for Manifest (for better DX)

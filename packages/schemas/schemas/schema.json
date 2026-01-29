@@ -5,35 +5,6 @@
   "description": "OpenForm JSON Schema specification (latest version)",
   "$ref": "#/$defs/OpenForm",
   "$defs": {
-    "CondExpr": {
-      "title": "CondExpr",
-      "description": "Conditional expression: boolean literal or expression string",
-      "anyOf": [
-        {
-          "description": "Literal boolean value",
-          "type": "boolean"
-        },
-        {
-          "description": "Expression string - either inline expression or reference to a logic key",
-          "minLength": 1,
-          "maxLength": 2000,
-          "type": "string"
-        }
-      ]
-    },
-    "LogicSection": {
-      "title": "LogicSection",
-      "description": "Named expressions that can be referenced in conditional expressions",
-      "type": "object",
-      "patternProperties": {
-        "^[a-zA-Z][a-zA-Z0-9_]*$": {
-          "description": "Expression string to evaluate",
-          "minLength": 1,
-          "maxLength": 2000,
-          "type": "string"
-        }
-      }
-    },
     "Form": {
       "unevaluatedProperties": false,
       "title": "Form",
@@ -110,7 +81,7 @@
               "type": "object",
               "patternProperties": {
                 "^(.*)$": {
-                  "$ref": "#/$defs/Field"
+                  "$ref": "#/$defs/FormField"
                 }
               }
             },
@@ -129,17 +100,18 @@
               "description": "Key of the default layer to use when none specified at render time",
               "type": "string"
             },
-            "allowAnnexes": {
+            "allowAdditionalAnnexes": {
               "default": false,
-              "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes array",
+              "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes record",
               "type": "boolean"
             },
             "annexes": {
-              "minItems": 0,
-              "description": "Predefined annex slots for supplementary documents. Each slot can be marked as required (must be filled at runtime) or optional",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/Annex"
+              "description": "Predefined annex slots keyed by identifier. Each slot can be marked as required (must be filled at runtime) or optional",
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9][a-zA-Z0-9_-]*$": {
+                  "$ref": "#/$defs/FormAnnex"
+                }
               }
             },
             "parties": {
@@ -150,9 +122,6 @@
                   "$ref": "#/$defs/FormParty"
                 }
               }
-            },
-            "witnesses": {
-              "$ref": "#/$defs/WitnessRequirement"
             }
           },
           "required": [
@@ -161,645 +130,8 @@
         }
       ]
     },
-    "Document": {
-      "unevaluatedProperties": false,
-      "title": "Document",
-      "description": "A document artifact representing static content with no inputs. Documents can have multiple layers for rendering to different output formats (e.g., PDF, Markdown, HTML).",
-      "type": "object",
-      "allOf": [
-        {
-          "title": "Artifact",
-          "description": "Root schema for all OpenForm artifacts (containers and documents).",
-          "type": "object",
-          "properties": {
-            "$schema": {
-              "format": "uri",
-              "description": "JSON Schema URI for this artifact instance.",
-              "type": "string"
-            },
-            "name": {
-              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
-              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
-              "minLength": 1,
-              "maxLength": 128,
-              "type": "string"
-            },
-            "version": {
-              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
-              "minLength": 1,
-              "maxLength": 200,
-              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-              "type": "string"
-            },
-            "title": {
-              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "description": {
-              "description": "Detailed description or context for the artifact.",
-              "minLength": 0,
-              "maxLength": 2000,
-              "type": "string"
-            },
-            "code": {
-              "description": "Optional user-defined internal code.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "releaseDate": {
-              "format": "date",
-              "description": "Artifact release date",
-              "type": "string"
-            },
-            "metadata": {
-              "$ref": "#/$defs/Metadata"
-            }
-          },
-          "required": [
-            "name"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "const": "document",
-              "type": "string"
-            },
-            "layers": {
-              "description": "Named layers for rendering this document into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
-              "type": "object",
-              "patternProperties": {
-                "^(.*)$": {
-                  "$ref": "#/$defs/Layer"
-                }
-              }
-            },
-            "defaultLayer": {
-              "minLength": 1,
-              "maxLength": 100,
-              "description": "Key of the default layer to use when none specified at render time",
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind"
-          ]
-        }
-      ]
-    },
-    "Bundle": {
-      "unevaluatedProperties": false,
-      "title": "Bundle",
-      "description": "A bundle artifact that groups together related artifacts into a single distributable unit. Bundles can contain documents, forms, checklists, and other bundles.",
-      "type": "object",
-      "allOf": [
-        {
-          "title": "Artifact",
-          "description": "Root schema for all OpenForm artifacts (containers and documents).",
-          "type": "object",
-          "properties": {
-            "$schema": {
-              "format": "uri",
-              "description": "JSON Schema URI for this artifact instance.",
-              "type": "string"
-            },
-            "name": {
-              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
-              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
-              "minLength": 1,
-              "maxLength": 128,
-              "type": "string"
-            },
-            "version": {
-              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
-              "minLength": 1,
-              "maxLength": 200,
-              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-              "type": "string"
-            },
-            "title": {
-              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "description": {
-              "description": "Detailed description or context for the artifact.",
-              "minLength": 0,
-              "maxLength": 2000,
-              "type": "string"
-            },
-            "code": {
-              "description": "Optional user-defined internal code.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "releaseDate": {
-              "format": "date",
-              "description": "Artifact release date",
-              "type": "string"
-            },
-            "metadata": {
-              "$ref": "#/$defs/Metadata"
-            }
-          },
-          "required": [
-            "name"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "const": "bundle",
-              "type": "string"
-            },
-            "logic": {
-              "$ref": "#/$defs/LogicSection"
-            },
-            "contents": {
-              "description": "Ordered bundle contents. Each item has a key and is either an inline artifact, path reference, or registry reference.",
-              "minItems": 0,
-              "type": "array",
-              "items": {
-                "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
-                "anyOf": [
-                  {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "const": "inline",
-                        "type": "string"
-                      },
-                      "key": {
-                        "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                        "minLength": 1,
-                        "maxLength": 100,
-                        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                        "type": "string"
-                      },
-                      "artifact": {
-                        "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
-                        "anyOf": [
-                          {
-                            "$ref": "#/$defs/Document"
-                          },
-                          {
-                            "$ref": "#/$defs/Form"
-                          },
-                          {
-                            "$ref": "#/$defs/Checklist"
-                          },
-                          {
-                            "$ref": "#/$defs/Bundle"
-                          }
-                        ]
-                      }
-                    },
-                    "required": [
-                      "type",
-                      "key",
-                      "artifact"
-                    ]
-                  },
-                  {
-                    "unevaluatedProperties": false,
-                    "type": "object",
-                    "allOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                            "minLength": 1,
-                            "maxLength": 100,
-                            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                            "type": "string"
-                          },
-                          "include": {
-                            "$ref": "#/$defs/CondExpr"
-                          }
-                        },
-                        "required": [
-                          "key"
-                        ]
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "const": "path",
-                            "type": "string"
-                          },
-                          "path": {
-                            "description": "Absolute path from repo root to the artifact file",
-                            "minLength": 1,
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "type",
-                          "path"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "unevaluatedProperties": false,
-                    "type": "object",
-                    "allOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                            "minLength": 1,
-                            "maxLength": 100,
-                            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                            "type": "string"
-                          },
-                          "include": {
-                            "$ref": "#/$defs/CondExpr"
-                          }
-                        },
-                        "required": [
-                          "key"
-                        ]
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "const": "registry",
-                            "type": "string"
-                          },
-                          "slug": {
-                            "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
-                            "minLength": 1,
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "type",
-                          "slug"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          },
-          "required": [
-            "kind",
-            "contents"
-          ]
-        }
-      ]
-    },
-    "BundleContentItem": {
-      "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
-      "anyOf": [
-        {
-          "additionalProperties": false,
-          "type": "object",
-          "properties": {
-            "type": {
-              "const": "inline",
-              "type": "string"
-            },
-            "key": {
-              "description": "Unique identifier for this content item, used to reference it in logic expressions",
-              "minLength": 1,
-              "maxLength": 100,
-              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "type": "string"
-            },
-            "artifact": {
-              "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/Document"
-                },
-                {
-                  "$ref": "#/$defs/Form"
-                },
-                {
-                  "$ref": "#/$defs/Checklist"
-                },
-                {
-                  "$ref": "#/$defs/Bundle"
-                }
-              ]
-            }
-          },
-          "required": [
-            "type",
-            "key",
-            "artifact"
-          ]
-        },
-        {
-          "unevaluatedProperties": false,
-          "type": "object",
-          "allOf": [
-            {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                  "minLength": 1,
-                  "maxLength": 100,
-                  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                  "type": "string"
-                },
-                "include": {
-                  "$ref": "#/$defs/CondExpr"
-                }
-              },
-              "required": [
-                "key"
-              ]
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "const": "path",
-                  "type": "string"
-                },
-                "path": {
-                  "description": "Absolute path from repo root to the artifact file",
-                  "minLength": 1,
-                  "type": "string"
-                }
-              },
-              "required": [
-                "type",
-                "path"
-              ]
-            }
-          ]
-        },
-        {
-          "unevaluatedProperties": false,
-          "type": "object",
-          "allOf": [
-            {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                  "minLength": 1,
-                  "maxLength": 100,
-                  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                  "type": "string"
-                },
-                "include": {
-                  "$ref": "#/$defs/CondExpr"
-                }
-              },
-              "required": [
-                "key"
-              ]
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "const": "registry",
-                  "type": "string"
-                },
-                "slug": {
-                  "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
-                  "minLength": 1,
-                  "type": "string"
-                }
-              },
-              "required": [
-                "type",
-                "slug"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "Checklist": {
-      "unevaluatedProperties": false,
-      "title": "Checklist",
-      "description": "A checklist artifact containing an ordered list of items to track. Each item may define how its status should be represented at runtime (boolean or enum).",
-      "type": "object",
-      "allOf": [
-        {
-          "title": "Artifact",
-          "description": "Root schema for all OpenForm artifacts (containers and documents).",
-          "type": "object",
-          "properties": {
-            "$schema": {
-              "format": "uri",
-              "description": "JSON Schema URI for this artifact instance.",
-              "type": "string"
-            },
-            "name": {
-              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
-              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
-              "minLength": 1,
-              "maxLength": 128,
-              "type": "string"
-            },
-            "version": {
-              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
-              "minLength": 1,
-              "maxLength": 200,
-              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-              "type": "string"
-            },
-            "title": {
-              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "description": {
-              "description": "Detailed description or context for the artifact.",
-              "minLength": 0,
-              "maxLength": 2000,
-              "type": "string"
-            },
-            "code": {
-              "description": "Optional user-defined internal code.",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "releaseDate": {
-              "format": "date",
-              "description": "Artifact release date",
-              "type": "string"
-            },
-            "metadata": {
-              "$ref": "#/$defs/Metadata"
-            }
-          },
-          "required": [
-            "name"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "const": "checklist",
-              "type": "string"
-            },
-            "items": {
-              "description": "Array of checklist items. Each item represents a task, step, or requirement.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/ChecklistItem"
-              }
-            },
-            "layers": {
-              "description": "Named layers for rendering this checklist into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
-              "type": "object",
-              "patternProperties": {
-                "^(.*)$": {
-                  "$ref": "#/$defs/Layer"
-                }
-              }
-            },
-            "defaultLayer": {
-              "minLength": 1,
-              "maxLength": 100,
-              "description": "Key of the default layer to use when none specified at render time",
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "items"
-          ]
-        }
-      ]
-    },
-    "ChecklistItem": {
-      "title": "ChecklistItem",
-      "additionalProperties": false,
-      "description": "A single item in a checklist artifact. Each item has an ID, title, optional description, and an optional status specification (boolean or enum). If status is omitted, a default boolean status may be assumed (implementation-defined).",
-      "type": "object",
-      "properties": {
-        "id": {
-          "description": "Unique identifier for the checklist item (e.g., \"task-1\", \"step-a\"). Used to link to runtime status.",
-          "minLength": 1,
-          "maxLength": 128,
-          "type": "string"
-        },
-        "title": {
-          "description": "Title or label for the checklist item",
-          "minLength": 1,
-          "maxLength": 500,
-          "type": "string"
-        },
-        "description": {
-          "description": "Detailed description or instructions for the item",
-          "minLength": 1,
-          "maxLength": 2000,
-          "type": "string"
-        },
-        "status": {
-          "title": "StatusSpec",
-          "description": "Specification for how checklist item status should be represented (boolean or enum).",
-          "anyOf": [
-            {
-              "title": "BooleanStatusSpec",
-              "description": "Boolean status (e.g., incomplete/complete) with an optional default value.",
-              "type": "object",
-              "properties": {
-                "kind": {
-                  "const": "boolean",
-                  "type": "string"
-                },
-                "default": {
-                  "description": "Default status value (true/false) for new instances",
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "kind"
-              ]
-            },
-            {
-              "title": "EnumStatusSpec",
-              "description": "Enum-based status with a set of allowed options and an optional default.",
-              "type": "object",
-              "properties": {
-                "kind": {
-                  "const": "enum",
-                  "type": "string"
-                },
-                "options": {
-                  "minItems": 1,
-                  "description": "Allowed status options",
-                  "type": "array",
-                  "items": {
-                    "title": "EnumStatusOption",
-                    "additionalProperties": false,
-                    "type": "object",
-                    "properties": {
-                      "value": {
-                        "description": "Internal status value (e.g., \"todo\", \"in-progress\", \"done\")",
-                        "minLength": 1,
-                        "maxLength": 64,
-                        "type": "string"
-                      },
-                      "label": {
-                        "description": "Human-readable label for the status option",
-                        "minLength": 1,
-                        "maxLength": 256,
-                        "type": "string"
-                      },
-                      "description": {
-                        "description": "Optional description or help text for this status option",
-                        "minLength": 1,
-                        "maxLength": 2000,
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "value",
-                      "label"
-                    ]
-                  }
-                },
-                "default": {
-                  "description": "Default status value for new instances (must match one of the option values)",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "type": "string"
-                }
-              },
-              "required": [
-                "kind",
-                "options"
-              ]
-            }
-          ]
-        }
-      },
-      "required": [
-        "id",
-        "title"
-      ]
-    },
-    "Field": {
-      "title": "Field",
+    "FormField": {
+      "title": "FormField",
       "description": "Single input/data element. Fields are keyed by their identifier and can be of various types (text, number, boolean, address, phone, etc.) or nested fieldsets",
       "anyOf": [
         {
@@ -1954,19 +1286,12 @@
         }
       ]
     },
-    "Annex": {
-      "title": "Annex",
+    "FormAnnex": {
+      "title": "FormAnnex",
       "additionalProperties": false,
       "description": "Defines an annex slot where a document must or may be attached at runtime",
       "type": "object",
       "properties": {
-        "id": {
-          "description": "Unique identifier for the annex (e.g., exhibit-a, schedule-1)",
-          "minLength": 1,
-          "maxLength": 100,
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
-          "type": "string"
-        },
         "title": {
           "description": "Title or heading for the annex slot",
           "minLength": 1,
@@ -1984,72 +1309,13 @@
         },
         "visible": {
           "$ref": "#/$defs/CondExpr"
-        }
-      },
-      "required": [
-        "id",
-        "title"
-      ]
-    },
-    "Party": {
-      "title": "Party",
-      "description": "Party definition: either a person (with full name and optional name components) or an organization (with name and optional legal/entity details). May include an optional signature reference",
-      "anyOf": [
-        {
-          "unevaluatedProperties": false,
-          "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/Person"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "const": "person",
-                  "type": "string"
-                },
-                "signature": {
-                  "description": "Signature identifier or reference (e.g., signature image URI, signature ID)",
-                  "minLength": 1,
-                  "maxLength": 500,
-                  "type": "string"
-                }
-              },
-              "required": [
-                "type"
-              ]
-            }
-          ]
         },
-        {
-          "unevaluatedProperties": false,
-          "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/Organization"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "const": "organization",
-                  "type": "string"
-                },
-                "signature": {
-                  "description": "Signature identifier or reference (e.g., signature image URI, signature ID)",
-                  "minLength": 1,
-                  "maxLength": 500,
-                  "type": "string"
-                }
-              },
-              "required": [
-                "type"
-              ]
-            }
-          ]
+        "order": {
+          "minimum": 0,
+          "description": "Display order for rendering",
+          "type": "number"
         }
-      ]
+      }
     },
     "FormParty": {
       "title": "FormParty",
@@ -2085,95 +1351,1738 @@
             }
           ]
         },
-        "multiple": {
-          "default": false,
-          "description": "Whether multiple parties can fill this role",
-          "type": "boolean"
-        },
         "min": {
           "minimum": 0,
-          "description": "Minimum parties required (when multiple=true)",
+          "default": 1,
+          "description": "Minimum parties required",
           "type": "number"
         },
         "max": {
           "minimum": 1,
-          "description": "Maximum parties allowed (when multiple=true)",
+          "default": 1,
+          "description": "Maximum parties allowed",
           "type": "number"
         },
         "required": {
           "$ref": "#/$defs/CondExpr"
         },
         "signature": {
-          "title": "SignatureRequirement",
-          "description": "Signature requirements for a party role",
+          "title": "FormSignature",
+          "description": "Design-time signature requirements for a party role",
           "type": "object",
           "properties": {
             "required": {
+              "default": false,
               "description": "Whether signature is required for this role",
               "type": "boolean"
             },
-            "type": {
-              "default": "any",
-              "description": "Type of signature accepted",
-              "anyOf": [
-                {
-                  "const": "electronic",
-                  "type": "string"
-                },
-                {
-                  "const": "wet",
-                  "type": "string"
-                },
-                {
-                  "const": "any",
-                  "type": "string"
-                }
-              ]
-            },
-            "order": {
-              "minimum": 1,
-              "description": "Signing sequence (1 = first signer)",
+            "witnesses": {
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of witnesses required for this signature",
               "type": "number"
+            },
+            "notarized": {
+              "default": false,
+              "description": "Whether at least one witness must be a notary",
+              "type": "boolean"
             }
-          },
-          "required": [
-            "required"
-          ]
+          }
         }
       },
       "required": [
         "label"
       ]
     },
-    "WitnessRequirement": {
-      "title": "WitnessRequirement",
-      "description": "Witness requirements for form execution",
+    "FormFieldset": {
+      "title": "FormFieldset",
+      "additionalProperties": false,
+      "description": "Grouped collection of fields that can be nested. Fields are keyed by their identifier",
       "type": "object",
       "properties": {
+        "id": {
+          "description": "Unique identifier for the fieldset (e.g., address-section, personal-info)",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title or heading for the fieldset",
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "description": {
+          "description": "Description or summary of the fieldset",
+          "minLength": 1,
+          "maxLength": 1000,
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {
+              "$ref": "#/$defs/FormField"
+            }
+          }
+        },
         "required": {
-          "description": "Whether witnesses are required",
+          "description": "Whether fieldset is required",
           "type": "boolean"
         },
-        "min": {
-          "minimum": 1,
-          "default": 1,
-          "description": "Minimum number of witnesses required",
+        "order": {
+          "description": "Display order (lower numbers appear first)",
+          "minimum": 0,
           "type": "number"
-        },
-        "max": {
-          "minimum": 1,
-          "description": "Maximum number of witnesses allowed",
-          "type": "number"
-        },
-        "notarized": {
-          "default": false,
-          "description": "Whether witnesses must be notarized",
-          "type": "boolean"
         }
       },
       "required": [
-        "required"
+        "id",
+        "fields"
       ]
+    },
+    "Document": {
+      "unevaluatedProperties": false,
+      "title": "Document",
+      "description": "A document artifact representing static content with no inputs. Documents can have multiple layers for rendering to different output formats (e.g., PDF, Markdown, HTML).",
+      "type": "object",
+      "allOf": [
+        {
+          "title": "Artifact",
+          "description": "Root schema for all OpenForm artifacts (containers and documents).",
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "format": "uri",
+              "description": "JSON Schema URI for this artifact instance.",
+              "type": "string"
+            },
+            "name": {
+              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+              "minLength": 1,
+              "maxLength": 128,
+              "type": "string"
+            },
+            "version": {
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "type": "string"
+            },
+            "title": {
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "description": {
+              "description": "Detailed description or context for the artifact.",
+              "minLength": 0,
+              "maxLength": 2000,
+              "type": "string"
+            },
+            "code": {
+              "description": "Optional user-defined internal code.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "releaseDate": {
+              "format": "date",
+              "description": "Artifact release date",
+              "type": "string"
+            },
+            "metadata": {
+              "$ref": "#/$defs/Metadata"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "document",
+              "type": "string"
+            },
+            "layers": {
+              "description": "Named layers for rendering this document into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
+              "type": "object",
+              "patternProperties": {
+                "^(.*)$": {
+                  "$ref": "#/$defs/Layer"
+                }
+              }
+            },
+            "defaultLayer": {
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Key of the default layer to use when none specified at render time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        }
+      ]
+    },
+    "Bundle": {
+      "unevaluatedProperties": false,
+      "title": "Bundle",
+      "description": "A bundle artifact that groups together related artifacts into a single distributable unit. Bundles can contain documents, forms, checklists, and other bundles.",
+      "type": "object",
+      "allOf": [
+        {
+          "title": "Artifact",
+          "description": "Root schema for all OpenForm artifacts (containers and documents).",
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "format": "uri",
+              "description": "JSON Schema URI for this artifact instance.",
+              "type": "string"
+            },
+            "name": {
+              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+              "minLength": 1,
+              "maxLength": 128,
+              "type": "string"
+            },
+            "version": {
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "type": "string"
+            },
+            "title": {
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "description": {
+              "description": "Detailed description or context for the artifact.",
+              "minLength": 0,
+              "maxLength": 2000,
+              "type": "string"
+            },
+            "code": {
+              "description": "Optional user-defined internal code.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "releaseDate": {
+              "format": "date",
+              "description": "Artifact release date",
+              "type": "string"
+            },
+            "metadata": {
+              "$ref": "#/$defs/Metadata"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "bundle",
+              "type": "string"
+            },
+            "logic": {
+              "$ref": "#/$defs/LogicSection"
+            },
+            "contents": {
+              "description": "Ordered bundle contents. Each item has a key and is either an inline artifact, path reference, or registry reference.",
+              "minItems": 0,
+              "type": "array",
+              "items": {
+                "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "inline",
+                        "type": "string"
+                      },
+                      "key": {
+                        "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                        "type": "string"
+                      },
+                      "artifact": {
+                        "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/Document"
+                          },
+                          {
+                            "$ref": "#/$defs/Form"
+                          },
+                          {
+                            "$ref": "#/$defs/Checklist"
+                          },
+                          {
+                            "$ref": "#/$defs/Bundle"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "key",
+                      "artifact"
+                    ]
+                  },
+                  {
+                    "unevaluatedProperties": false,
+                    "type": "object",
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                            "minLength": 1,
+                            "maxLength": 100,
+                            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                            "type": "string"
+                          },
+                          "include": {
+                            "$ref": "#/$defs/CondExpr"
+                          }
+                        },
+                        "required": [
+                          "key"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "const": "path",
+                            "type": "string"
+                          },
+                          "path": {
+                            "description": "Absolute path from repo root to the artifact file",
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "path"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "unevaluatedProperties": false,
+                    "type": "object",
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                            "minLength": 1,
+                            "maxLength": 100,
+                            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                            "type": "string"
+                          },
+                          "include": {
+                            "$ref": "#/$defs/CondExpr"
+                          }
+                        },
+                        "required": [
+                          "key"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "const": "registry",
+                            "type": "string"
+                          },
+                          "slug": {
+                            "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "slug"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "kind",
+            "contents"
+          ]
+        }
+      ]
+    },
+    "BundleContentItem": {
+      "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "inline",
+              "type": "string"
+            },
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+              "type": "string"
+            },
+            "artifact": {
+              "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Document"
+                },
+                {
+                  "$ref": "#/$defs/Form"
+                },
+                {
+                  "$ref": "#/$defs/Checklist"
+                },
+                {
+                  "$ref": "#/$defs/Bundle"
+                }
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "key",
+            "artifact"
+          ]
+        },
+        {
+          "unevaluatedProperties": false,
+          "type": "object",
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                  "type": "string"
+                },
+                "include": {
+                  "$ref": "#/$defs/CondExpr"
+                }
+              },
+              "required": [
+                "key"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "path",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Absolute path from repo root to the artifact file",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "path"
+              ]
+            }
+          ]
+        },
+        {
+          "unevaluatedProperties": false,
+          "type": "object",
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                  "type": "string"
+                },
+                "include": {
+                  "$ref": "#/$defs/CondExpr"
+                }
+              },
+              "required": [
+                "key"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "registry",
+                  "type": "string"
+                },
+                "slug": {
+                  "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "slug"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Checklist": {
+      "unevaluatedProperties": false,
+      "title": "Checklist",
+      "description": "A checklist artifact containing an ordered list of items to track. Each item may define how its status should be represented at runtime (boolean or enum).",
+      "type": "object",
+      "allOf": [
+        {
+          "title": "Artifact",
+          "description": "Root schema for all OpenForm artifacts (containers and documents).",
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "format": "uri",
+              "description": "JSON Schema URI for this artifact instance.",
+              "type": "string"
+            },
+            "name": {
+              "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+              "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+              "minLength": 1,
+              "maxLength": 128,
+              "type": "string"
+            },
+            "version": {
+              "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "type": "string"
+            },
+            "title": {
+              "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "description": {
+              "description": "Detailed description or context for the artifact.",
+              "minLength": 0,
+              "maxLength": 2000,
+              "type": "string"
+            },
+            "code": {
+              "description": "Optional user-defined internal code.",
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "releaseDate": {
+              "format": "date",
+              "description": "Artifact release date",
+              "type": "string"
+            },
+            "metadata": {
+              "$ref": "#/$defs/Metadata"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "checklist",
+              "type": "string"
+            },
+            "items": {
+              "description": "Array of checklist items. Each item represents a task, step, or requirement.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ChecklistItem"
+              }
+            },
+            "layers": {
+              "description": "Named layers for rendering this checklist into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
+              "type": "object",
+              "patternProperties": {
+                "^(.*)$": {
+                  "$ref": "#/$defs/Layer"
+                }
+              }
+            },
+            "defaultLayer": {
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Key of the default layer to use when none specified at render time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "items"
+          ]
+        }
+      ]
+    },
+    "ChecklistItem": {
+      "title": "ChecklistItem",
+      "additionalProperties": false,
+      "description": "A single item in a checklist artifact. Each item has an ID, title, optional description, and an optional status specification (boolean or enum). If status is omitted, a default boolean status may be assumed (implementation-defined).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier for the checklist item (e.g., \"task-1\", \"step-a\"). Used to link to runtime status.",
+          "minLength": 1,
+          "maxLength": 128,
+          "type": "string"
+        },
+        "title": {
+          "description": "Title or label for the checklist item",
+          "minLength": 1,
+          "maxLength": 500,
+          "type": "string"
+        },
+        "description": {
+          "description": "Detailed description or instructions for the item",
+          "minLength": 1,
+          "maxLength": 2000,
+          "type": "string"
+        },
+        "status": {
+          "title": "StatusSpec",
+          "description": "Specification for how checklist item status should be represented (boolean or enum).",
+          "anyOf": [
+            {
+              "title": "BooleanStatusSpec",
+              "description": "Boolean status (e.g., incomplete/complete) with an optional default value.",
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "boolean",
+                  "type": "string"
+                },
+                "default": {
+                  "description": "Default status value (true/false) for new instances",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            {
+              "title": "EnumStatusSpec",
+              "description": "Enum-based status with a set of allowed options and an optional default.",
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "enum",
+                  "type": "string"
+                },
+                "options": {
+                  "minItems": 1,
+                  "description": "Allowed status options",
+                  "type": "array",
+                  "items": {
+                    "title": "EnumStatusOption",
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "description": "Internal status value (e.g., \"todo\", \"in-progress\", \"done\")",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "label": {
+                        "description": "Human-readable label for the status option",
+                        "minLength": 1,
+                        "maxLength": 256,
+                        "type": "string"
+                      },
+                      "description": {
+                        "description": "Optional description or help text for this status option",
+                        "minLength": 1,
+                        "maxLength": 2000,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "label"
+                    ]
+                  }
+                },
+                "default": {
+                  "description": "Default status value for new instances (must match one of the option values)",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "options"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "CondExpr": {
+      "title": "CondExpr",
+      "description": "Conditional expression: boolean literal or expression string",
+      "anyOf": [
+        {
+          "description": "Literal boolean value",
+          "type": "boolean"
+        },
+        {
+          "description": "Expression string - either inline expression or reference to a logic key",
+          "minLength": 1,
+          "maxLength": 2000,
+          "type": "string"
+        }
+      ]
+    },
+    "LogicSection": {
+      "title": "LogicSection",
+      "description": "Named computed values with type information that can be referenced in conditional expressions",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "title": "LogicExpression",
+          "description": "A typed computed value with optional metadata (label, description). The type property determines the expected result type and value schema.",
+          "anyOf": [
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "boolean",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a boolean",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "string",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a string",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "number",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a number",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "integer",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to an integer",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "percentage",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a percentage (0-100)",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "rating",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a rating value",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "date",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to an ISO 8601 date (YYYY-MM-DD)",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "time",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to a time (HH:MM:SS)",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "datetime",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to an ISO 8601 datetime",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "duration",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Expression that evaluates to an ISO 8601 duration string",
+                      "minLength": 1,
+                      "maxLength": 2000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "money",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Money object with amount and currency expressions",
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "currency": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "address",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Address object with component expressions",
+                      "type": "object",
+                      "properties": {
+                        "line1": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "line2": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "locality": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "region": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "country": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "line1",
+                        "locality",
+                        "region",
+                        "postalCode",
+                        "country"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "phone",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Phone object with number and optional type/extension expressions",
+                      "type": "object",
+                      "properties": {
+                        "number": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "extension": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "coordinate",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Coordinate object with latitude and longitude expressions",
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "lon": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lon"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "bbox",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Bounding box with north, south, east, west boundary expressions",
+                      "type": "object",
+                      "properties": {
+                        "north": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "south": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "east": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "west": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "north",
+                        "south",
+                        "east",
+                        "west"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "person",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Person object with name component expressions",
+                      "type": "object",
+                      "properties": {
+                        "fullName": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "title": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "firstName": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "suffix": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "fullName"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "organization",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Organization object with component expressions",
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "legalName": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "domicile": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "entityType": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "entityId": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "taxId": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Display label for the computed value",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "description": {
+                      "description": "Description or documentation of the computed value",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "identification",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Identification object with type, number, and optional issuer/date expressions",
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "number": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "issueDate": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        },
+                        "expiryDate": {
+                          "description": "Expression string to evaluate",
+                          "minLength": 1,
+                          "maxLength": 2000,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
     },
     "Layer": {
       "title": "Layer",
@@ -2325,54 +3234,6 @@
         }
       ]
     },
-    "Fieldset": {
-      "title": "Fieldset",
-      "additionalProperties": false,
-      "description": "Grouped collection of fields that can be nested. Fields are keyed by their identifier",
-      "type": "object",
-      "properties": {
-        "id": {
-          "description": "Unique identifier for the fieldset (e.g., address-section, personal-info)",
-          "minLength": 1,
-          "maxLength": 100,
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
-          "type": "string"
-        },
-        "title": {
-          "description": "Title or heading for the fieldset",
-          "minLength": 1,
-          "maxLength": 200,
-          "type": "string"
-        },
-        "description": {
-          "description": "Description or summary of the fieldset",
-          "minLength": 1,
-          "maxLength": 1000,
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "patternProperties": {
-            "^(.*)$": {
-              "$ref": "#/$defs/Field"
-            }
-          }
-        },
-        "required": {
-          "description": "Whether fieldset is required",
-          "type": "boolean"
-        },
-        "order": {
-          "description": "Display order (lower numbers appear first)",
-          "minimum": 0,
-          "type": "number"
-        }
-      },
-      "required": [
-        "id",
-        "fields"
-      ]
-    },
     "Address": {
       "title": "Address",
       "description": "Physical address with street, locality, region, postal code, and country",
@@ -2387,7 +3248,6 @@
         },
         "line2": {
           "description": "Secondary address line",
-          "minLength": 1,
           "maxLength": 200,
           "type": "string"
         },
@@ -2690,6 +3550,99 @@
       },
       "required": [
         "number"
+      ]
+    },
+    "Attachment": {
+      "title": "Attachment",
+      "additionalProperties": false,
+      "description": "Attachment data representing an attached document. The key in the record is the annex identifier (the key from form.annexes).",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Original file name",
+          "minLength": 1,
+          "maxLength": 255,
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "MIME type of the attached file",
+          "minLength": 1,
+          "maxLength": 100,
+          "type": "string"
+        },
+        "checksum": {
+          "description": "SHA-256 checksum for integrity verification",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "mimeType"
+      ]
+    },
+    "Signature": {
+      "title": "Signature",
+      "additionalProperties": false,
+      "description": "Captured signature data containing the signature image, timestamp, capture method, and optional metadata.",
+      "type": "object",
+      "properties": {
+        "image": {
+          "description": "Base64-encoded signature image or data URI",
+          "minLength": 1,
+          "type": "string"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "description": "ISO 8601 date-time when the signature was captured",
+          "type": "string"
+        },
+        "method": {
+          "description": "Method used to capture the signature",
+          "anyOf": [
+            {
+              "const": "drawn",
+              "type": "string"
+            },
+            {
+              "const": "typed",
+              "type": "string"
+            },
+            {
+              "const": "uploaded",
+              "type": "string"
+            },
+            {
+              "const": "certificate",
+              "type": "string"
+            }
+          ]
+        },
+        "type": {
+          "default": "signature",
+          "description": "Whether this is a full signature or initials",
+          "anyOf": [
+            {
+              "const": "signature",
+              "type": "string"
+            },
+            {
+              "const": "initials",
+              "type": "string"
+            }
+          ]
+        },
+        "metadata": {
+          "description": "Additional metadata (IP address, device info, etc.)",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {}
+          }
+        }
+      },
+      "required": [
+        "timestamp",
+        "method"
       ]
     },
     "OpenForm": {

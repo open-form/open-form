@@ -1,8 +1,8 @@
 {
   "title": "Primitives",
   "pages": [
-    "index",
     "address",
+    "attachment",
     "bbox",
     "coordinate",
     "duration",
@@ -11,7 +11,8 @@
     "money",
     "organization",
     "person",
-    "phone"
+    "phone",
+    "signature"
   ],
   "defaultOpen": false
 }

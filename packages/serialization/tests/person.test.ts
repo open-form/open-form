@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testPerson = {
   firstName: "John",
@@ -36,14 +36,6 @@ describe("person Serializers", () => {
   describe("euSerializers", () => {
     it("person.stringify (same as USA)", () => {
       const result = euSerializers.person.stringify(testPerson);
-      expect(result).toContain("John");
-      expect(result).toContain("Doe");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("person.stringify (same as USA)", () => {
-      const result = intlSerializers.person.stringify(testPerson);
       expect(result).toContain("John");
       expect(result).toContain("Doe");
     });

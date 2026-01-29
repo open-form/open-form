@@ -10,9 +10,10 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { baseOptions } from "@/lib/layout.shared";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
-
+import { Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/$")({
   component: Page,
   loader: async ({ params }) => {
@@ -20,6 +21,19 @@ export const Route = createFileRoute("/$")({
     const data = await serverLoader({ data: slugs });
     await clientLoader.preload(data.path);
     return data;
+  },
+  notFoundComponent: () => {
+    return (
+      <main className="flex flex-col items-center justify-center h-screen">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <h1>Not Found</h1>
+          <p>This page doesn't exist...</p>
+          <Link to="/$" className="bg-secondary px-4 py-2 rounded-md">
+            Go back to the home page
+          </Link>
+        </div>
+      </main>
+    );
   },
 });
 
@@ -33,23 +47,96 @@ const serverLoader = createServerFn({
 
     return {
       path: page.path,
+      url: page.url,
       pageTree: await source.serializePageTree(source.getPageTree()),
     };
   });
 
 import { PageLastUpdate } from "fumadocs-ui/layouts/docs/page";
 
+import {
+  PropertiesTable,
+  DesignTimeBadge,
+  RunTimeBadge,
+  MethodChain,
+  MethodTable,
+} from "@/components/mdx";
+
 const clientLoader = browserCollections.docs.createClientLoader({
   component({ toc, frontmatter, default: MDX, lastModified }) {
     return (
       <DocsPage toc={toc}>
-        <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
-        {lastModified && <PageLastUpdate date={lastModified} />}
+        <DocsTitle>
+          <div className="flex justify-between gap-4">
+            <span className="tracking-tight">{frontmatter.title}</span>
+            {lastModified && (
+              <PageLastUpdate
+                date={lastModified}
+                className="text-xs text-muted-foreground font-normal"
+              />
+            )}
+          </div>
+        </DocsTitle>
+        <DocsDescription className="p-0!">
+          {frontmatter.description}
+        </DocsDescription>
+
+        <PageActions />
+
         <DocsBody>
           <MDX
             components={{
               ...defaultMdxComponents,
+              h1: (props) => (
+                <h1
+                  {...props}
+                  className="tracking-tight text-[1.35rem] font-semibold text-foreground/90 dark:text-foreground/100"
+                />
+              ),
+              h2: (props) => (
+                <h2
+                  {...props}
+                  className="tracking-tight text-lg font-semibold text-foreground/90"
+                />
+              ),
+              h3: (props) => (
+                <h3
+                  {...props}
+                  className="font-semibold text-base text-foreground/90"
+                />
+              ),
+              h4: (props) => (
+                <h4
+                  {...props}
+                  className="font-semibold text-base text-foreground/90"
+                />
+              ),
+              h5: (props) => (
+                <h5
+                  {...props}
+                  className="font-semibold text-base text-muted-foreground uppercase"
+                />
+              ),
+              strong: (props) => (
+                <strong {...props} className="font-semibold" />
+              ),
+              code: (props) => (
+                <code {...props} className="line-[1rem] py-0.25 font-medium" />
+              ),
+              li: (props) => <li {...props} className="leading-normal ml-4" />,
+              a: (props) => (
+                <a
+                  {...props}
+                  className="text-primary no-underline font-medium"
+                />
+              ),
+              PropertiesTable,
+              DesignTimeBadge,
+              RunTimeBadge,
+              MethodChain,
+              MethodTable,
+              Tab,
+              Tabs,
             }}
           />
         </DocsBody>
@@ -65,10 +152,14 @@ function Page() {
 
   return (
     <DocsLayout {...baseOptions()} tree={pageTree}>
-      <Content />
+      <PageProvider url={data.url} filePath={data.path}>
+        <Content />
+      </PageProvider>
     </DocsLayout>
   );
 }
+
+import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
 
 // import { createFileRoute, notFound } from "@tanstack/react-router";
 // import { DocsLayout } from "fumadocs-ui/layouts/docs";
@@ -87,7 +178,7 @@ function Page() {
 // import { baseOptions } from "@/lib/layout.shared";
 // import { useFumadocsLoader } from "fumadocs-core/source/client";
 // import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
-// import { PageProvider, usePageContext } from "@/lib/page-context";
+import { PageProvider, usePageContext } from "@/lib/page-context";
 
 // export const Route = createFileRoute("/$")({
 //   component: Page,
@@ -130,18 +221,18 @@ function Page() {
 //     };
 //   });
 
-// function PageActions() {
-//   const { url, filePath } = usePageContext();
-//   const markdownUrl = `${url}.mdx`;
-//   const githubUrl = `https://github.com/nicholasgriffintn/open-form/blob/main/apps/docs/${filePath}`;
+function PageActions() {
+  const { url, filePath } = usePageContext();
+  const markdownUrl = `${url}.mdx`;
+  const githubUrl = `https://github.com/nicholasgriffintn/open-form/blob/main/apps/docs/${filePath}`;
 
-//   return (
-//     <div className="flex flex-row gap-2 items-center border-b border-fd-border pb-4 mb-6">
-//       <LLMCopyButton markdownUrl={markdownUrl} />
-//       <ViewOptions markdownUrl={markdownUrl} githubUrl={githubUrl} />
-//     </div>
-//   );
-// }
+  return (
+    <div className="flex flex-row gap-2 items-center border-b border-fd-border pb-4 mb-6">
+      <LLMCopyButton markdownUrl={markdownUrl} />
+      <ViewOptions markdownUrl={markdownUrl} githubUrl={githubUrl} />
+    </div>
+  );
+}
 
 // const clientLoader = createClientLoader(browserDocs.doc, {
 //   id: "docs",

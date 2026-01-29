@@ -6,9 +6,9 @@ import type { Bbox } from '@open-form/types'
 import { isObject } from '../utils'
 
 /**
- * Validate Bbox object. Throws error if invalid.
+ * Assert Bbox object is valid. Throws error if invalid.
  */
-export function validateBbox(value: unknown): void {
+function assertBbox(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid bbox: must be a Bbox object')
 	}
@@ -62,7 +62,7 @@ export const bboxStringifier = {
 	stringify(value: Bbox | Partial<Bbox>, fallback = ''): string {
 		if (value == null) return fallback
 
-		validateBbox(value)
+		assertBbox(value)
 
 		const bbox = value as Bbox
 		const sw = bbox.southWest

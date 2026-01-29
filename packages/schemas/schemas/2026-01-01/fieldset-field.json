@@ -1187,7 +1187,7 @@
                   ]
                 },
                 {
-                  "$ref": "FieldsetField"
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FieldsetField"
                 }
               ]
             }

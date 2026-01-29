@@ -3,7 +3,7 @@
  *
  * Implementations can back this with:
  *  - In-memory map (@open-form/core createMemoryResolver)
- *  - Local filesystem (@open-form/resolvers/fs)
+ *  - Local filesystem (@open-form/resolvers)
  *  - Object storage (S3/R2/etc.)
  *  - HTTP fetch
  */

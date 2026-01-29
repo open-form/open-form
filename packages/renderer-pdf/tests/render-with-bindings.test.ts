@@ -46,11 +46,13 @@ describe('renderPdf with bindings', () => {
     },
   }
 
+  // Bindings format: { pdfFieldName: formDataExpression }
+  // Keys are the field names in the PDF, values are the form data paths
   const bindings = {
-    name: 'pet_name',
-    species: 'SPECIES',
-    weight: 'petWeight',
-    hasVaccination: 'is_vaccinated',
+    pet_name: 'name',
+    SPECIES: 'species',
+    petWeight: 'weight',
+    is_vaccinated: 'hasVaccination',
   }
 
   test('renders PDF template with pet data using bindings', async () => {
@@ -67,7 +69,12 @@ describe('renderPdf with bindings', () => {
     expect(template.length).toBeGreaterThan(0)
 
     // Render with bindings
-    const output = await renderPdf(new Uint8Array(template), formDefinition, testData, bindings)
+    const output = await renderPdf({
+      template: new Uint8Array(template),
+      form: formDefinition,
+      data: testData,
+      bindings,
+    })
 
     expect(output).toBeDefined()
     expect(output.length).toBeGreaterThan(0)

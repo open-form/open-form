@@ -1,10 +1,7 @@
 import { describe, test, expect } from 'vitest'
-import {
-  buildFormContext,
-  getLogicValues,
-  getFieldValueFromContext,
-} from '@/logic/evaluation/context-builder'
+import { buildFormContext } from '@/logic/runtime/evaluation/context-builder'
 import type { Form } from '@open-form/types'
+import { getLogicValues, getFieldValueFromContext } from '../helpers/evaluation-helpers'
 
 /**
  * Tests for context-builder.ts
@@ -36,8 +33,8 @@ describe('context-builder', () => {
       hasLicense: { type: 'boolean' },
     },
     logic: {
-      isAdult: 'fields.age.value >= 18',
-      canDrive: 'isAdult and fields.hasLicense.value',
+      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+      canDrive: { type: 'boolean', value: 'isAdult and fields.hasLicense.value' },
     },
   })
 

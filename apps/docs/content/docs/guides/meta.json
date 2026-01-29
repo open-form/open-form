@@ -1,0 +1,13 @@
+{
+  "title": "Guides",
+  "pages": [
+    "forms",
+    "documents",
+    "checklists",
+    "bundles",
+    "text-layers",
+    "pdf-layers"
+  ],
+  "defaultOpen": false,
+  "icon": "Compass"
+}

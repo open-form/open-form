@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/2026-01-01/formannex.json",
+  "title": "FormAnnex",
+  "additionalProperties": false,
+  "description": "Defines an annex slot where a document must or may be attached at runtime",
+  "type": "object",
+  "properties": {
+    "title": {
+      "description": "Title or heading for the annex slot",
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of what document should be attached",
+      "minLength": 1,
+      "maxLength": 1000,
+      "type": "string"
+    },
+    "required": {
+      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+    },
+    "visible": {
+      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+    },
+    "order": {
+      "minimum": 0,
+      "description": "Display order for rendering",
+      "type": "number"
+    }
+  }
+}

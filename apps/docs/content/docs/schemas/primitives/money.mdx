@@ -3,16 +3,24 @@ title: Money
 description: A monetary amount with currency
 ---
 
-A monetary amount paired with an ISO 4217 currency code.
+A Money is a structured primitive that represents a monetary amount paired with an ISO 4217 currency code.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `amount` | `number` | Yes | Amount expressed in decimal form (supports negative values) |
-| `currency` | `string` | Yes | ISO 4217 alpha-3 currency code (e.g., USD, EUR) |
+<PropertiesTable properties={[
+  {
+    name: 'amount',
+    type: 'number',
+    description: 'Amount expressed in decimal form (supports negative values).',
+  },
+  {
+    name: 'currency',
+    type: 'string',
+    description: 'ISO 4217 alpha-3 currency code (e.g., USD, EUR).',
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

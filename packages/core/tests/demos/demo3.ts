@@ -8,7 +8,7 @@ const f0: Form = {
   description: 'Collect details from prospective adopters',
   code: 'FORM-ADOPT-1',
   logic: {
-    isAdult: 'fields.age.value >= 18',
+    isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
   },
   metadata: {
     department: 'adoptions',
@@ -32,7 +32,7 @@ const f1 = open.form({
   name: 'pet-adoption',
   title: 'Pet Adoption Form',
   logic: {
-    isAdult: 'fields.age.value >= 18',
+    isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
   },
   fields: {
     age: {
@@ -68,7 +68,7 @@ const f3 = open
   .version('1.0.0')
   .title('Pet Adoption Form')
   .logic({
-    isAdult: 'fields.age.value >= 18',
+    isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
   })
   .fields({
     age: open.field

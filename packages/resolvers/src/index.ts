@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * // Direct subpath import (recommended for tree-shaking)
- * import { createFsResolver } from '@open-form/resolvers/fs'
+ * import { createFsResolver } from '@open-form/resolvers'
  *
  * // Umbrella import (convenience)
  * import { createFsResolver } from '@open-form/resolvers'

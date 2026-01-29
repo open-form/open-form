@@ -1,17 +1,17 @@
 /**
- * Tests for inspectPdfFields function
+ * Tests for inspectAcroFormFields function
  */
 
 import { describe, test, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inspectPdfFields } from "../src/inspect";
+import { inspectAcroFormFields } from "../src/inspect";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-describe("inspectPdfFields", () => {
+describe("inspectAcroFormFields", () => {
   test("inspects fields in pet-addendum.pdf", async () => {
     const templatePath = path.join(__dirname, "fixtures", "pet-addendum.pdf");
 
@@ -27,7 +27,7 @@ describe("inspectPdfFields", () => {
     expect(template.length).toBeGreaterThan(0);
 
     // Inspect fields
-    const fields = await inspectPdfFields(new Uint8Array(template));
+    const fields = await inspectAcroFormFields(new Uint8Array(template));
 
     console.log("\n=== pet-addendum.pdf fields ===");
     console.log(JSON.stringify(fields, null, 2));
@@ -47,7 +47,7 @@ describe("inspectPdfFields", () => {
     expect(template.length).toBeGreaterThan(0);
 
     // Inspect fields
-    const fields = await inspectPdfFields(new Uint8Array(template));
+    const fields = await inspectAcroFormFields(new Uint8Array(template));
 
     console.log("\n=== pet-addendum-2.pdf fields ===");
     console.log(JSON.stringify(fields, null, 2));

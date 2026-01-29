@@ -12,6 +12,7 @@ export default defineConfig({
 	external: [
 		// Mark workspace dependencies as external (they'll be installed separately)
 		'@open-form/types',
+		'@open-form/serialization',
 		// Mark runtime dependencies as external (they're in package.json dependencies)
 		'handlebars',
 	],

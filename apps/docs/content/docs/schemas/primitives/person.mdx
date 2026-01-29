@@ -3,22 +3,49 @@ title: Person
 description: A person's name
 ---
 
-A person's name with a required full name and optional components (title, first, middle, last, suffix).
+A Person is a structured primitive that represents a natural person.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `fullName` | `string` | Yes | Full name as a single string |
-| `title` | `string` | No | Prefix or honorific (Mr., Dr., etc.) |
-| `firstName` | `string` | No | First/given name |
-| `middleName` | `string` | No | Middle name or initial |
-| `lastName` | `string` | No | Last/family name |
-| `suffix` | `string` | No | Suffix (Jr., Sr., III, etc.) |
+<PropertiesTable properties={[
+  {
+    name: 'fullName',
+    type: 'string',
+    description: 'Full name as a single string.',
+  },
+  {
+    name: 'title',
+    type: 'string',
+    description: 'Prefix or honorific (Mr., Dr., etc.).',
+    isOptional: true,
+  },
+  {
+    name: 'firstName',
+    type: 'string',
+    description: 'First/given name.',
+    isOptional: true,
+  },
+  {
+    name: 'middleName',
+    type: 'string',
+    description: 'Middle name or initial.',
+    isOptional: true,
+  },
+  {
+    name: 'lastName',
+    type: 'string',
+    description: 'Last/family name.',
+    isOptional: true,
+  },
+  {
+    name: 'suffix',
+    type: 'string',
+    description: 'Suffix (Jr., Sr., III, etc.).',
+    isOptional: true,
+  },
+]} />
 
-## Examples
-
-
+# Examples
 
 ```yaml tab="YAML"
 fullName: Dr. Jane Marie Smith, Ph.D.
@@ -29,7 +56,6 @@ lastName: Smith
 suffix: Ph.D.
 ```
 
-
 ```json tab="JSON"
 {
   "fullName": "Dr. Jane Marie Smith, Ph.D.",
@@ -38,19 +64,5 @@ suffix: Ph.D.
   "middleName": "Marie",
   "lastName": "Smith",
   "suffix": "Ph.D."
-}
-```
-
-
-
-### Minimal
-
-```yaml tab="YAML"
-fullName: John Doe
-```
-
-```json tab="JSON"
-{
-  "fullName": "John Doe"
 }
 ```

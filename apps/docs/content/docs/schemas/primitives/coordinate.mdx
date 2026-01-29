@@ -3,16 +3,24 @@ title: Coordinate
 description: A geographic coordinate
 ---
 
-A geographic coordinate with latitude and longitude in decimal degrees (WGS84).
+A Coordinate is a structured primitive that represents a single geographic coordinate with latitude and longitude in decimal degrees (WGS84).
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `lat` | `number` | Yes | Latitude in decimal degrees, range -90 to 90 |
-| `lon` | `number` | Yes | Longitude in decimal degrees, range -180 to 180 |
+<PropertiesTable properties={[
+  {
+    name: 'lat',
+    type: 'number',
+    description: 'Latitude in decimal degrees, range -90 to 90.',
+  },
+  {
+    name: 'lon',
+    type: 'number',
+    description: 'Longitude in decimal degrees, range -180 to 180.',
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

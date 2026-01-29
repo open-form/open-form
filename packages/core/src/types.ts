@@ -17,14 +17,28 @@ import type {
   Artifact,
   Metadata,
   Party,
+  Signer,
+  PartySignatory,
   Resolver,
   OpenFormRenderer,
   RendererLayer,
 } from '@open-form/types'
 
+// Re-export RendererLayer for convenience
+export type { RendererLayer } from '@open-form/types'
+
 // ============================================================================
 // VALIDATION TYPES
 // ============================================================================
+
+/**
+ * Instance template structure containing field values and optional annexes.
+ * Used for validating form data payloads.
+ */
+export interface InstanceTemplate extends Record<string, unknown> {
+  fields: Record<string, unknown>
+  annexes?: Record<string, unknown>
+}
 
 /**
  * Represents a validation error for a specific field.
@@ -131,9 +145,6 @@ export interface SerializationOptions {
  * @typeParam T - The artifact type (Form, Document, Bundle, Checklist)
  */
 export interface IArtifactInstance<T extends Artifact> {
-  /** The raw artifact data. Use this for serialization or direct access. */
-  readonly schema: T
-
   /** Artifact kind discriminator ('form', 'document', 'bundle', 'checklist'). */
   readonly kind: T['kind']
 
@@ -209,7 +220,7 @@ export interface IArtifactInstance<T extends Artifact> {
  */
 export interface RenderOptions<Output = unknown> {
   /** The renderer to use (e.g., textRenderer, pdfRenderer, docxRenderer) */
-  renderer: OpenFormRenderer<RendererLayer, Output, Record<string, unknown>>
+  renderer: OpenFormRenderer<RendererLayer, Output>
 
   /** Resolver for auto-loading file-backed layers (only needs read method) */
   resolver?: Resolver
@@ -222,10 +233,10 @@ export interface RenderOptions<Output = unknown> {
 }
 
 /**
- * Options for rendering a FilledForm (data is already attached).
+ * Options for rendering a RuntimeForm (data is already attached).
  *
  * This is the same as RenderOptions but without the `data` property,
- * since FilledForm already contains the validated data.
+ * since RuntimeForm already contains the validated data.
  *
  * @typeParam Output - The output type produced by the renderer
  *
@@ -233,16 +244,49 @@ export interface RenderOptions<Output = unknown> {
  * ```typescript
  * const filled = form.fill({ name: 'John', age: 30 })
  *
- * // No data needed - it's already in the FilledForm
+ * // No data needed - it's already in the RuntimeForm
  * const output = await filled.render({
  *   renderer: textRenderer,
  *   layer: 'html'
  * })
  * ```
  */
-export interface FilledFormRenderOptions<Output = unknown> {
+export interface RuntimeFormRenderOptions<Output = unknown> {
   /** The renderer to use (e.g., textRenderer, pdfRenderer, docxRenderer) */
-  renderer: OpenFormRenderer<RendererLayer, Output, Record<string, unknown>>
+  renderer: OpenFormRenderer<RendererLayer, Output>
+
+  /** Resolver for auto-loading file-backed layers (only needs read method) */
+  resolver?: Resolver
+
+  /** Key of the layer to use. If not provided, uses defaultLayer or first available. */
+  layer?: string
+}
+
+/**
+ * Options for rendering a RuntimeChecklist.
+ *
+ * The renderer is optional - if not provided, returns raw layer content.
+ * When a renderer is provided, it processes template variables like {{title}}, {{items}}, etc.
+ *
+ * @typeParam Output - The output type produced by the renderer
+ *
+ * @example
+ * ```typescript
+ * const filled = checklist.fill({ reviewed: true, approved: false })
+ *
+ * // With renderer - processes template variables
+ * const output = await filled.render({
+ *   renderer: textRenderer(),
+ *   layer: 'markdown'
+ * })
+ *
+ * // Without renderer - returns raw layer content
+ * const raw = await filled.render({ layer: 'markdown' })
+ * ```
+ */
+export interface RuntimeChecklistRenderOptions<Output = unknown> {
+  /** The renderer to use for template processing. If not provided, returns raw layer content. */
+  renderer?: OpenFormRenderer<RendererLayer, Output>
 
   /** Resolver for auto-loading file-backed layers (only needs read method) */
   resolver?: Resolver
@@ -259,7 +303,9 @@ export interface FilledFormRenderOptions<Output = unknown> {
  * const filled = form.fill({
  *   fields: { name: 'John', age: 30 },
  *   annexes: { schedule: { items: [...] } },
- *   parties: { buyer: { type: 'person', name: { firstName: 'John' } } }
+ *   parties: { buyer: { type: 'person', name: { firstName: 'John' } } },
+ *   signers: { john: { person: { fullName: 'John Doe' } } },
+ *   signatories: { buyer: { 'buyer-0': [{ signerId: 'john' }] } }
  * })
  * ```
  */
@@ -273,8 +319,11 @@ export interface FillOptions {
   /** Party data indexed by role ID */
   parties?: Record<string, Party | Party[]>
 
-  /** Witness data */
-  witnesses?: Party[]
+  /** Global registry of signers with their adopted signatures */
+  signers?: Record<string, Signer>
+
+  /** Maps parties to their signatories. Structure: role → partyId → signatories */
+  signatories?: Record<string, Record<string, PartySignatory[]>>
 }
 
 // ============================================================================

@@ -34,60 +34,43 @@
         }
       ]
     },
-    "multiple": {
-      "default": false,
-      "description": "Whether multiple parties can fill this role",
-      "type": "boolean"
-    },
     "min": {
       "minimum": 0,
-      "description": "Minimum parties required (when multiple=true)",
+      "default": 1,
+      "description": "Minimum parties required",
       "type": "number"
     },
     "max": {
       "minimum": 1,
-      "description": "Maximum parties allowed (when multiple=true)",
+      "default": 1,
+      "description": "Maximum parties allowed",
       "type": "number"
     },
     "required": {
       "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
     },
     "signature": {
-      "title": "SignatureRequirement",
-      "description": "Signature requirements for a party role",
+      "title": "FormSignature",
+      "description": "Design-time signature requirements for a party role",
       "type": "object",
       "properties": {
         "required": {
+          "default": false,
           "description": "Whether signature is required for this role",
           "type": "boolean"
         },
-        "type": {
-          "default": "any",
-          "description": "Type of signature accepted",
-          "anyOf": [
-            {
-              "const": "electronic",
-              "type": "string"
-            },
-            {
-              "const": "wet",
-              "type": "string"
-            },
-            {
-              "const": "any",
-              "type": "string"
-            }
-          ]
-        },
-        "order": {
-          "minimum": 1,
-          "description": "Signing sequence (1 = first signer)",
+        "witnesses": {
+          "minimum": 0,
+          "default": 0,
+          "description": "Number of witnesses required for this signature",
           "type": "number"
+        },
+        "notarized": {
+          "default": false,
+          "description": "Whether at least one witness must be a notary",
+          "type": "boolean"
         }
-      },
-      "required": [
-        "required"
-      ]
+      }
     }
   },
   "required": [

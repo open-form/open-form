@@ -6,9 +6,9 @@ import type { Coordinate } from '@open-form/types'
 import { isObject } from '../utils'
 
 /**
- * Validate Coordinate object. Throws error if invalid.
+ * Assert Coordinate object is valid. Throws error if invalid.
  */
-export function validateCoordinate(value: unknown): void {
+function assertCoordinate(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid coordinate: must be a Coordinate object')
 	}
@@ -42,7 +42,7 @@ export const coordinateStringifier = {
 	stringify(value: Coordinate | Partial<Coordinate>, fallback = ''): string {
 		if (value == null) return fallback
 
-		validateCoordinate(value)
+		assertCoordinate(value)
 
 		const coord = value as Coordinate
 		return `${coord.lat},${coord.lon}`

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testPhone = { number: "+12125551234", extension: "123" };
 
@@ -33,19 +33,6 @@ describe("phone Serializers", () => {
     it("phone.stringify string as-is", () => {
       const result = euSerializers.phone.stringify("+441632960000");
       expect(result).toBe("+441632960000");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("phone.stringify E.164 format", () => {
-      const result = intlSerializers.phone.stringify(testPhone);
-      expect(result).toContain("+12125551234");
-      expect(result).toContain("ext. 123");
-    });
-
-    it("phone.stringify string as-is", () => {
-      const result = intlSerializers.phone.stringify("+33123456789");
-      expect(result).toBe("+33123456789");
     });
   });
 

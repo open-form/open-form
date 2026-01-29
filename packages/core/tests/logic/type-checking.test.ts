@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest'
-import { validateFormLogic, validateBundleLogic } from '@/logic/validation'
+import { validateFormLogic, validateBundleLogic } from '@/logic/design-time/validation'
 import type { Form, Bundle } from '@open-form/types'
-import type { LogicValidationIssue } from '@/logic/validation/validate-form-logic'
+import type { LogicValidationIssue } from '@/logic/design-time/validation/validate-form-logic'
 
 describe('Expression Type Checking', () => {
 	describe('validateFormLogic - type checking', () => {
@@ -33,7 +33,7 @@ describe('Expression Type Checking', () => {
 				name: 'test-form',
 				title: 'Test Form',
 				logic: {
-					isAdult: 'fields.age.value >= 18',
+					isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
 				},
 				fields: {
 					age: { type: 'number', label: 'Age' },
@@ -156,7 +156,7 @@ describe('Expression Type Checking', () => {
 				title: 'Test Form',
 				logic: {
 					// This logic key returns a number, not boolean
-					ageCalc: 'fields.age.value + 10',
+					ageCalc: { type: 'boolean', value: 'fields.age.value + 10' },
 				},
 				fields: {
 					age: { type: 'number', label: 'Age' },
@@ -184,9 +184,9 @@ describe('Expression Type Checking', () => {
 				name: 'test-form',
 				title: 'Test Form',
 				logic: {
-					isAdult: 'fields.age.value >= 18',
-					isVeryOld: 'fields.age.value >= 65',
-					needsSpecialForm: 'isAdult and isVeryOld',
+					isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+					isVeryOld: { type: 'boolean', value: 'fields.age.value >= 65' },
+					needsSpecialForm: { type: 'boolean', value: 'isAdult and isVeryOld' },
 				},
 				fields: {
 					age: { type: 'number', label: 'Age' },
@@ -277,26 +277,23 @@ describe('Expression Type Checking', () => {
 				fields: {
 					amount: { type: 'number', label: 'Amount' },
 				},
-				annexes: [
-					{
-						id: 'receipt',
+				annexes: {
+					receipt: {
 						title: 'Receipt',
 						required: 'fields.amount.value > 100', // Valid boolean
 					},
-					{
-						id: 'invoice',
+					invoice: {
 						title: 'Invoice',
 						visible: 'fields.amount.value * 2', // Invalid - returns number
 					},
-				],
+				},
 			}
 
 			const result = validateFormLogic(form)
 			expect(result.issues).toBeDefined()
 
 			const invoiceIssue = result.issues?.find(
-				(i) => (i as LogicValidationIssue).path.includes('invoice') ||
-					((i as LogicValidationIssue).path[1] === 1)
+				(i) => (i as LogicValidationIssue).path.includes('invoice')
 			) as LogicValidationIssue
 			expect(invoiceIssue).toBeDefined()
 			expect(invoiceIssue.severity).toBe('error')
@@ -321,7 +318,7 @@ describe('Expression Type Checking', () => {
 				name: 'test-bundle',
 				title: 'Test Bundle',
 				logic: {
-					isHighValue: 'forms.main.fields.amount.value > 1000',
+					isHighValue: { type: 'boolean', value: 'forms.main.fields.amount.value > 1000' },
 				},
 				contents: [
 					{ type: 'inline', key: 'main', artifact: form },
@@ -351,7 +348,7 @@ describe('Expression Type Checking', () => {
 				title: 'Test Bundle',
 				logic: {
 					// This returns a number, not boolean
-					amountCalc: 'forms.main.fields.amount.value + 100',
+					amountCalc: { type: 'boolean', value: 'forms.main.fields.amount.value + 100' },
 				},
 				contents: [
 					{ type: 'inline', key: 'main', artifact: form },

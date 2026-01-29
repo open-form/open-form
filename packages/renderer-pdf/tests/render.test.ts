@@ -61,7 +61,11 @@ describe('renderPdf', () => {
     expect(template.length).toBeGreaterThan(0)
 
     // Render
-    const output = await renderPdf(new Uint8Array(template), formDefinition, testData)
+    const output = await renderPdf({
+      template: new Uint8Array(template),
+      form: formDefinition,
+      data: testData,
+    })
 
     expect(output).toBeDefined()
     expect(output.length).toBeGreaterThan(0)

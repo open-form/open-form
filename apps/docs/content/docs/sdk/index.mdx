@@ -1,0 +1,47 @@
+---
+title: SDK
+description: TypeScript SDK for creating and working with OpenForm artifacts
+---
+
+The `@open-form/sdk` package is an umbrella package for creating, validating, rendering OpenForm artifacts.
+
+# Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```bash
+    npm install @open-form/sdk
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @open-form/sdk
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @open-form/sdk
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @open-form/sdk
+    ```
+  </Tab>
+</Tabs>
+
+
+
+# Package Overview
+
+The SDK is an umbrella package that re-exports functionality from:
+
+| Package | Description |
+|---------|-------------|
+| `@open-form/core` | Builders, instances, and lifecycle types for all artifact types |
+| `@open-form/types` | TypeScript type definitions |
+| `@open-form/renderer-pdf` | PDF output |
+| `@open-form/renderer-docx` | DOCX output |
+| `@open-form/renderer-text` | Plain text and markdown output |
+| `@open-form/serialization` | Locale-aware value formatting for rendering |
+

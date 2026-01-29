@@ -10,7 +10,6 @@ export const AddressSchema = Type.Object(
 		line2: Type.Optional(
 			Type.String({
 				description: 'Secondary address line',
-				minLength: 1,
 				maxLength: 200,
 			}),
 		),

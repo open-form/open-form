@@ -4,7 +4,7 @@ import type {
   Stringifier,
   SerializerFallbacks,
 } from "@open-form/types";
-import { usaSerializers, euSerializers, intlSerializers } from "./base";
+import { usaSerializers, euSerializers } from "./base";
 
 function createWrappedStringifier<T>(
   baseStringify: (value: T) => string,
@@ -43,6 +43,8 @@ function applyFallbacks(
     bbox: wrap("bbox"),
     duration: wrap("duration"),
     identification: wrap("identification"),
+    attachment: wrap("attachment"),
+    signature: wrap("signature"),
   };
 }
 
@@ -63,11 +65,7 @@ function applyFallbacks(
  */
 export function createSerializer(config: SerializerConfig): SerializerRegistry {
   const baseRegistry =
-    config.regionFormat === "eu"
-      ? euSerializers
-      : config.regionFormat === "intl"
-        ? intlSerializers
-        : usaSerializers;
+    config.regionFormat === "eu" ? euSerializers : usaSerializers;
 
   return applyFallbacks(baseRegistry, config.fallbacks);
 }

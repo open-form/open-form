@@ -1,15 +1,24 @@
-export { ArtifactSchema } from './artifact';
-export { FormSchema } from './form';
-export { DocumentSchema } from './document';
-export { ChecklistSchema, ChecklistItemSchema } from './checklist';
-export { BundleSchema, BundleContentItemSchema } from './bundle';
+// Shared
+export { ArtifactSchema, LayerSchema } from './shared';
 
+// Logic
+export { CondExprSchema, LogicSectionSchema } from './logic';
+
+// Form
 export {
-	isForm,
-	isDocument,
-	isChecklist,
-	isBundle,
-	getArtifactKind,
-	hasValidKind,
-	type ArtifactKind,
-} from './guards';
+	FormSchema,
+	FormFieldSchema,
+	FieldsetFieldSchema,
+	FormFieldsetSchema,
+	FormAnnexSchema,
+	FormPartySchema,
+} from './form';
+
+// Document
+export { DocumentSchema } from './document';
+
+// Checklist
+export { ChecklistSchema, ChecklistItemSchema } from './checklist';
+
+// Bundle
+export { BundleSchema, BundleContentItemSchema } from './bundle';

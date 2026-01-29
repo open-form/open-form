@@ -1,9 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import { load, safeLoad, loadFromObject, safeLoadFromObject, LoadError, type AnyArtifactInstance } from '@/load'
-import { FormInstance } from '@/builders/artifacts/form'
-import { DocumentInstance } from '@/builders/artifacts/document'
-import { BundleInstance } from '@/builders/artifacts/bundle'
-import { ChecklistInstance } from '@/builders/artifacts/checklist'
+import { load, safeLoad, loadFromObject, safeLoadFromObject, LoadError, type AnyArtifactInstance } from '@/serialization'
+import type { FormInstance } from '@/artifacts'
 
 /**
  * Tests for load/safeLoad functions.
@@ -81,7 +78,6 @@ items:
 
         expect(instance.kind).toBe('form')
         expect(instance.name).toBe('test-form')
-        expect(instance).toBeInstanceOf(FormInstance)
       })
 
       test('loads document from YAML', () => {
@@ -89,7 +85,6 @@ items:
 
         expect(instance.kind).toBe('document')
         expect(instance.name).toBe('test-document')
-        expect(instance).toBeInstanceOf(DocumentInstance)
       })
 
       test('loads bundle from YAML', () => {
@@ -97,7 +92,6 @@ items:
 
         expect(instance.kind).toBe('bundle')
         expect(instance.name).toBe('test-bundle')
-        expect(instance).toBeInstanceOf(BundleInstance)
       })
 
       test('loads checklist from YAML', () => {
@@ -105,7 +99,6 @@ items:
 
         expect(instance.kind).toBe('checklist')
         expect(instance.name).toBe('test-checklist')
-        expect(instance).toBeInstanceOf(ChecklistInstance)
       })
     })
 
@@ -115,7 +108,6 @@ items:
 
         expect(instance.kind).toBe('form')
         expect(instance.name).toBe('test-form')
-        expect(instance).toBeInstanceOf(FormInstance)
       })
 
       test('loads bundle from JSON', () => {
@@ -215,7 +207,7 @@ title: Unknown
 
         expect(result.success).toBe(true)
         if (result.success) {
-          expect(result.data).toBeInstanceOf(FormInstance)
+          expect(result.data.kind).toBe('form')
         }
       })
 
@@ -225,10 +217,10 @@ title: Unknown
         const bundleResult = safeLoad(bundleYAML)
         const checklistResult = safeLoad(checklistYAML)
 
-        expect(formResult.success && formResult.data).toBeInstanceOf(FormInstance)
-        expect(documentResult.success && documentResult.data).toBeInstanceOf(DocumentInstance)
-        expect(bundleResult.success && bundleResult.data).toBeInstanceOf(BundleInstance)
-        expect(checklistResult.success && checklistResult.data).toBeInstanceOf(ChecklistInstance)
+        expect(formResult.success && formResult.data.kind).toBe('form')
+        expect(documentResult.success && documentResult.data.kind).toBe('document')
+        expect(bundleResult.success && bundleResult.data.kind).toBe('bundle')
+        expect(checklistResult.success && checklistResult.data.kind).toBe('checklist')
       })
     })
 
@@ -302,7 +294,6 @@ title: Empty Name
 
         expect(instance.kind).toBe('form')
         expect(instance.name).toBe('object-form')
-        expect(instance).toBeInstanceOf(FormInstance)
       })
 
       test('loads document from object', () => {
@@ -315,7 +306,6 @@ title: Empty Name
         const instance = loadFromObject(obj)
 
         expect(instance.kind).toBe('document')
-        expect(instance).toBeInstanceOf(DocumentInstance)
       })
 
       test('loads bundle from object', () => {
@@ -329,7 +319,6 @@ title: Empty Name
         const instance = loadFromObject(obj)
 
         expect(instance.kind).toBe('bundle')
-        expect(instance).toBeInstanceOf(BundleInstance)
       })
 
       test('loads checklist from object', () => {
@@ -343,7 +332,6 @@ title: Empty Name
         const instance = loadFromObject(obj)
 
         expect(instance.kind).toBe('checklist')
-        expect(instance).toBeInstanceOf(ChecklistInstance)
       })
     })
 
@@ -542,7 +530,6 @@ title: Empty Name
       expect(typeof instance.toJSON).toBe('function')
       expect(typeof instance.toYAML).toBe('function')
       expect(typeof instance.clone).toBe('function')
-      expect(typeof instance.with).toBe('function')
 
       // Form-specific methods
       expect(typeof instance.parseData).toBe('function')

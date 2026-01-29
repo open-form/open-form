@@ -3,20 +3,49 @@ title: Organization
 description: An organization's identity and legal details
 ---
 
-An organization's identity including legal name, entity type, and tax information.
+An Organization is a structured primitive that represents a legal entity, such as a company, agency, or organization.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `name` | `string` | Yes | Common or trade name |
-| `legalName` | `string` | No | Registered/legal name |
-| `domicile` | `string` | No | Country/region of domicile |
-| `entityType` | `string` | No | Legal entity type (corporation, LLC, etc.) |
-| `entityId` | `string` | No | Business identification number |
-| `taxId` | `string` | No | Tax identification number |
+<PropertiesTable properties={[
+  {
+    name: 'name',
+    type: 'string',
+    description: 'Common or trade name.',
+  },
+  {
+    name: 'legalName',
+    type: 'string',
+    description: 'Registered/legal name.',
+    isOptional: true,
+  },
+  {
+    name: 'domicile',
+    type: 'string',
+    description: 'Country/region of domicile.',
+    isOptional: true,
+  },
+  {
+    name: 'entityType',
+    type: 'string',
+    description: 'Legal entity type (corporation, LLC, etc.).',
+    isOptional: true,
+  },
+  {
+    name: 'entityId',
+    type: 'string',
+    description: 'Business identification number.',
+    isOptional: true,
+  },
+  {
+    name: 'taxId',
+    type: 'string',
+    description: 'Tax identification number.',
+    isOptional: true,
+  },
+]} />
 
-## Examples
+# Examples
 
 
 

@@ -3,25 +3,36 @@ title: Phone
 description: A phone number in E.164 format
 ---
 
-A phone number in international E.164 format with optional type and extension.
+A Phone is a structured primitive that represents a phone number in international E.164 format with optional type and extension.
 
-## Properties
+# Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `number` | `string` | Yes | Phone number in international E.164 format (e.g., +14155552671) |
-| `type` | `string` | No | Category/usage of the number (mobile, work, home, etc.) |
-| `extension` | `string` | No | Optional extension digits |
+<PropertiesTable properties={[
+  {
+    name: 'number',
+    type: 'string',
+    description: 'Phone number in international E.164 format (e.g., +14155552671).',
+  },
+  {
+    name: 'type',
+    type: 'string',
+    description: 'Category/usage of the number (mobile, work, home, etc.).',
+    isOptional: true,
+  },
+  {
+    name: 'extension',
+    type: 'string',
+    description: 'Optional extension digits.',
+    isOptional: true,
+  },
+]} />
 
-## Examples
-
-
+# Examples
 
 ```yaml tab="YAML"
 number: "+14155552671"
 type: mobile
 ```
-
 
 ```json tab="JSON"
 {
@@ -30,9 +41,7 @@ type: mobile
 }
 ```
 
-
-
-### With extension
+## With extension
 
 ```yaml tab="YAML"
 number: "+12125551234"

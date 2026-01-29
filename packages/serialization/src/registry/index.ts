@@ -1,2 +1,2 @@
-export { usaSerializers, euSerializers, intlSerializers } from "./base";
+export { usaSerializers, euSerializers } from "./base";
 export { createSerializer } from "./factory";

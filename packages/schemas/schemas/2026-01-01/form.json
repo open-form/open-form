@@ -76,7 +76,7 @@
           "type": "object",
           "patternProperties": {
             "^(.*)$": {
-              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Field"
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormField"
             }
           }
         },
@@ -95,17 +95,18 @@
           "description": "Key of the default layer to use when none specified at render time",
           "type": "string"
         },
-        "allowAnnexes": {
+        "allowAdditionalAnnexes": {
           "default": false,
-          "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes array",
+          "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes record",
           "type": "boolean"
         },
         "annexes": {
-          "minItems": 0,
-          "description": "Predefined annex slots for supplementary documents. Each slot can be marked as required (must be filled at runtime) or optional",
-          "type": "array",
-          "items": {
-            "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Annex"
+          "description": "Predefined annex slots keyed by identifier. Each slot can be marked as required (must be filled at runtime) or optional",
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9][a-zA-Z0-9_-]*$": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormAnnex"
+            }
           }
         },
         "parties": {
@@ -116,9 +117,6 @@
               "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormParty"
             }
           }
-        },
-        "witnesses": {
-          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/WitnessRequirement"
         }
       },
       "required": [

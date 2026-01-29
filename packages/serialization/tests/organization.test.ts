@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { usaSerializers, euSerializers, intlSerializers } from "../src/index";
+import { usaSerializers, euSerializers } from "../src/index";
 
 const testOrganization = { name: "Acme Corp", taxId: "12-3456789" };
 
@@ -20,13 +20,6 @@ describe("organization Serializers", () => {
   describe("euSerializers", () => {
     it("organization.stringify (same as USA)", () => {
       const result = euSerializers.organization.stringify(testOrganization);
-      expect(result).toContain("Acme Corp");
-    });
-  });
-
-  describe("intlSerializers", () => {
-    it("organization.stringify (same as USA)", () => {
-      const result = intlSerializers.organization.stringify(testOrganization);
       expect(result).toContain("Acme Corp");
     });
   });

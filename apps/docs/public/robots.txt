@@ -1,0 +1,5 @@
+// public/robots.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.open-form.dev/sitemap.xml

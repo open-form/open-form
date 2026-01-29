@@ -15,8 +15,10 @@ import type {
   Bbox,
   Duration,
   Identification,
+  Attachment,
+  Signature,
 } from "../schemas/primitives";
-import type { Party } from "../schemas/blocks";
+import type { Party } from "../runtime";
 
 /**
  * Fallback values for serializers when serialization fails
@@ -32,16 +34,16 @@ export interface SerializerFallbacks {
   bbox?: string;
   duration?: string;
   identification?: string;
+  attachment?: string;
+  signature?: string;
 }
 
 /**
- * Configuration options for creating locale and region-specific serializers.
+ * Configuration options for creating region-specific serializers.
  */
 export interface SerializerConfig {
-  /** Locale code (e.g., 'en-US', 'fr-FR', 'de-DE'). Currently 'en-US' is fully supported. */
-  locale?: string;
-  /** Regional format preference. Determines address/phone formatting patterns. */
-  regionFormat?: "us" | "eu" | "intl";
+  /** Regional format preference. Determines address/phone/money formatting patterns. */
+  regionFormat?: "us" | "eu";
   /** Fallback values for each serializer type when serialization fails. Defaults to empty string if not specified. */
   fallbacks?: SerializerFallbacks;
 }
@@ -73,12 +75,7 @@ export interface Stringifier<T> {
 export interface SerializerRegistry {
   money: Stringifier<Money | number | Partial<Money>>;
   address: Stringifier<Address | Partial<Address>>;
-  phone: Stringifier<
-    | Phone
-    | string
-    | Partial<Phone>
-    | { number?: string; countryCode?: string; extension?: string }
-  >;
+  phone: Stringifier<Phone | string | Partial<Phone>>;
   person: Stringifier<
     | Person
     | Partial<Person>
@@ -91,14 +88,12 @@ export interface SerializerRegistry {
         suffix?: string;
       }
   >;
-  organization: Stringifier<
-    | Organization
-    | Partial<Organization>
-    | { name?: string; ein?: string; email?: string; phone?: string }
-  >;
+  organization: Stringifier<Organization | Partial<Organization>>;
   party: Stringifier<Party | Partial<Party>>;
   coordinate: Stringifier<Coordinate | Partial<Coordinate>>;
   bbox: Stringifier<Bbox | Partial<Bbox>>;
   duration: Stringifier<Duration | string>;
   identification: Stringifier<Identification | Partial<Identification>>;
+  attachment: Stringifier<Attachment | Partial<Attachment>>;
+  signature: Stringifier<Signature | Partial<Signature>>;
 }

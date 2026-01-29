@@ -3,7 +3,7 @@
  * Shared across all renderers (text, docx, pdf, etc.)
  */
 
-import type { Form, Field } from "@open-form/types";
+import type { Form, FormField } from "@open-form/types";
 
 /**
  * Represents the mapping of field names to their types
@@ -24,18 +24,18 @@ export function buildFieldTypeMap(schema: Form): FieldTypeMap {
   for (const [fieldName, field] of Object.entries(schema.fields)) {
     if (!field) continue;
 
-    const fieldType = (field as Field & { type: string }).type;
+    const fieldType = (field as FormField & { type: string }).type;
 
     // Map the field itself
     fieldMap[fieldName] = fieldType;
 
     // If this is a fieldset or similar composite field, also map nested fields
     if (isCompositeField(field)) {
-      const compositeField = field as Field & { fields?: Record<string, Field> };
+      const compositeField = field as FormField & { fields?: Record<string, FormField> };
       if (compositeField.fields) {
         for (const [nestedName, nestedField] of Object.entries(compositeField.fields)) {
           if (!nestedField) continue;
-          const nestedType = (nestedField as Field & { type: string }).type;
+          const nestedType = (nestedField as FormField & { type: string }).type;
           const fullPath = `${fieldName}.${nestedName}`;
           fieldMap[fullPath] = nestedType;
         }

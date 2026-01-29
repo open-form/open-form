@@ -70,13 +70,28 @@ describe("createFsResolver", () => {
     await expect(resolver.read("/nonexistent.txt")).rejects.toThrow();
   });
 
-  test("respects root directory boundary", async () => {
+  test("prevents path traversal attacks", async () => {
     const resolver = createFsResolver({ root: fixturesDir });
 
-    // Try to read outside the root (should fail or read from a different location)
-    // This depends on the OS and path resolution
+    // Attempt to escape root directory via path traversal
     await expect(
-      resolver.read("/../../../etc/passwd")
-    ).rejects.toThrow();
+      resolver.read("/../../../package.json")
+    ).rejects.toThrow("Path traversal detected");
+
+    await expect(
+      resolver.read("/../../package.json")
+    ).rejects.toThrow("Path traversal detected");
+
+    await expect(
+      resolver.read("../package.json")
+    ).rejects.toThrow("Path traversal detected");
+  });
+
+  test("allows valid paths that look suspicious but stay within root", async () => {
+    const resolver = createFsResolver({ root: fixturesDir });
+
+    // Going into subdir then back should still work
+    const bytes = await resolver.read("/subdir/../test.txt");
+    expect(new TextDecoder().decode(bytes)).toBe("Hello, World!");
   });
 });

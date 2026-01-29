@@ -11,7 +11,7 @@ import type { Form } from "@open-form/types";
 import { renderPdf } from "../src/render";
 import { open } from "@open-form/core";
 import { pdfRenderer } from "../src/";
-import { createFsResolver } from "@open-form/resolvers/fs";
+import { createFsResolver } from "@open-form/resolvers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,10 +64,10 @@ describe("@open-form/renderer-pdf - README Examples", () => {
         const template = fs.readFileSync(templatePath);
 
         // Render with automatic field type detection
-        const output = await renderPdf(
-          new Uint8Array(template),
-          petAddendumForm,
-          {
+        const output = await renderPdf({
+          template: new Uint8Array(template),
+          form: petAddendumForm,
+          data: {
             name: "Fluffy",
             weight: 12,
             species: "cat",
@@ -81,8 +81,8 @@ describe("@open-form/renderer-pdf - README Examples", () => {
               amount: 100,
               currency: "USD",
             },
-          }
-        );
+          },
+        });
 
         expect(output).toBeDefined();
         expect(output).toBeInstanceOf(Uint8Array);
@@ -165,7 +165,7 @@ describe("@open-form/renderer-pdf - README Examples", () => {
             },
           })
           .render({
-            renderer: pdfRenderer,
+            renderer: pdfRenderer(),
             layer: "pdf",
             resolver,
           });
@@ -190,10 +190,10 @@ describe("@open-form/renderer-pdf - README Examples", () => {
         const template = fs.readFileSync(templatePath);
 
         // Render with form schema for automatic serialization
-        const output = await renderPdf(
-          new Uint8Array(template),
-          petAddendumForm,
-          {
+        const output = await renderPdf({
+          template: new Uint8Array(template),
+          form: petAddendumForm,
+          data: {
             name: "Fluffy",
             weight: 12,
             species: "cat",
@@ -207,8 +207,8 @@ describe("@open-form/renderer-pdf - README Examples", () => {
               amount: 100,
               currency: "USD",
             },
-          }
-        );
+          },
+        });
 
         expect(output).toBeDefined();
         expect(output).toBeInstanceOf(Uint8Array);

@@ -6,9 +6,9 @@ import type { Identification } from '@open-form/types'
 import { isObject } from '../utils'
 
 /**
- * Validate Identification object. Throws error if invalid.
+ * Assert Identification object is valid. Throws error if invalid.
  */
-export function validateIdentification(value: unknown): void {
+function assertIdentification(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid identification: must be an Identification object')
 	}
@@ -36,7 +36,7 @@ export const identificationStringifier = {
 	stringify(value: Identification | Partial<Identification>, fallback = ''): string {
 		if (value == null) return fallback
 
-		validateIdentification(value)
+		assertIdentification(value)
 
 		const id = value as Identification
 		const parts: string[] = [`${id.type}: ${id.number}`]

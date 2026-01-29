@@ -11,7 +11,7 @@ import type { Form } from "@open-form/types";
 import { renderDocx } from "../src/render";
 import { open } from "@open-form/core";
 import { docxRenderer } from "../src/";
-import { createFsResolver } from "@open-form/resolvers/fs";
+import { createFsResolver } from "@open-form/resolvers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,17 +56,16 @@ describe("@open-form/renderer-docx - README Examples", () => {
         const template = fs.readFileSync(templatePath);
 
         // Render with form schema for basic template rendering
-        const output = await renderDocx(
-          new Uint8Array(template),
-          {
+        const output = await renderDocx({
+          template: new Uint8Array(template),
+          data: {
             name: "Fluffy",
             species: "cat",
             weight: 12,
             hasVaccination: true,
           },
-          {},
-          petAddendumForm
-        );
+          form: petAddendumForm,
+        });
 
         expect(output).toBeDefined();
         expect(output).toBeInstanceOf(Uint8Array);
@@ -133,7 +132,7 @@ describe("@open-form/renderer-docx - README Examples", () => {
             },
           })
           .render({
-            renderer: docxRenderer,
+            renderer: docxRenderer(),
             layer: "docx",
             resolver,
           });
@@ -159,17 +158,16 @@ describe("@open-form/renderer-docx - README Examples", () => {
         const template = fs.readFileSync(templatePath);
 
         // Render with different data
-        const output = await renderDocx(
-          new Uint8Array(template),
-          {
+        const output = await renderDocx({
+          template: new Uint8Array(template),
+          data: {
             name: "Whiskers",
             species: "dog",
             weight: 25,
             hasVaccination: false,
           },
-          {},
-          petAddendumForm
-        );
+          form: petAddendumForm,
+        });
 
         expect(output).toBeDefined();
         expect(output).toBeInstanceOf(Uint8Array);

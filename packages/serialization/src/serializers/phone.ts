@@ -6,9 +6,9 @@ import type { Phone } from '@open-form/types'
 import { isObject } from '../utils'
 
 /**
- * Validate Phone object or string. Throws error if invalid.
+ * Assert Phone object or string is valid. Throws error if invalid.
  */
-export function validatePhone(value: unknown): void {
+function assertPhone(value: unknown): void {
 	if (typeof value === 'string') {
 		if (!value.startsWith('+') || value.length < 7) {
 			throw new Error('Invalid phone: string must be in E.164 format (e.g., "+12125551234")')
@@ -32,17 +32,17 @@ export function validatePhone(value: unknown): void {
  */
 export const phoneStringifier = {
 	stringify(
-		value: Phone | string | Partial<Phone> | { number?: string; countryCode?: string; extension?: string },
+		value: Phone | string | Partial<Phone>,
 		fallback = ''
 	): string {
 		if (value == null) return fallback
 
 		if (typeof value === 'string') {
-			validatePhone(value)
+			assertPhone(value)
 			return value
 		}
 
-		validatePhone(value)
+		assertPhone(value)
 
 		const parts: string[] = []
 		const phoneNumber = (value as Phone).number

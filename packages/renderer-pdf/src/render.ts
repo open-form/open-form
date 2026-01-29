@@ -3,9 +3,10 @@
  */
 
 import { PDFDocument } from 'pdf-lib'
-import type { Form, Field, BinaryContent, SerializerRegistry } from '@open-form/types'
+import type { Form, FormField, BinaryContent, SerializerRegistry } from '@open-form/types'
 import { usaSerializers, preprocessFieldData } from '@open-form/serialization'
-import { createSerializedFieldWrapper } from './utils/field-serializer.js'
+import { createSerializedFieldWrapper } from './utils/field-serializer'
+import { type PdfSignatureOptions, resolvePdfSignatureOptions } from './utils/signature-helpers'
 
 /**
  * Get a value from a nested object using dot notation path.
@@ -25,16 +26,30 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 /**
+ * Options for rendering a PDF template.
+ */
+export interface RenderPdfOptions {
+  /** PDF template as BinaryContent (Uint8Array) */
+  template: BinaryContent
+  /** Form definition containing field schemas */
+  form: Form
+  /** Data object to populate form fields */
+  data: Record<string, unknown>
+  /** Optional mapping from form field names to PDF AcroForm field names */
+  bindings?: Record<string, string>
+  /** Optional custom serializer registry. Uses USA serializers by default. */
+  serializers?: SerializerRegistry
+  /** Options for signature and initials rendering */
+  signatureOptions?: PdfSignatureOptions
+}
+
+/**
  * Render PDF template with form data.
  *
  * Automatically applies serializers to fields based on schema types,
  * enabling ergonomic field access with automatic formatting.
  *
- * @param template - PDF template as BinaryContent (Uint8Array)
- * @param form - Form definition containing field schemas
- * @param data - Data object to populate form fields
- * @param bindings - Optional mapping from form field names to PDF AcroForm field names
- * @param serializers - Optional custom serializer registry. Uses USA serializers by default.
+ * @param options - Render options containing template, form, data, bindings, and serializers
  * @returns Rendered PDF as BinaryContent
  *
  * @example
@@ -42,16 +57,20 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
  * const template = fs.readFileSync('template.pdf')
  * const form = { fields: { firstName: { type: 'text' }, salePrice: { type: 'money' } } }
  * const data = { firstName: 'John', salePrice: { amount: 250000, currency: 'USD' } }
- * const output = await renderPdf(template, form, data)
+ * const output = await renderPdf({ template, form, data })
  * ```
  */
-export async function renderPdf(
-  template: BinaryContent,
-  form: Form,
-  data: Record<string, unknown>,
-  bindings?: Record<string, string>,
-  serializers: SerializerRegistry = usaSerializers
-): Promise<BinaryContent> {
+export async function renderPdf({
+  template,
+  form,
+  data,
+  bindings,
+  serializers = usaSerializers,
+  signatureOptions,
+}: RenderPdfOptions): Promise<BinaryContent> {
+  // Resolve signature options with defaults (for future signature helper implementation)
+  const _resolvedSignatureOptions = resolvePdfSignatureOptions(signatureOptions)
+
   // Preprocess data to wrap serializable fields
   const wrapperStrategy = (value: unknown, fieldType: string) =>
     createSerializedFieldWrapper(value, fieldType, serializers)
@@ -148,7 +167,7 @@ export async function renderPdf(
   } else {
     // No bindings: use form field names directly as PDF field names
     if (form.fields) {
-      const fieldEntries = Object.entries(form.fields) as [string, Field][]
+      const fieldEntries = Object.entries(form.fields) as [string, FormField][]
       for (const [fieldName, fieldDef] of fieldEntries) {
         const value = preprocessedData[fieldName]
         if (value == null) continue

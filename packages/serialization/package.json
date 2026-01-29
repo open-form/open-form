@@ -1,6 +1,6 @@
 {
   "name": "@open-form/serialization",
-  "version": "0.1.3",
+  "version": "0.2.1",
   "description": "Primitive serialization package for OpenForm framework",
   "type": "module",
   "main": "./dist/index.js",
@@ -64,15 +64,17 @@
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "@open-form/types": ">=0.1.3"
+    "@open-form/types": ">=0.2.0"
   },
   "peerDependenciesMeta": {
     "@open-form/types": {
       "optional": false
     }
   },
+  "dependencies": {
+    "@open-form/types": "workspace:^"
+  },
   "devDependencies": {
-    "@open-form/types": "workspace:^",
     "@open-form/eslint-config": "workspace:*",
     "@open-form/typescript-config": "workspace:*",
     "@types/node": "catalog:",

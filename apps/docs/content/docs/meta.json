@@ -1,5 +1,13 @@
 {
   "title": "OpenForm Documentation",
-  "pages": ["index", "quickstart", "concepts", "--- Reference ---", "schemas"],
+  "pages": [
+    "index",
+    "quickstart",
+    "concepts",
+    "guides",
+    "--- Reference ---",
+    "schemas",
+    "sdk"
+  ],
   "defaultOpen": true
 }

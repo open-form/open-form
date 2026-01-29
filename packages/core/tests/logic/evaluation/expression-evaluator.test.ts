@@ -3,10 +3,9 @@ import {
   evaluateExpression,
   evaluateBooleanExpression,
   evaluateExpressionOrDefault,
-  evaluateMultipleExpressions,
-  isCondExpr,
-} from '@/logic/evaluation/expression-evaluator'
-import type { EvaluationContext } from '@/logic/evaluation/types'
+} from '@/logic/runtime/evaluation/expression-evaluator'
+import type { EvaluationContext } from '@/logic/runtime/evaluation/types'
+import { evaluateMultipleExpressions, isCondExpr } from '../helpers/evaluation-helpers'
 
 /**
  * Tests for expression-evaluator.ts

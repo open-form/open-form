@@ -5,9 +5,9 @@
 import { isObject } from '../utils'
 
 /**
- * Validate Money object. Throws error if invalid.
+ * Assert Money object is valid. Throws error if invalid.
  */
-export function validateMoney(value: unknown): void {
+export function assertMoney(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid money: must be a Money object')
 	}

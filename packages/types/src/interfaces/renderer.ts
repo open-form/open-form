@@ -6,7 +6,8 @@
 
 import type { Form } from "../schemas/artifacts";
 import type { SerializerRegistry, SerializerFallbacks } from "./serializers";
-import type { Bindings } from "../schemas/artifacts/common";
+import type { Bindings } from "../schemas/artifacts/shared";
+import type { FormData } from "../runtime";
 
 /**
  * Common renderer configuration options
@@ -57,13 +58,10 @@ export interface RendererLayer {
 /**
  * Parameters required to execute a render operation.
  */
-export interface RenderRequest<
-  Input extends RendererLayer = RendererLayer,
-  Data = unknown
-> {
+export interface RenderRequest<Input extends RendererLayer = RendererLayer> {
   template: Input;
   form: Form;
-  data: Data;
+  data: FormData;
   bindings?: Bindings;
   ctx?: OpenFormRendererContext;
 }
@@ -101,8 +99,7 @@ export interface OpenFormRendererContext {
  */
 export interface OpenFormRenderer<
   Input extends RendererLayer = RendererLayer,
-  Output = unknown,
-  Data = unknown
+  Output = unknown
 > {
   /**
    * Unique ID for this renderer (e.g. 'text', 'docx', 'pdf').
@@ -113,5 +110,5 @@ export interface OpenFormRenderer<
    * Perform the actual rendering.
    * @param request - The render request containing template, form, data, bindings, and optional context
    */
-  render(request: RenderRequest<Input, Data>): Promise<Output> | Output;
+  render(request: RenderRequest<Input>): Promise<Output> | Output;
 }

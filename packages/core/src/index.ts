@@ -1,248 +1,424 @@
-// Initialize format validators
-import './utils/formats'
+// ============================================================================
+// ARTIFACTS (Design-time + Runtime)
+// ============================================================================
 
-// Serialization
-export * from './serialization/index'
+export {
+  // Form
+  FormValidationError,
+  form,
+  field,
+  textField,
+  booleanField,
+  numberField,
+  coordinateField,
+  bboxField,
+  moneyField,
+  addressField,
+  phoneField,
+  durationField,
+  emailField,
+  uuidField,
+  uriField,
+  enumField,
+  dateField,
+  datetimeField,
+  timeField,
+  personField,
+  organizationField,
+  identificationField,
+  multiselectField,
+  percentageField,
+  ratingField,
+  fieldsetField,
+  fieldset,
+  annex,
+  party,
+  // Checklist
+  checklist,
+  // Document
+  document,
+  // Bundle
+  bundle,
+  // Shared
+  layer,
+  fileLayer,
+  inlineLayer,
+  // Serialization helpers
+  runtimeFormFromJSON,
+  runtimeDocumentFromJSON,
+  runtimeChecklistFromJSON,
+  runtimeBundleFromJSON,
+  // Shared utilities
+  withArtifactMethods,
+  renderLayer,
+  resolveLayerKey,
+  resolveAndRenderLayer,
+  // Unified namespace
+  open,
+} from "./artifacts";
 
-export * from './schemas/primitives/index'
-export * from './schemas/blocks/index'
-export * from './runtime/index'
-
-// Export builders
-export * from './builders'
-
-// Export FilledForm class
-export { FilledForm } from './filled-form'
-
-// Export load functions
-export { load, safeLoad, loadFromObject, safeLoadFromObject, LoadError, type AnyArtifactInstance } from './load'
-
-// Export all public types from centralized types.ts
 export type {
-  // Validation types
+  // Form types
+  FormInstance,
+  RuntimeForm,
+  DraftForm,
+  SignableForm,
+  ExecutedForm,
+  FormInput,
+  RuntimeFormJSON,
+  InferFormPayload,
+  ExtractFields,
+  FieldKeys,
+  PartyRoleKeys,
+  CaptureOptions,
+  // Document types
+  DocumentInstance,
+  RuntimeDocument,
+  DraftDocument,
+  FinalDocument,
+  DocumentInput,
+  RuntimeDocumentJSON,
+  // Checklist types
+  ChecklistInstance,
+  RuntimeChecklist,
+  DraftChecklist,
+  CompletedChecklist,
+  ChecklistInput,
+  RuntimeChecklistJSON,
+  InferChecklistPayload,
+  ItemStatusToDataType,
+  ItemsToDataType,
+  // Bundle types
+  BundleInstance,
+  RuntimeBundle,
+  DraftBundle,
+  SignableBundle,
+  ExecutedBundle,
+  BundleInput,
+  RuntimeBundleJSON,
+  RuntimeInstance,
+  RuntimeBundleContents,
+  RuntimeBundleRenderOptions,
+  RuntimeBundleRenderedOutput,
+  RuntimeBundleRendered,
+  // Shared types
+  ArtifactMethods,
+  LayerRenderOptions,
+  // Builder types
+  FieldAPI,
+  TextFieldBuilder,
+  BooleanFieldBuilder,
+  NumberFieldBuilder,
+  CoordinateFieldBuilder,
+  BboxFieldBuilder,
+  MoneyFieldBuilder,
+  AddressFieldBuilder,
+  PhoneFieldBuilder,
+  DurationFieldBuilder,
+  EmailFieldBuilder,
+  UuidFieldBuilder,
+  UriFieldBuilder,
+  EnumFieldBuilder,
+  DateFieldBuilder,
+  DatetimeFieldBuilder,
+  TimeFieldBuilder,
+  PersonFieldBuilder,
+  OrganizationFieldBuilder,
+  IdentificationFieldBuilder,
+  MultiselectFieldBuilder,
+  PercentageFieldBuilder,
+  RatingFieldBuilder,
+  FieldsetFieldBuilder,
+  PartyAPI,
+  PartyBuilder,
+  FieldsetAPI,
+  FieldsetBuilder,
+  LayerAPI,
+  FileLayerBuilderType,
+  InlineLayerBuilderType,
+  LayerBuilderType,
+  AnnexAPI,
+  AnnexBuilder,
+  Open,
+} from "./artifacts";
+
+// ============================================================================
+// PRIMITIVES
+// ============================================================================
+
+export {
+  address,
+  attachment,
+  bbox,
+  coordinate,
+  date,
+  datetime,
+  duration,
+  identification,
+  metadata,
+  money,
+  organization,
+  partyData,
+  percentage,
+  person,
+  phone,
+  rating,
+  signature,
+  time,
+} from "./primitives";
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+
+export { assembleBundle } from "./rendering";
+
+export type {
+  ResolvedArtifact,
+  ArtifactResolver,
+  RendererRegistry,
+  AssemblyContentEntry,
+  BundleAssemblyOptions,
+  AssembledBundleOutput,
+  AssembledBundle,
+} from "./rendering";
+
+// ============================================================================
+// RESOLVERS
+// ============================================================================
+
+export { createMemoryResolver } from "./resolvers";
+
+export type {
+  MemoryResolverOptions,
+  Resolver,
+} from "./resolvers";
+
+// ============================================================================
+// VALIDATION
+// ============================================================================
+
+export {
+  // Type guards
+  isForm,
+  isDocument,
+  isBundle,
+  isChecklist,
+  isFormField,
+  isFormAnnex,
+  isFormFieldset,
+  isFormParty,
+  isLayer,
+  isParty,
+  isSignature,
+  isAttachment,
+  isAddress,
+  isBbox,
+  isCoordinate,
+  isDuration,
+  isIdentification,
+  isMetadata,
+  isMoney,
+  isOrganization,
+  isPerson,
+  isPhone,
+  // Validators
+  validateForm,
+  validateDocument,
+  validateBundle,
+  validateChecklist,
+  validateFormField,
+  validateFormAnnex,
+  validateFormFieldset,
+  validateFormParty,
+  validateLayer,
+  validateChecklistItem,
+  validateBundleContentItem,
+  validateSignature,
+  validateAttachment,
+  validateAddress,
+  validateBbox,
+  validateCoordinate,
+  validateDuration,
+  validateIdentification,
+  validateMetadata,
+  validateMoney,
+  validateOrganization,
+  validatePerson,
+  validatePhone,
+  // Coercion
+  coerceTypes,
+  // Party validation
+  validatePartyForRole,
+  isPartyTypeAllowed,
+  inferPartyType,
+  expectsArrayFormat,
+  validatePartyId,
+  validatePartiesForRole,
+  // Artifact validation
+  validateArtifact,
+  parseArtifact,
+} from "./validation";
+
+export type {
   ValidationError,
   ValidationSuccess,
   ValidationFailure,
   ValidationResult,
   ValidateOptions,
-  // Serialization types
-  SerializationFormat,
-  SerializationOptions,
-  // Instance interface
-  IArtifactInstance,
-  // Render options
-  RenderOptions,
-  FilledFormRenderOptions,
-  FillOptions,
-  // Input types
-  FormInput,
-  DocumentInput,
-  BundleInput,
-  ChecklistInput,
-} from './types'
-
-// Export instance classes
-export { FormInstance, FormValidationError } from './builders/artifacts/form'
-export { DocumentInstance } from './builders/artifacts/document'
-export { BundleInstance } from './builders/artifacts/bundle'
-export { ChecklistInstance } from './builders/artifacts/checklist'
-
-// Import functions for open namespace
-import { validate, toStandardSchema, parse } from './utils'
-import { load, safeLoad } from './load'
+  PartyValidationResult,
+  ExtendedValidationResult,
+} from "./validation";
 
 // ============================================================================
-// ARTIFACTS
+// INFERENCE (Type utilities)
 // ============================================================================
 
-export {
-  type ArtifactBase,
-  type Form,
-  type Document,
-  type Checklist,
-  type ChecklistItem,
-  type StatusSpec,
-  type EnumStatusOption,
-  type Bundle,
-  type BundleContentItem,
-  type Layer,
-  type InlineLayer,
-  type FileLayer,
-  type Artifact,
-} from './schemas/artifacts'
+export type {
+  JsonSchema,
+  FieldToDataType,
+  FieldsToDataType,
+  InferFormData,
+  // InferFormPayload is already exported from ./artifacts
+} from "./inference";
+
+export { compile, compileToJsonSchema } from "./inference";
+
+// ============================================================================
+// SERIALIZATION
+// ============================================================================
+
+export * from "./serialization";
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+export { OPENFORM_SCHEMA_URL } from "@open-form/schemas";
 
 // ============================================================================
 // LOGIC
 // ============================================================================
 
-export {
-  type CondExpr,
-  type LogicSection,
-} from './logic'
+export * from "./logic";
 
-// Logic type inference
+// ============================================================================
+// SCHEMAS (Type re-exports from @open-form/types)
+// ============================================================================
+
+// Artifact types
 export type {
-  InferredPrimitiveType,
-  InferredCompositeType,
-  InferredType,
-  TypeConfidence,
-  TypeInferenceResult,
-  TypeValidationSeverity,
-  TypeValidationResult,
-} from './logic'
+  ArtifactBase,
+  Form,
+  Document,
+  Checklist,
+  ChecklistItem,
+  StatusSpec,
+  EnumStatusOption,
+  Bundle,
+  BundleContentItem,
+  Layer,
+  InlineLayer,
+  FileLayer,
+} from "@open-form/types";
 
-// Artifact type guards
+// Block types (fields, fieldsets, annexes, parties)
+export type {
+  FormField,
+  FieldsetField,
+  TextField,
+  NumberField,
+  BooleanField,
+  EnumField,
+  EmailField,
+  UriField,
+  UuidField,
+  AddressField,
+  PhoneField,
+  CoordinateField,
+  BboxField,
+  MoneyField,
+  DurationField,
+  FormFieldset,
+  FormAnnex,
+  Party,
+  Bindings,
+} from "@open-form/types";
+
+// Primitive types
+export type {
+  Coordinate,
+  Address,
+  Phone,
+  Money,
+  Duration,
+  Person,
+  Organization,
+  Identification,
+  Bbox,
+  Metadata,
+} from "@open-form/types";
+
+// Artifact union type and kind
+export type { Artifact } from "@open-form/types";
+export type ArtifactKind = "form" | "document" | "checklist" | "bundle";
+
+// ============================================================================
+// LOAD
+// ============================================================================
+
 export {
-  isForm,
-  isDocument,
-  isBundle,
-  isChecklist,
-  getArtifactKind,
-  hasValidKind,
-  type ArtifactKind,
-} from './schemas/artifacts'
-
-// ---------------------------
-// Open API - Unified namespace
-// ---------------------------
-
-// Import all builders for the open namespace (re-import for convenience)
-import { form, document, checklist, bundle } from './builders/artifacts'
-import { field, fieldset, annex, party, formParty, partyData, witnessRequirement } from './builders/blocks'
-import {
-  coordinate,
-  address,
-  phone,
-  money,
-  duration,
-  layer,
-  person,
-  organization,
-  identification,
-  bbox,
-  metadata,
-  date,
-  datetime,
-  time,
-  percentage,
-  rating,
-} from './builders/primitives'
-
-// Import only the useful utils for the open.utils namespace
-import { makeInstanceTemplate, applyDefaults, withDefaults } from './utils'
-
-// Re-export serializer types from types
-export type { SerializerRegistry, SerializerConfig } from '@open-form/types'
-
-// Type for the open namespace
-type OpenAPI = {
-  // Artifacts (all return instances)
-  form: typeof form
-  document: typeof document
-  checklist: typeof checklist
-  bundle: typeof bundle
-
-  // Blocks - Definition-time (form schema building)
-  field: typeof field
-  fieldset: typeof fieldset
-  annex: typeof annex
-  party: typeof party           // Definition-time: party role definition
-  formParty: typeof formParty   // Alias for party (backwards compatibility)
-  witnessRequirement: typeof witnessRequirement
-
-  // Blocks - Runtime (filling forms)
-  partyData: typeof partyData   // Runtime: actual party data (person/organization)
-
-  // Primitives (return plain data)
-  coordinate: typeof coordinate
-  address: typeof address
-  phone: typeof phone
-  money: typeof money
-  duration: typeof duration
-  layer: typeof layer
-  person: typeof person
-  organization: typeof organization
-  identification: typeof identification
-  bbox: typeof bbox
-  metadata: typeof metadata
-  date: typeof date
-  datetime: typeof datetime
-  time: typeof time
-  percentage: typeof percentage
-  rating: typeof rating
-
-  // Loading (for unknown artifact types)
-  load: typeof load
-  safeLoad: typeof safeLoad
-
-  // Parsing (auto-detect JSON/YAML)
-  parse: typeof parse
-
-  // Validation (convenience, also available on instances)
-  validate: typeof validate
-  toStandardSchema: typeof toStandardSchema
-
-  // Utilities (power users)
-  utils: {
-    makeInstanceTemplate: typeof makeInstanceTemplate
-    applyDefaults: typeof applyDefaults
-    withDefaults: typeof withDefaults
-  }
-}
-
-export const open: OpenAPI = {
-  // Artifacts (all return instances)
-  form,
-  document,
-  checklist,
-  bundle,
-
-  // Blocks - Definition-time (form schema building)
-  field,
-  fieldset,
-  annex,
-  party,
-  formParty,
-  witnessRequirement,
-
-  // Blocks - Runtime (filling forms)
-  partyData,
-
-  // Primitives (return plain data)
-  coordinate,
-  address,
-  phone,
-  money,
-  duration,
-  layer,
-  person,
-  organization,
-  identification,
-  bbox,
-  metadata,
-  date,
-  datetime,
-  time,
-  percentage,
-  rating,
-
-  // Loading
   load,
   safeLoad,
+  loadFromObject,
+  safeLoadFromObject,
+  LoadError,
+  // Type guards for artifact discrimination
+  isFormInstance,
+  isDocumentInstance,
+  isBundleInstance,
+  isChecklistInstance,
+} from "./serialization";
 
-  // Parsing (auto-detect JSON/YAML)
-  parse,
+export type { AnyArtifactInstance } from "./serialization";
 
-  // Validation
-  validate,
-  toStandardSchema,
+// ============================================================================
+// TYPES
+// ============================================================================
 
-  // Utilities (power users)
-  utils: {
-    makeInstanceTemplate,
-    applyDefaults,
-    withDefaults,
-  },
-}
+export type {
+  SerializationFormat,
+  SerializationOptions,
+  RenderOptions,
+  RuntimeFormRenderOptions,
+  RuntimeChecklistRenderOptions,
+  FillOptions,
+  InstanceTemplate,
+} from "./types";
 
-export * from './utils'
+// Re-export from @open-form/types
+export type {
+  ChecklistData,
+  SerializerRegistry,
+  SerializerConfig,
+} from "@open-form/types";
+
+// Re-export sealing types from @open-form/types
+export type {
+  SigningFieldType,
+  SigningField,
+  SealingRequest,
+  SealingResult,
+  Sealer,
+  // Legacy aliases (deprecated)
+  FormalSigningRequest,
+  FormalSigningResponse,
+  FormalSigningAdapter,
+} from "@open-form/types";
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
+export { validateArtifact as validate } from "./validation";
+export { parse } from "./serialization";

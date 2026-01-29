@@ -78,6 +78,14 @@ function getSerializerForType(
         return serializers.organization;
       case "party":
         return serializers.party;
+      case "coordinate":
+        return serializers.coordinate;
+      case "bbox":
+        return serializers.bbox;
+      case "duration":
+        return serializers.duration;
+      case "identification":
+        return serializers.identification;
       default:
         return null;
     }

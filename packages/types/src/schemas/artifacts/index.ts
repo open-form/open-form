@@ -3,16 +3,55 @@
  * Includes Document, Form, Checklist, and Bundle artifacts
  */
 
+// Shared types
 export type {
   ArtifactBase,
   Layer,
   InlineLayer,
   FileLayer,
   Bindings,
-} from "./common";
+  CondExpr,
+  // Logic expression types
+  BaseLogicExpression,
+  BooleanLogicExpression,
+  StringLogicExpression,
+  NumberLogicExpression,
+  IntegerLogicExpression,
+  PercentageLogicExpression,
+  RatingLogicExpression,
+  DateLogicExpression,
+  TimeLogicExpression,
+  DatetimeLogicExpression,
+  DurationLogicExpression,
+  MoneyLogicExpressionValue,
+  AddressLogicExpressionValue,
+  PhoneLogicExpressionValue,
+  CoordinateLogicExpressionValue,
+  BboxLogicExpressionValue,
+  PersonLogicExpressionValue,
+  OrganizationLogicExpressionValue,
+  IdentificationLogicExpressionValue,
+  MoneyLogicExpression,
+  AddressLogicExpression,
+  PhoneLogicExpression,
+  CoordinateLogicExpression,
+  BboxLogicExpression,
+  PersonLogicExpression,
+  OrganizationLogicExpression,
+  IdentificationLogicExpression,
+  ScalarLogicExpression,
+  ObjectLogicExpression,
+  LogicExpression,
+  ScalarLogicType,
+  ObjectLogicType,
+  LogicExpressionType,
+  LogicSection,
+} from "./shared";
 
+// Document artifact
 export type { Document } from "./document";
 
+// Checklist artifact
 export type {
   BooleanStatusSpec,
   EnumStatusOption,
@@ -22,16 +61,54 @@ export type {
   Checklist,
 } from "./checklist";
 
-export type { BundleContentItem, Bundle } from "./bundle";
-
+// Bundle artifact
 export type {
-  Fieldset,
-  Annex,
-  SignatureRequirement,
-  FormParty,
-  WitnessRequirement,
+  BundleContentItem,
+  InlineBundleItem,
+  PathBundleItem,
+  RegistryBundleItem,
+  Bundle,
+} from "./bundle";
+
+// Form artifact and related types
+export type {
+  // Form type
   Form,
+  // Field types
+  BaseField,
+  FieldsetField,
+  FormField,
+  TextField,
+  BooleanField,
+  NumberField,
+  CoordinateField,
+  BboxField,
+  MoneyField,
+  AddressField,
+  PhoneField,
+  DurationField,
+  EmailField,
+  UuidField,
+  UriField,
+  EnumField,
+  DateField,
+  DatetimeField,
+  TimeField,
+  PersonField,
+  OrganizationField,
+  IdentificationField,
+  MultiselectField,
+  PercentageField,
+  RatingField,
+  // Fieldset
+  FormFieldset,
+  // Annex
+  FormAnnex,
+  // Party
+  FormParty,
+  // Signature
+  FormSignature,
 } from "./form";
 
 // Union types
-export type { Artifact, OpenFormPayload } from "./unions";
+export type { Artifact } from "./unions";

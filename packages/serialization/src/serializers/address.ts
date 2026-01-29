@@ -5,9 +5,9 @@
 import { isObject } from '../utils'
 
 /**
- * Validate Address object. Throws error if invalid.
+ * Assert Address object is valid. Throws error if invalid.
  */
-export function validateAddress(value: unknown): void {
+export function assertAddress(value: unknown): void {
 	if (!isObject(value)) {
 		throw new TypeError('Invalid address: must be an Address object')
 	}

@@ -38,14 +38,18 @@ export const Route = createRootRoute({
   component: RootDocument,
 });
 
+import { TanstackProvider } from 'fumadocs-core/framework/tanstack';
+
 function RootDocument() {
   return (
     <html lang="en" suppressHydrationWarning>
       <HeadContent />
       <body className="flex flex-col min-h-screen">
+        <TanstackProvider>
         <RootProvider>
           <Outlet />
         </RootProvider>
+        </TanstackProvider>
         <Scripts />
       </body>
     </html>

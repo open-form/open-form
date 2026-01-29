@@ -1,4 +1,4 @@
-import { open, toYAML, toJSON } from '@/index'
+import { open, toYAML } from '@/index'
 
 const myForm = open.form({
   kind: 'form',
@@ -41,7 +41,7 @@ const myForm = open.form({
     },
   },
   defaultLayer: 'default',
-  annexes: [],
+  annexes: {},
 })
 
 console.log(myForm)
@@ -50,20 +50,24 @@ console.log(myForm)
 const isValidArtifact = myForm.validate()
 console.log(isValidArtifact)
 
-// Create instance template (using utils)
-const instanceTemplate = open.utils.makeInstanceTemplate(myForm.schema)
-console.log('ℹ️ instanceTemplate')
-console.log(instanceTemplate)
+// Create sample data for validation
+const sampleData = {
+  fields: {
+    name: 'Fluffy',
+    type: 'cat',
+    age: 3,
+  },
+}
+console.log('ℹ️ sampleData')
+console.log(sampleData)
 
 // Serialize (using direct exports)
-const yaml = toYAML(instanceTemplate)
+const yaml = toYAML(sampleData)
 console.log(yaml)
 
-const json = toJSON(instanceTemplate, {
-  indent: 2,
-})
+const json = JSON.stringify(sampleData, null, 2)
 console.log(json)
 
 // Validate data against form (using instance method)
-const isValid = myForm.safeParseData(instanceTemplate)
+const isValid = myForm.safeParseData(sampleData)
 console.log(isValid)

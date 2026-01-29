@@ -18,5 +18,11 @@ export function isSerializableFieldType(
     "person",
     "organization",
     "party",
+    "coordinate",
+    "bbox",
+    "duration",
+    "identification",
+    "attachment",
+    "signature",
   ].includes(fieldType);
 }

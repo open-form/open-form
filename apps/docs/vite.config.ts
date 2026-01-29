@@ -31,9 +31,14 @@ const config = defineConfig({
     tanstackStart({
       prerender: {
         enabled: true,
+        crawlLinks: true, // Discovers all linkable pages
       },
       router: {
         routeFileIgnorePrefix: "components",
+      },
+      sitemap: {
+        enabled: true,
+        host: 'https://docs.open-form.dev',
       },
     }),
     viteReact(),
