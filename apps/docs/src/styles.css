@@ -78,10 +78,10 @@
 }
 
 .dark {
-  --background: oklch(0.216 0.012 50);
-  --foreground: oklch(0.9702 0 0);
+  --background: oklch(0.21 0.01 50);
+  --foreground: oklch(0.85 0 0);
   --card: oklch(0.374 0.015 52);
-  --card-foreground: oklch(0.9818 0.0051 50);
+  --card-foreground: oklch(0.8 0.0051 50);
   --popover: oklch(0.3085 0.012 50);
   --popover-foreground: oklch(0.9211 0.0038 50);
   --primary: oklch(0.74 0.16 50.3041);
@@ -102,7 +102,7 @@
   --chart-3: oklch(0.213 0.0074 50);
   --chart-4: oklch(0.3074 0.049 289.323);
   --chart-5: oklch(0.5608 0.1281 42.0584);
-  --sidebar: oklch(0.147 0.012 50);
+  --sidebar: oklch(0.17 0.01 50);
   --sidebar-foreground: oklch(0.783 0.01 50);
   --sidebar-primary: oklch(0.325 0.01 50);
   --sidebar-primary-foreground: oklch(0.9881 0 0);
@@ -130,8 +130,10 @@
     0 1px 1.5px 0px hsl(0 0% 0% / 0), 0 8px 10px -1px hsl(0 0% 0% / 0);
   --shadow-2xl: 0 1px 1.5px 0px hsl(0 0% 0% / 0);
   /* Fumadocs overrides */
+  --color-fd-background: oklch(0.2 0.01 50);
+  --color-fd-foreground: oklch(0.85 0 0);
   --color-fd-card: oklch(0.216 0.012 50);
-  --color-fd-card-foreground: oklch(0.9818 0.0051 50);
+  --color-fd-card-foreground: oklch(0.8 0.0051 50);
   --color-fd-border: oklch(0.32 0.015 52);
   --color-fd-muted: oklch(0.216 0.012 50);
   --color-fd-muted-foreground: oklch(0.7575 0.012 52);
