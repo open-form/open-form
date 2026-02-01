@@ -1,0 +1,120 @@
+{
+  "$id": "https://schema.open-form.dev/registry.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenForm Registry Index",
+  "description": "Schema for registry.json index file",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "format": "uri",
+      "description": "JSON Schema URI for validation",
+      "type": "string"
+    },
+    "name": {
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Registry name/identifier",
+      "type": "string"
+    },
+    "homepage": {
+      "format": "uri",
+      "description": "Homepage URL for the registry",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 2000,
+      "description": "Description of the registry",
+      "type": "string"
+    },
+    "artifactsPath": {
+      "pattern": "^/[a-zA-Z0-9/_-]*$",
+      "maxLength": 100,
+      "description": "Path prefix for artifact files (e.g., \"/r\" or \"/artifacts\"). Defaults to \"/r\" if not specified.",
+      "default": "/r",
+      "type": "string"
+    },
+    "items": {
+      "description": "List of all artifacts in the registry",
+      "type": "array",
+      "items": {
+        "title": "RegistryItemSummary",
+        "description": "Summary information about an artifact in the registry",
+        "type": "object",
+        "properties": {
+          "name": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Artifact name (unique within registry)",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Artifact kind",
+            "anyOf": [
+              {
+                "const": "form",
+                "type": "string"
+              },
+              {
+                "const": "document",
+                "type": "string"
+              },
+              {
+                "const": "checklist",
+                "type": "string"
+              },
+              {
+                "const": "bundle",
+                "type": "string"
+              }
+            ]
+          },
+          "version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+",
+            "description": "Semantic version",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Human-readable title",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "description": "Brief description of the artifact",
+            "type": "string"
+          },
+          "layers": {
+            "description": "Available layer keys",
+            "type": "array",
+            "items": {
+              "description": "Layer key",
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Tags for search and filtering",
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "maxLength": 50,
+              "description": "Tag for categorization",
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "version"
+        ]
+      }
+    }
+  },
+  "required": [
+    "name",
+    "items"
+  ]
+}

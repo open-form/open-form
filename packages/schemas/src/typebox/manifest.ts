@@ -8,6 +8,78 @@
 import { Type } from '@sinclair/typebox'
 
 /**
+ * Registry entry with authentication options
+ */
+const RegistryEntryObjectSchema = Type.Object(
+  {
+    url: Type.String({
+      format: 'uri',
+      description: 'Registry base URL',
+    }),
+    headers: Type.Optional(
+      Type.Record(
+        Type.String(),
+        Type.String(),
+        { description: 'HTTP headers for authentication (supports ${ENV_VAR} expansion)' }
+      )
+    ),
+    params: Type.Optional(
+      Type.Record(
+        Type.String(),
+        Type.String(),
+        { description: 'Query parameters to include in requests' }
+      )
+    ),
+  },
+  {
+    description: 'Registry configuration with authentication options',
+  }
+)
+
+/**
+ * Registry entry - either a simple URL string or an object with auth
+ */
+const RegistryEntrySchema = Type.Union(
+  [
+    Type.String({
+      format: 'uri',
+      description: 'Simple registry URL',
+    }),
+    RegistryEntryObjectSchema,
+  ],
+  {
+    description: 'Registry configuration - URL string or object with authentication',
+  }
+)
+
+/**
+ * Artifact configuration for the project
+ */
+const ArtifactConfigSchema = Type.Object(
+  {
+    dir: Type.Optional(
+      Type.String({
+        minLength: 1,
+        maxLength: 256,
+        description: 'Directory for installed artifacts (default: "artifacts")',
+        default: 'artifacts',
+      })
+    ),
+    format: Type.Optional(
+      Type.Unsafe<'json' | 'yaml'>({
+        type: 'string',
+        enum: ['json', 'yaml'],
+        description: 'Default output format for artifacts (default: "yaml")',
+        default: 'yaml',
+      })
+    ),
+  },
+  {
+    description: 'Configuration for artifact management',
+  }
+)
+
+/**
  * Manifest schema for open-form.json project files
  */
 export const ManifestSchema = Type.Object(
@@ -41,6 +113,19 @@ export const ManifestSchema = Type.Object(
       default: 'private',
       description: 'Project visibility',
     }),
+    registries: Type.Optional(
+      Type.Record(
+        Type.String({
+          pattern: '^@[a-zA-Z0-9][a-zA-Z0-9-_]*$',
+          description: 'Registry namespace (must start with @)',
+        }),
+        RegistryEntrySchema,
+        {
+          description: 'Custom registries for this project (overrides global config)',
+        }
+      )
+    ),
+    artifacts: Type.Optional(ArtifactConfigSchema),
   },
   {
     $id: 'https://schema.open-form.dev/manifest.json',
@@ -52,6 +137,25 @@ export const ManifestSchema = Type.Object(
 )
 
 /**
+ * Manifest registry entry type
+ */
+export type ManifestRegistryEntry =
+  | string
+  | {
+      url: string
+      headers?: Record<string, string>
+      params?: Record<string, string>
+    }
+
+/**
+ * Manifest artifact configuration type
+ */
+export interface ManifestArtifactConfig {
+  dir?: string
+  format?: 'json' | 'yaml'
+}
+
+/**
  * TypeScript interface for Manifest (for better DX)
  */
 export interface Manifest {
@@ -60,4 +164,6 @@ export interface Manifest {
   title: string
   description?: string
   visibility: 'public' | 'private'
+  registries?: Record<string, ManifestRegistryEntry>
+  artifacts?: ManifestArtifactConfig
 }

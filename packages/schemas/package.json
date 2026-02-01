@@ -73,7 +73,8 @@
     "export:all-schemas": "tsx scripts/export-all-schemas.ts",
     "export:root-schema": "tsx scripts/export-root-schema.ts",
     "export:manifest": "tsx scripts/export-manifest-schema.ts",
-    "export:all": "pnpm export:root-schema && pnpm export:all-schemas && pnpm export:manifest"
+    "export:registry": "tsx scripts/export-registry-schemas.ts",
+    "export:all": "pnpm export:root-schema && pnpm export:all-schemas && pnpm export:manifest && pnpm export:registry"
   },
   "dependencies": {},
   "devDependencies": {

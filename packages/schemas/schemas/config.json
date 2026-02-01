@@ -1,8 +1,8 @@
 {
-  "$id": "https://schema.open-form.dev/manifest.json",
+  "$id": "https://schema.open-form.dev/config.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OpenForm Project Manifest",
-  "description": "Schema for open-form.json project manifest files",
+  "title": "OpenForm Global Config",
+  "description": "Schema for ~/.open-form/config.json global configuration file",
   "additionalProperties": false,
   "type": "object",
   "properties": {
@@ -11,38 +11,12 @@
       "description": "JSON Schema URI for validation",
       "type": "string"
     },
-    "name": {
-      "pattern": "^@[a-z0-9-]+/[a-z0-9-]+$",
-      "minLength": 3,
-      "maxLength": 214,
-      "description": "Scoped package name (@org/repo-name)",
-      "type": "string"
-    },
-    "title": {
-      "minLength": 1,
-      "maxLength": 200,
-      "description": "Human-readable project title",
-      "type": "string"
-    },
-    "description": {
-      "maxLength": 1000,
-      "description": "Project description",
-      "type": "string"
-    },
-    "visibility": {
-      "type": "string",
-      "enum": [
-        "public",
-        "private"
-      ],
-      "default": "private",
-      "description": "Project visibility"
-    },
     "registries": {
-      "description": "Custom registries for this project (overrides global config)",
+      "description": "Configured registries by namespace",
       "type": "object",
       "patternProperties": {
         "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$": {
+          "title": "RegistryEntry",
           "description": "Registry configuration - URL string or object with authentication",
           "anyOf": [
             {
@@ -51,6 +25,7 @@
               "type": "string"
             },
             {
+              "title": "RegistryEntryObject",
               "description": "Registry configuration with authentication options",
               "type": "object",
               "properties": {
@@ -86,32 +61,31 @@
         }
       }
     },
-    "artifacts": {
-      "description": "Configuration for artifact management",
+    "defaults": {
+      "title": "GlobalDefaults",
+      "description": "Default settings for CLI operations",
       "type": "object",
       "properties": {
-        "dir": {
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Directory for installed artifacts (default: \"artifacts\")",
+        "format": {
+          "description": "Default output format for artifacts",
+          "default": "yaml",
+          "anyOf": [
+            {
+              "const": "json",
+              "type": "string"
+            },
+            {
+              "const": "yaml",
+              "type": "string"
+            }
+          ]
+        },
+        "artifactsDir": {
+          "description": "Default directory for installed artifacts",
           "default": "artifacts",
           "type": "string"
-        },
-        "format": {
-          "type": "string",
-          "enum": [
-            "json",
-            "yaml"
-          ],
-          "description": "Default output format for artifacts (default: \"yaml\")",
-          "default": "yaml"
         }
       }
     }
-  },
-  "required": [
-    "name",
-    "title",
-    "visibility"
-  ]
+  }
 }
