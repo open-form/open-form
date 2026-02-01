@@ -73,8 +73,6 @@ export const RegistryIndexSchema = z.object({
 	items: z.array(RegistryItemSummarySchema)
 		.describe('List of all artifacts in the registry'),
 }).meta({
-	id: 'https://schema.open-form.dev/registry.json',
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm Registry Index',
 	description: 'Schema for registry.json index file',
 }).strict();

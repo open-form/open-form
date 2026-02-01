@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { schemaId } from './config';
 
 // Artifacts
 import { FormSchema } from './artifacts/form';
@@ -83,8 +82,6 @@ export const OpenFormSchema = z.union([
 	ChecklistSchema,
 	BundleSchema,
 ]).meta({
-	id: schemaId('open-form'),
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm',
 	description: 'Root schema for any OpenForm artifact document',
 });

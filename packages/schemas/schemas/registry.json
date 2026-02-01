@@ -35,79 +35,7 @@
       "description": "List of all artifacts in the registry",
       "type": "array",
       "items": {
-        "title": "RegistryItemSummary",
-        "description": "Summary information about an artifact in the registry",
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "Artifact name (unique within registry)",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128,
-            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
-          },
-          "kind": {
-            "description": "Artifact kind",
-            "anyOf": [
-              {
-                "type": "string",
-                "const": "form"
-              },
-              {
-                "type": "string",
-                "const": "document"
-              },
-              {
-                "type": "string",
-                "const": "checklist"
-              },
-              {
-                "type": "string",
-                "const": "bundle"
-              }
-            ]
-          },
-          "version": {
-            "description": "Semantic version",
-            "type": "string",
-            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
-          },
-          "title": {
-            "description": "Human-readable title",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "description": {
-            "description": "Brief description of the artifact",
-            "type": "string",
-            "maxLength": 2000
-          },
-          "layers": {
-            "description": "Available layer keys",
-            "type": "array",
-            "items": {
-              "description": "Layer key",
-              "type": "string"
-            }
-          },
-          "tags": {
-            "description": "Tags for search and filtering",
-            "type": "array",
-            "items": {
-              "description": "Tag for categorization",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 50
-            }
-          }
-        },
-        "required": [
-          "name",
-          "kind",
-          "version"
-        ],
-        "additionalProperties": false
+        "$ref": "#/$defs/RegistryItemSummary"
       }
     }
   },
@@ -115,5 +43,82 @@
     "name",
     "items"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "RegistryItemSummary": {
+      "title": "RegistryItemSummary",
+      "description": "Summary information about an artifact in the registry",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Artifact name (unique within registry)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+        },
+        "kind": {
+          "description": "Artifact kind",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "form"
+            },
+            {
+              "type": "string",
+              "const": "document"
+            },
+            {
+              "type": "string",
+              "const": "checklist"
+            },
+            {
+              "type": "string",
+              "const": "bundle"
+            }
+          ]
+        },
+        "version": {
+          "description": "Semantic version",
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
+        },
+        "title": {
+          "description": "Human-readable title",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "description": "Brief description of the artifact",
+          "type": "string",
+          "maxLength": 2000
+        },
+        "layers": {
+          "description": "Available layer keys",
+          "type": "array",
+          "items": {
+            "description": "Layer key",
+            "type": "string"
+          }
+        },
+        "tags": {
+          "description": "Tags for search and filtering",
+          "type": "array",
+          "items": {
+            "description": "Tag for categorization",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          }
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "version"
+      ],
+      "additionalProperties": false
+    }
+  }
 }

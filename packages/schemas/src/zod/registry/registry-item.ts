@@ -121,8 +121,6 @@ export const RegistryItemSchema = z.object({
 		.optional(),
 	// Allow additional properties for artifact-specific fields (fields, items, etc.)
 }).passthrough().meta({
-	id: 'https://schema.open-form.dev/registry-item.json',
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm Registry Item',
 	description: 'Schema for registry item files (r/{name}.json)',
 });

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { schemaId } from '../../config';
 import { ArtifactSchema } from '../shared/base';
 import { LayerSchema } from '../shared/layer';
 import { ChecklistItemSchema } from './item';
@@ -25,8 +24,6 @@ export const ChecklistSchema = ArtifactSchema.extend({
 		.describe('Key of the default layer to use when none specified at render time')
 		.optional(),
 }).meta({
-	id: schemaId('checklist'),
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'Checklist',
 	description: 'A checklist artifact containing an ordered list of items to track. Each item may define how its status should be represented at runtime (boolean or enum).',
 }).strict();

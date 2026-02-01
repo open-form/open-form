@@ -59,8 +59,6 @@ export const LockFileSchema = z.object({
 		LockedArtifactSchema,
 	).describe('Installed artifacts by reference'),
 }).meta({
-	id: 'https://schema.open-form.dev/lock.json',
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm Lock File',
 	description: 'Schema for .open-form/lock.json lock file',
 }).strict();

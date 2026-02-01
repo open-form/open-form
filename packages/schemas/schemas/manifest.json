@@ -51,52 +51,72 @@
         "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$"
       },
       "additionalProperties": {
-        "description": "Registry configuration - URL string or object with authentication",
-        "anyOf": [
-          {
-            "description": "Simple registry URL",
-            "type": "string",
-            "format": "uri"
-          },
-          {
-            "description": "Registry configuration with authentication options",
-            "type": "object",
-            "properties": {
-              "url": {
-                "description": "Registry base URL",
-                "type": "string",
-                "format": "uri"
-              },
-              "headers": {
-                "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
-                "type": "object",
-                "propertyNames": {
-                  "type": "string"
-                },
-                "additionalProperties": {
-                  "type": "string"
-                }
-              },
-              "params": {
-                "description": "Query parameters to include in requests",
-                "type": "object",
-                "propertyNames": {
-                  "type": "string"
-                },
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "required": [
-              "url"
-            ],
-            "additionalProperties": false
-          }
-        ]
+        "$ref": "#/$defs/ManifestRegistryEntry"
       }
     },
     "artifacts": {
+      "$ref": "#/$defs/ManifestArtifactConfig"
+    }
+  },
+  "required": [
+    "name",
+    "title",
+    "visibility"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "ManifestRegistryEntry": {
+      "title": "ManifestRegistryEntry",
+      "description": "Registry configuration - URL string or object with authentication",
+      "anyOf": [
+        {
+          "description": "Simple registry URL",
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "$ref": "#/$defs/ManifestRegistryEntryObject"
+        }
+      ]
+    },
+    "ManifestRegistryEntryObject": {
+      "title": "ManifestRegistryEntryObject",
+      "description": "Registry configuration with authentication options",
+      "type": "object",
+      "properties": {
+        "url": {
+          "description": "Registry base URL",
+          "type": "string",
+          "format": "uri"
+        },
+        "headers": {
+          "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "params": {
+          "description": "Query parameters to include in requests",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "ManifestArtifactConfig": {
+      "title": "ManifestArtifactConfig",
       "description": "Configuration for artifact management",
       "type": "object",
       "properties": {
@@ -124,11 +144,5 @@
       },
       "additionalProperties": false
     }
-  },
-  "required": [
-    "name",
-    "title",
-    "visibility"
-  ],
-  "additionalProperties": false
+  }
 }

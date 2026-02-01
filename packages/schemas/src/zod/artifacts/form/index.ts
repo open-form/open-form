@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { schemaId } from '../../config';
 import { ArtifactSchema } from '../shared/base';
 import { LayerSchema } from '../shared/layer';
 import { LogicSectionSchema } from '../logic/logic-section';
@@ -60,8 +59,6 @@ export const FormSchema = ArtifactSchema.extend({
 	).describe('Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.')
 		.optional(),
 }).meta({
-	id: schemaId('form'),
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'Form',
 	description: 'A form artifact that defines a data contract with field definitions, optional layers for rendering, and optional annexes. Forms are the primary artifact type for structured data collection and document generation.',
 }).strict();

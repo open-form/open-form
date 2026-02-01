@@ -17,54 +17,66 @@
         "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$"
       },
       "additionalProperties": {
-        "title": "RegistryEntry",
-        "description": "Registry configuration - URL string or object with authentication",
-        "anyOf": [
-          {
-            "description": "Simple registry URL",
-            "type": "string",
-            "format": "uri"
-          },
-          {
-            "title": "RegistryEntryObject",
-            "description": "Registry configuration with authentication options",
-            "type": "object",
-            "properties": {
-              "url": {
-                "description": "Registry base URL",
-                "type": "string",
-                "format": "uri"
-              },
-              "headers": {
-                "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
-                "type": "object",
-                "propertyNames": {
-                  "type": "string"
-                },
-                "additionalProperties": {
-                  "type": "string"
-                }
-              },
-              "params": {
-                "description": "Query parameters to include in requests",
-                "type": "object",
-                "propertyNames": {
-                  "type": "string"
-                },
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "required": [
-              "url"
-            ],
-            "additionalProperties": false
-          }
-        ]
+        "$ref": "#/$defs/RegistryEntry"
       }
     },
     "defaults": {
+      "$ref": "#/$defs/GlobalDefaults"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "RegistryEntry": {
+      "title": "RegistryEntry",
+      "description": "Registry configuration - URL string or object with authentication",
+      "anyOf": [
+        {
+          "description": "Simple registry URL",
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "$ref": "#/$defs/RegistryEntryObject"
+        }
+      ]
+    },
+    "RegistryEntryObject": {
+      "title": "RegistryEntryObject",
+      "description": "Registry configuration with authentication options",
+      "type": "object",
+      "properties": {
+        "url": {
+          "description": "Registry base URL",
+          "type": "string",
+          "format": "uri"
+        },
+        "headers": {
+          "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "params": {
+          "description": "Query parameters to include in requests",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "GlobalDefaults": {
       "title": "GlobalDefaults",
       "description": "Default settings for CLI operations",
       "type": "object",
@@ -91,6 +103,5 @@
       },
       "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 }

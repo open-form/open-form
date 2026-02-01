@@ -10,7 +10,7 @@ import { z } from 'zod';
 /**
  * Registry entry with authentication options
  */
-const RegistryEntryObjectSchema = z.object({
+export const ManifestRegistryEntryObjectSchema = z.object({
 	url: z.url().describe('Registry base URL'),
 	headers: z.record(z.string(), z.string())
 		.describe('HTTP headers for authentication (supports ${ENV_VAR} expansion)')
@@ -19,23 +19,25 @@ const RegistryEntryObjectSchema = z.object({
 		.describe('Query parameters to include in requests')
 		.optional(),
 }).meta({
+	title: 'ManifestRegistryEntryObject',
 	description: 'Registry configuration with authentication options',
 });
 
 /**
  * Registry entry - either a simple URL string or an object with auth
  */
-const RegistryEntrySchema = z.union([
+export const ManifestRegistryEntrySchema = z.union([
 	z.url().describe('Simple registry URL'),
-	RegistryEntryObjectSchema,
+	ManifestRegistryEntryObjectSchema,
 ]).meta({
+	title: 'ManifestRegistryEntry',
 	description: 'Registry configuration - URL string or object with authentication',
 });
 
 /**
  * Artifact configuration for the project
  */
-const ArtifactConfigSchema = z.object({
+export const ManifestArtifactConfigSchema = z.object({
 	dir: z.string()
 		.min(1)
 		.max(256)
@@ -47,6 +49,7 @@ const ArtifactConfigSchema = z.object({
 		.describe('Default output format for artifacts (default: "yaml")')
 		.optional(),
 }).meta({
+	title: 'ManifestArtifactConfig',
 	description: 'Configuration for artifact management',
 });
 
@@ -75,16 +78,30 @@ export const ManifestSchema = z.object({
 		.describe('Project visibility'),
 	registries: z.record(
 		z.string().regex(/^@[a-zA-Z0-9][a-zA-Z0-9-_]*$/).describe('Registry namespace (must start with @)'),
-		RegistryEntrySchema,
+		ManifestRegistryEntrySchema,
 	).describe('Custom registries for this project (overrides global config)')
 		.optional(),
-	artifacts: ArtifactConfigSchema.optional(),
+	artifacts: ManifestArtifactConfigSchema.optional(),
 }).meta({
-	id: 'https://schema.open-form.dev/manifest.json',
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm Project Manifest',
 	description: 'Schema for open-form.json project manifest files',
 }).strict();
+
+/**
+ * Manifest Schema Registry
+ *
+ * Contains all manifest-related schemas with their IDs for proper $ref generation.
+ */
+export const ManifestSchemaRegistry = z.registry<{
+	id?: string;
+	title?: string;
+	description?: string;
+}>();
+
+ManifestSchemaRegistry.add(ManifestRegistryEntryObjectSchema, { id: 'ManifestRegistryEntryObject' });
+ManifestSchemaRegistry.add(ManifestRegistryEntrySchema, { id: 'ManifestRegistryEntry' });
+ManifestSchemaRegistry.add(ManifestArtifactConfigSchema, { id: 'ManifestArtifactConfig' });
+ManifestSchemaRegistry.add(ManifestSchema, { id: 'Manifest' });
 
 /**
  * Manifest registry entry type

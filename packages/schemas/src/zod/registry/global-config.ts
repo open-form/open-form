@@ -65,8 +65,6 @@ export const GlobalConfigSchema = z.object({
 		.optional(),
 	defaults: GlobalDefaultsSchema.optional(),
 }).meta({
-	id: 'https://schema.open-form.dev/config.json',
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'OpenForm Global Config',
 	description: 'Schema for ~/.open-form/config.json global configuration file',
 }).strict();

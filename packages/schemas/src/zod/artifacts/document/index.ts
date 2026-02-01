@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { schemaId } from '../../config';
 import { ArtifactSchema } from '../shared/base';
 import { LayerSchema } from '../shared/layer';
 
@@ -22,8 +21,6 @@ export const DocumentSchema = ArtifactSchema.extend({
 		.describe('Key of the default layer to use when none specified at render time')
 		.optional(),
 }).meta({
-	id: schemaId('document'),
-	$schema: 'https://json-schema.org/draft/2020-12/schema',
 	title: 'Document',
 	description: 'A document artifact representing static content with no inputs. Documents can have multiple layers for rendering to different output formats (e.g., PDF, Markdown, HTML).',
 }).strict();
