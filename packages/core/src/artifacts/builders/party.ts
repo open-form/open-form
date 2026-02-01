@@ -5,9 +5,7 @@
  */
 
 import type { FormParty, FormSignature } from '@open-form/types';
-import { extractSchema } from '@open-form/schemas';
-import { coerceTypes } from '@/validation/coerce';
-import { validateFormParty } from '@/validation';
+import { parseFormParty } from '@/validation/artifact-parsers';
 
 // Condition expression type (boolean or string expression)
 type CondExpr = boolean | string;
@@ -16,15 +14,8 @@ type CondExpr = boolean | string;
 // Validation
 // ============================================================================
 
-const schema = extractSchema('FormParty') as Record<string, unknown>;
-
 function parseParty(input: unknown): FormParty {
-	const coerced = coerceTypes(schema, input) as Record<string, unknown>;
-	if (!validateFormParty(coerced)) {
-		const errors = (validateFormParty as unknown as { errors: Array<{ message?: string }> }).errors;
-		throw new Error(`Invalid FormParty: ${errors?.[0]?.message || 'validation failed'}`);
-	}
-	return coerced as unknown as FormParty;
+	return parseFormParty(input);
 }
 
 // ============================================================================

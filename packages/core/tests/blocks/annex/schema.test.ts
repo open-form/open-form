@@ -114,13 +114,12 @@ describe('Annex', () => {
 					expect(() => annex(input)).toThrow();
 				});
 
-				test('strips additional properties', () => {
+				test('rejects additional properties (strict validation)', () => {
 					const input = {
 						title: 'Test',
 						extra: 'should be removed',
 					} as any;
-					const result = annex(input);
-					expect(result).not.toHaveProperty('extra');
+					expect(() => annex(input)).toThrow();
 				});
 			});
 		});

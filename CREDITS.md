@@ -4,8 +4,7 @@ OpenForm is built on the shoulders of excellent open source projects.
 
 ## Core Dependencies
 
-- **[TypeBox](https://github.com/sinclairzx81/typebox)** — JSON Schema type builder for TypeScript
-- **[AJV](https://github.com/ajv-validator/ajv)** — JSON Schema validation
+- **[Zod](https://github.com/colinhacks/zod)** — TypeScript-first schema validation
 - **[yaml](https://github.com/eemeli/yaml)** — YAML parsing and serialization
 
 ## Renderers

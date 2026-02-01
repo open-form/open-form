@@ -41,10 +41,7 @@ import type {
 	Identification,
 } from '@open-form/types';
 
-import { extractSchema } from '@open-form/schemas';
-import { coerceTypes } from '@/validation/coerce';
-import { validateFormField } from '@/validation';
-import { deepClone } from '@/utils/clone';
+import { parseFormField } from '@/validation/artifact-parsers';
 
 // Condition expression type (boolean or string expression)
 type CondExpr = boolean | string;
@@ -53,16 +50,8 @@ type CondExpr = boolean | string;
 // Validation
 // ============================================================================
 
-const schema = extractSchema('FormField') as Record<string, unknown>;
-
 function parseField(input: unknown): FormField {
-	const cloned = deepClone(input);
-	const coerced = coerceTypes(schema, cloned) as Record<string, unknown>;
-	if (!validateFormField(coerced)) {
-		const errors = (validateFormField as unknown as { errors: Array<{ message?: string }> }).errors;
-		throw new Error(`Invalid FormField: ${errors?.[0]?.message || 'validation failed'}`);
-	}
-	return coerced as unknown as FormField;
+	return parseFormField(input);
 }
 
 // ============================================================================

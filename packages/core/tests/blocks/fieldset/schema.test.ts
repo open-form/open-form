@@ -343,14 +343,13 @@ describe('Fieldset', () => {
 					expect(() => fieldset(input)).toThrow();
 				});
 
-				test('strips additional properties', () => {
+				test('rejects additional properties (strict validation)', () => {
 					const input = {
 						id: 'test',
 						fields: { field1: { type: 'text' } },
 						extra: 'should be removed',
 					} as any;
-					const result = fieldset(input);
-					expect(result).not.toHaveProperty('extra');
+					expect(() => fieldset(input)).toThrow();
 				});
 			});
 		});

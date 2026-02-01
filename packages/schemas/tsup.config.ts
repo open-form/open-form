@@ -3,16 +3,14 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
 	entry: ['src/index.ts'],
 	format: ['esm'], // ESM only
-	dts: {
-		resolve: true,
-	},
+	dts: true, // Generate .d.ts but don't bundle type dependencies
 	splitting: false,
 	sourcemap: false,
 	clean: true,
 	preserveImportMeta: true, // Preserve JSON import attributes
 	external: [
-		// TypeBox is dev-only, but mark as external if referenced
-		'@sinclair/typebox',
+		// Zod types should be referenced, not bundled
+		'zod',
 	],
 })
 

@@ -1,5 +1,4 @@
-import Ajv from 'ajv'
-import addFormats from 'ajv-formats'
+import { z } from 'zod'
 import type { Form } from '@open-form/types'
 import { compile, type InferFormPayload } from '@/inference'
 import { deepClone } from '@/utils/clone'
@@ -10,16 +9,154 @@ export type { ValidationError, ValidationSuccess, ValidationFailure, ValidationR
 // Import types for internal use
 import type { ValidationError, ValidationResult, InstanceTemplate } from '@/types'
 
-// Initialize AJV with JSON Schema 2020-12 support and formats
-const ajv = new Ajv({
-  strict: false,
-  allErrors: true,
-  verbose: true,
-  useDefaults: true,
-})
+/**
+ * Build a Zod schema from a compiled JSON Schema
+ * This is a simplified conversion for common form field patterns
+ */
+function jsonSchemaToZod(jsonSchema: Record<string, unknown>): z.ZodType {
+	const type = jsonSchema.type as string | undefined
 
-// Add format validators (date, email, uri, uuid, etc.)
-addFormats(ajv)
+	if (type === 'object') {
+		const properties = jsonSchema.properties as Record<string, Record<string, unknown>> | undefined
+		const required = jsonSchema.required as string[] | undefined
+
+		if (!properties) {
+			return z.record(z.string(), z.unknown())
+		}
+
+		const shape: Record<string, z.ZodType> = {}
+		for (const [key, propSchema] of Object.entries(properties)) {
+			let fieldSchema = jsonSchemaToZod(propSchema)
+			if (!required?.includes(key)) {
+				fieldSchema = fieldSchema.optional()
+			}
+			shape[key] = fieldSchema
+		}
+
+		return z.object(shape).passthrough()
+	}
+
+	if (type === 'array') {
+		const items = jsonSchema.items as Record<string, unknown> | undefined
+		if (items) {
+			return z.array(jsonSchemaToZod(items))
+		}
+		return z.array(z.unknown())
+	}
+
+	if (type === 'string') {
+		let schema: z.ZodType = z.string()
+		const format = jsonSchema.format as string | undefined
+		const minLength = jsonSchema.minLength as number | undefined
+		const maxLength = jsonSchema.maxLength as number | undefined
+		const pattern = jsonSchema.pattern as string | undefined
+
+		if (format === 'email') {
+			schema = z.email()
+		} else if (format === 'uri' || format === 'url') {
+			schema = z.url()
+		} else if (format === 'date') {
+			schema = z.iso.date()
+		} else if (format === 'date-time') {
+			schema = z.iso.datetime()
+		} else {
+			if (minLength !== undefined) {
+				schema = (schema as z.ZodString).min(minLength)
+			}
+			if (maxLength !== undefined) {
+				schema = (schema as z.ZodString).max(maxLength)
+			}
+			if (pattern !== undefined) {
+				schema = (schema as z.ZodString).regex(new RegExp(pattern))
+			}
+		}
+		return schema
+	}
+
+	if (type === 'number' || type === 'integer') {
+		let schema = z.number()
+		const minimum = jsonSchema.minimum as number | undefined
+		const maximum = jsonSchema.maximum as number | undefined
+
+		if (minimum !== undefined) {
+			schema = schema.min(minimum)
+		}
+		if (maximum !== undefined) {
+			schema = schema.max(maximum)
+		}
+		if (type === 'integer') {
+			schema = schema.int()
+		}
+		return schema
+	}
+
+	if (type === 'boolean') {
+		return z.boolean()
+	}
+
+	if (type === 'null') {
+		return z.null()
+	}
+
+	// Handle union types (anyOf, oneOf)
+	const anyOf = jsonSchema.anyOf as Record<string, unknown>[] | undefined
+	const oneOf = jsonSchema.oneOf as Record<string, unknown>[] | undefined
+	const unionTypes = anyOf || oneOf
+
+	if (unionTypes && unionTypes.length > 0) {
+		const schemas = unionTypes.map((s) => jsonSchemaToZod(s))
+		if (schemas.length === 1) {
+			return schemas[0]!
+		}
+		if (schemas.length >= 2) {
+			return z.union([schemas[0]!, schemas[1]!, ...schemas.slice(2)])
+		}
+	}
+
+	// Handle const
+	if ('const' in jsonSchema) {
+		return z.literal(jsonSchema.const as string | number | boolean)
+	}
+
+	// Handle enum
+	const enumValues = jsonSchema.enum as (string | number)[] | undefined
+	if (enumValues && enumValues.length > 0) {
+		if (typeof enumValues[0] === 'string') {
+			return z.enum(enumValues as [string, ...string[]])
+		}
+		if (enumValues.length >= 2) {
+			const literals = enumValues.map((v) => z.literal(v))
+			return z.union([literals[0]!, literals[1]!, ...literals.slice(2)])
+		}
+		return z.literal(enumValues[0])
+	}
+
+	// Default fallback
+	return z.unknown()
+}
+
+/**
+ * Apply defaults from JSON Schema to data
+ */
+function applyDefaults(
+	data: Record<string, unknown>,
+	jsonSchema: Record<string, unknown>
+): Record<string, unknown> {
+	const properties = jsonSchema.properties as Record<string, Record<string, unknown>> | undefined
+	if (!properties) return data
+
+	const result = { ...data }
+
+	for (const [key, propSchema] of Object.entries(properties)) {
+		if (result[key] === undefined && 'default' in propSchema) {
+			result[key] = propSchema.default
+		} else if (result[key] && typeof result[key] === 'object' && propSchema.type === 'object') {
+			result[key] = applyDefaults(result[key] as Record<string, unknown>, propSchema)
+		}
+	}
+
+	return result
+}
 
 /**
  * Validate user-submitted data against a form definition
@@ -29,107 +166,90 @@ addFormats(ajv)
  * @returns Validation result with success status, data (with defaults applied), and errors
  */
 export function validateFormData<F extends Form>(
-  form: F,
-  data: Record<string, unknown>
+	form: F,
+	data: Record<string, unknown>
 ): ValidationResult<InferFormPayload<F>> {
-  // Compile the form to a JSON Schema
-  const schema = compile(form)
+	// Compile the form to a JSON Schema
+	const jsonSchema = compile(form)
 
-  // Compile the schema with AJV
-  const validateFn = ajv.compile(schema)
+	// Deep clone data to avoid mutating the original
+	// Handle null/undefined gracefully by defaulting to empty object
+	let dataCopy = data != null ? deepClone(data) : {}
 
-  // Deep clone data to avoid mutating the original (AJV will apply defaults to this copy)
-  // Handle null/undefined gracefully by defaulting to empty object
-  const dataCopy = data != null ? deepClone(data) : {}
+	// Apply defaults from schema
+	dataCopy = applyDefaults(dataCopy, jsonSchema)
 
-  // Validate the data (AJV will apply defaults from schema)
-  const isValid = validateFn(dataCopy)
+	// Build Zod schema from JSON Schema
+	const zodSchema = jsonSchemaToZod(jsonSchema)
 
-  if (isValid) {
-    return {
-      success: true,
-      data: dataCopy as InferFormPayload<F>,
-      errors: null,
-    }
-  }
+	// Validate the data
+	const result = zodSchema.safeParse(dataCopy)
 
-  // Map AJV errors to our error format
-  const errors: ValidationError[] = (validateFn.errors || []).map((err) => {
-    let field = err.instancePath || '/'
+	if (result.success) {
+		return {
+			success: true,
+			data: dataCopy as InferFormPayload<F>,
+			errors: null,
+		}
+	}
 
-    // Remove leading slash and convert JSON pointer to dot notation
-    field = field.replace(/^\//, '').replace(/\//g, '.')
+	// Map Zod errors to our error format
+	const errors: ValidationError[] = result.error.issues.map((issue) => {
+		const field = issue.path.join('.') || 'root'
+		let message = issue.message
 
-    // Handle root level errors
-    if (!field) {
-      field = (err.params?.missingProperty as string) || 'root'
-    }
+		// Enhance error messages based on code
+		// Zod 4 has different issue codes than Zod 3
+		if (issue.code === 'invalid_type') {
+			const invalidTypeIssue = issue as { expected?: string; received?: string }
+			if (invalidTypeIssue.received === 'undefined') {
+				message = `Missing required field: ${field}`
+			} else if (invalidTypeIssue.expected && invalidTypeIssue.received) {
+				message = `Expected type ${invalidTypeIssue.expected}, received ${invalidTypeIssue.received}`
+			}
+		} else if (issue.code === 'too_small') {
+			const tooSmallIssue = issue as { minimum?: number; type?: string }
+			if (tooSmallIssue.minimum !== undefined) {
+				message = `Must be at least ${tooSmallIssue.minimum}`
+			}
+		} else if (issue.code === 'too_big') {
+			const tooBigIssue = issue as { maximum?: number; type?: string }
+			if (tooBigIssue.maximum !== undefined) {
+				message = `Must be at most ${tooBigIssue.maximum}`
+			}
+		} else if (issue.code === 'invalid_format') {
+			const formatIssue = issue as { format?: string }
+			if (formatIssue.format === 'email') {
+				message = 'Invalid email format'
+			} else if (formatIssue.format === 'url' || formatIssue.format === 'uri') {
+				message = 'Invalid URL format'
+			} else if (formatIssue.format === 'regex') {
+				message = 'Does not match required pattern'
+			}
+		} else if (issue.code === 'invalid_value') {
+			const valueIssue = issue as { values?: unknown[] }
+			if (valueIssue.values) {
+				message = `Must be one of: ${valueIssue.values.join(', ')}`
+			}
+		} else if (issue.code === 'unrecognized_keys') {
+			const keysIssue = issue as { keys?: string[] }
+			if (keysIssue.keys) {
+				message = `Unknown field(s): ${keysIssue.keys.join(', ')}`
+			}
+		}
 
-    let message = err.message || 'Validation failed'
+		return {
+			field,
+			message,
+			value: undefined, // Zod doesn't provide the invalid value directly
+		}
+	})
 
-    // Enhance error messages based on keyword
-    switch (err.keyword) {
-      case 'required':
-        message = `Missing required field: ${err.params?.missingProperty}`
-        field = err.params?.missingProperty as string
-        break
-      case 'type':
-        message = `Expected type ${err.params?.type}`
-        break
-      case 'minLength':
-        message = `Must be at least ${err.params?.limit} characters`
-        break
-      case 'maxLength':
-        message = `Must be at most ${err.params?.limit} characters`
-        break
-      case 'minimum':
-        message = `Must be at least ${err.params?.limit}`
-        break
-      case 'maximum':
-        message = `Must be at most ${err.params?.limit}`
-        break
-      case 'pattern': {
-        const pattern = err.params?.pattern as string | undefined
-        if (pattern) {
-          // Provide human-readable hints for common patterns
-          if (pattern.includes('P(?:\\d+Y)?(?:\\d+M)?')) {
-            message = `Must be a valid ISO 8601 duration (e.g., "P1Y", "P6M", "P30D", "PT2H30M")`
-          } else if (pattern.includes('^\\+[1-9]')) {
-            message = `Must be a valid E.164 phone number (e.g., "+14155551234")`
-          } else if (pattern.includes('([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d')) {
-            message = `Must be a valid time in HH:MM:SS format (e.g., "14:30:00")`
-          } else {
-            message = `Does not match required pattern: ${pattern}`
-          }
-        } else {
-          message = `Does not match required pattern`
-        }
-        break
-      }
-      case 'format':
-        message = `Invalid ${err.params?.format} format`
-        break
-      case 'enum':
-        message = `Must be one of: ${(err.params?.allowedValues as string[])?.join(', ')}`
-        break
-      case 'additionalProperties':
-        message = `Unknown field: ${err.params?.additionalProperty}`
-        field = err.params?.additionalProperty as string
-        break
-    }
-
-    return {
-      field,
-      message,
-      value: err.data,
-    }
-  })
-
-  return {
-    success: false,
-    data: null,
-    errors,
-  }
+	return {
+		success: false,
+		data: null,
+		errors,
+	}
 }
 
 /**
@@ -143,10 +263,10 @@ export function validateFormData<F extends Form>(
  * @returns Validation result with success status, data (with defaults applied), and errors
  */
 export function validateInstance<F extends Form>(
-  form: F,
-  instance: InstanceTemplate
+	form: F,
+	instance: InstanceTemplate
 ): ValidationResult<InferFormPayload<F>> {
-  // InstanceTemplate extends Record<string, unknown> so it's compatible
-  // with validateFormData which expects { fields: {...}, annexes: {...} }
-  return validateFormData(form, instance)
+	// InstanceTemplate extends Record<string, unknown> so it's compatible
+	// with validateFormData which expects { fields: {...}, annexes: {...} }
+	return validateFormData(form, instance)
 }

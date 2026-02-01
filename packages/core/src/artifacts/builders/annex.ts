@@ -5,9 +5,7 @@
  */
 
 import type { FormAnnex } from '@open-form/types';
-import { extractSchema } from '@open-form/schemas';
-import { coerceTypes } from '@/validation/coerce';
-import { validateFormAnnex } from '@/validation';
+import { parseFormAnnex } from '@/validation/artifact-parsers';
 
 // Condition expression type (boolean or string expression)
 type CondExpr = boolean | string;
@@ -16,15 +14,8 @@ type CondExpr = boolean | string;
 // Validation
 // ============================================================================
 
-const schema = extractSchema('FormAnnex') as Record<string, unknown>;
-
 function parseAnnex(input: unknown): FormAnnex {
-	const coerced = coerceTypes(schema, input) as Record<string, unknown>;
-	if (!validateFormAnnex(coerced)) {
-		const errors = (validateFormAnnex as unknown as { errors: Array<{ message?: string }> }).errors;
-		throw new Error(`Invalid FormAnnex: ${errors?.[0]?.message || 'validation failed'}`);
-	}
-	return coerced as unknown as FormAnnex;
+	return parseFormAnnex(input);
 }
 
 // ============================================================================

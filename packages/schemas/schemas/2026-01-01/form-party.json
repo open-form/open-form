@@ -1,53 +1,52 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/formparty.json",
-  "title": "FormParty",
-  "description": "Design-time party role definition. Defines what roles exist and what constraints apply when filling a form.",
+  "id": "FormParty",
   "type": "object",
   "properties": {
     "label": {
-      "minLength": 1,
-      "maxLength": 100,
       "description": "Display name for this role",
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
     },
     "description": {
-      "maxLength": 500,
       "description": "Description of this role",
-      "type": "string"
+      "type": "string",
+      "maxLength": 500
     },
     "partyType": {
-      "default": "any",
       "description": "Constraint on party type",
+      "default": "any",
       "anyOf": [
         {
-          "const": "person",
-          "type": "string"
+          "type": "string",
+          "const": "person"
         },
         {
-          "const": "organization",
-          "type": "string"
+          "type": "string",
+          "const": "organization"
         },
         {
-          "const": "any",
-          "type": "string"
+          "type": "string",
+          "const": "any"
         }
       ]
     },
     "min": {
-      "minimum": 0,
-      "default": 1,
       "description": "Minimum parties required",
-      "type": "number"
+      "default": 1,
+      "type": "number",
+      "minimum": 0
     },
     "max": {
-      "minimum": 1,
-      "default": 1,
       "description": "Maximum parties allowed",
-      "type": "number"
+      "default": 1,
+      "type": "number",
+      "minimum": 1
     },
     "required": {
-      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
     },
     "signature": {
       "title": "FormSignature",
@@ -55,25 +54,45 @@
       "type": "object",
       "properties": {
         "required": {
-          "default": false,
           "description": "Whether signature is required for this role",
+          "default": false,
           "type": "boolean"
         },
         "witnesses": {
-          "minimum": 0,
-          "default": 0,
           "description": "Number of witnesses required for this signature",
-          "type": "number"
+          "default": 0,
+          "type": "number",
+          "minimum": 0
         },
         "notarized": {
-          "default": false,
           "description": "Whether at least one witness must be a notary",
+          "default": false,
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
   "required": [
     "label"
-  ]
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "CondExpr": {
+      "id": "CondExpr",
+      "anyOf": [
+        {
+          "description": "Literal boolean value",
+          "type": "boolean"
+        },
+        {
+          "description": "Expression string - either inline expression or reference to a logic key",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      ]
+    }
+  },
+  "title": "FormParty"
 }

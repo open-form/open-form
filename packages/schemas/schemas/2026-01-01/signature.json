@@ -1,66 +1,68 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/signature.json",
-  "title": "Signature",
-  "additionalProperties": false,
-  "description": "Captured signature data containing the signature image, timestamp, capture method, and optional metadata.",
   "type": "object",
   "properties": {
     "image": {
       "description": "Base64-encoded signature image or data URI",
-      "minLength": 1,
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "timestamp": {
-      "format": "date-time",
       "description": "ISO 8601 date-time when the signature was captured",
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "method": {
       "description": "Method used to capture the signature",
       "anyOf": [
         {
-          "const": "drawn",
-          "type": "string"
+          "type": "string",
+          "const": "drawn"
         },
         {
-          "const": "typed",
-          "type": "string"
+          "type": "string",
+          "const": "typed"
         },
         {
-          "const": "uploaded",
-          "type": "string"
+          "type": "string",
+          "const": "uploaded"
         },
         {
-          "const": "certificate",
-          "type": "string"
+          "type": "string",
+          "const": "certificate"
         }
       ]
     },
     "type": {
-      "default": "signature",
       "description": "Whether this is a full signature or initials",
+      "default": "signature",
       "anyOf": [
         {
-          "const": "signature",
-          "type": "string"
+          "type": "string",
+          "const": "signature"
         },
         {
-          "const": "initials",
-          "type": "string"
+          "type": "string",
+          "const": "initials"
         }
       ]
     },
     "metadata": {
       "description": "Additional metadata (IP address, device info, etc.)",
       "type": "object",
-      "patternProperties": {
-        "^(.*)$": {}
-      }
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
     }
   },
   "required": [
     "timestamp",
     "method"
-  ]
+  ],
+  "additionalProperties": false,
+  "id": "Signature",
+  "title": "Signature"
 }

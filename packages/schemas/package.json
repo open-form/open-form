@@ -11,23 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./schema.json": {
-      "import": "./schemas/schema.json",
-      "require": "./schemas/schema.json",
-      "default": "./schemas/schema.json"
-    },
-    "./manifest.json": {
-      "import": "./schemas/manifest.json",
-      "require": "./schemas/manifest.json",
-      "default": "./schemas/manifest.json"
     }
   },
   "sideEffects": false,
   "files": [
     "dist",
-    "schemas/schema.json",
-    "schemas/manifest.json",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"
@@ -38,7 +26,7 @@
     "forms",
     "json-schema",
     "schemas",
-    "typebox",
+    "zod",
     "validation"
   ],
   "license": "MIT",
@@ -62,23 +50,23 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsx scripts/export-root-schema.ts && tsup",
-    "dev": "tsx scripts/export-root-schema.ts && tsup --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "clean": "rm -rf schemas/open-form.schema.json dist",
     "pack:dry": "npm pack --dry-run",
     "prepublishOnly": "pnpm run build",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "check": "pnpm lint && pnpm check-types && echo \"✅ All checks passed\" || echo \"❌ Checks failed\"",
-    "export:all-schemas": "tsx scripts/export-all-schemas.ts",
-    "export:root-schema": "tsx scripts/export-root-schema.ts",
-    "export:manifest": "tsx scripts/export-manifest-schema.ts",
-    "export:registry": "tsx scripts/export-registry-schemas.ts",
-    "export:all": "pnpm export:root-schema && pnpm export:all-schemas && pnpm export:manifest && pnpm export:registry"
+    "export:bundled-schema": "tsx scripts/export-root-schema-zod.ts",
+    "export:individual-schemas": "tsx scripts/export-all-schemas-zod.ts",
+    "export:manifest": "tsx scripts/export-manifest-schema-zod.ts",
+    "export:registry": "tsx scripts/export-registry-schemas-zod.ts",
+    "export:all": "pnpm export:bundled-schema && pnpm export:individual-schemas && pnpm export:manifest && pnpm export:registry"
   },
   "dependencies": {},
   "devDependencies": {
-    "@sinclair/typebox": "^0.34.41",
+    "zod": "catalog:",
     "@open-form/eslint-config": "workspace:*",
     "@open-form/types": "workspace:*",
     "@open-form/typescript-config": "workspace:*",

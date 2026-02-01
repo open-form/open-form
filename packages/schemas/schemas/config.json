@@ -1,64 +1,67 @@
 {
-  "$id": "https://schema.open-form.dev/config.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OpenForm Global Config",
-  "description": "Schema for ~/.open-form/config.json global configuration file",
-  "additionalProperties": false,
+  "$id": "https://schema.open-form.dev/config.json",
   "type": "object",
   "properties": {
     "$schema": {
-      "format": "uri",
       "description": "JSON Schema URI for validation",
-      "type": "string"
+      "type": "string",
+      "format": "uri"
     },
     "registries": {
       "description": "Configured registries by namespace",
       "type": "object",
-      "patternProperties": {
-        "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$": {
-          "title": "RegistryEntry",
-          "description": "Registry configuration - URL string or object with authentication",
-          "anyOf": [
-            {
-              "format": "uri",
-              "description": "Simple registry URL",
-              "type": "string"
-            },
-            {
-              "title": "RegistryEntryObject",
-              "description": "Registry configuration with authentication options",
-              "type": "object",
-              "properties": {
-                "url": {
-                  "format": "uri",
-                  "description": "Registry base URL",
+      "propertyNames": {
+        "description": "Registry namespace (must start with @)",
+        "type": "string",
+        "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+      },
+      "additionalProperties": {
+        "title": "RegistryEntry",
+        "description": "Registry configuration - URL string or object with authentication",
+        "anyOf": [
+          {
+            "description": "Simple registry URL",
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "title": "RegistryEntryObject",
+            "description": "Registry configuration with authentication options",
+            "type": "object",
+            "properties": {
+              "url": {
+                "description": "Registry base URL",
+                "type": "string",
+                "format": "uri"
+              },
+              "headers": {
+                "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
+                "type": "object",
+                "propertyNames": {
                   "type": "string"
                 },
-                "headers": {
-                  "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
-                  "type": "object",
-                  "patternProperties": {
-                    "^(.*)$": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "params": {
-                  "description": "Query parameters to include in requests",
-                  "type": "object",
-                  "patternProperties": {
-                    "^(.*)$": {
-                      "type": "string"
-                    }
-                  }
+                "additionalProperties": {
+                  "type": "string"
                 }
               },
-              "required": [
-                "url"
-              ]
-            }
-          ]
-        }
+              "params": {
+                "description": "Query parameters to include in requests",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        ]
       }
     },
     "defaults": {
@@ -71,12 +74,12 @@
           "default": "yaml",
           "anyOf": [
             {
-              "const": "json",
-              "type": "string"
+              "type": "string",
+              "const": "json"
             },
             {
-              "const": "yaml",
-              "type": "string"
+              "type": "string",
+              "const": "yaml"
             }
           ]
         },
@@ -85,7 +88,9 @@
           "default": "artifacts",
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
-  }
+  },
+  "additionalProperties": false
 }

@@ -1,89 +1,99 @@
 {
-  "$id": "https://schema.open-form.dev/manifest.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.open-form.dev/manifest.json",
   "title": "OpenForm Project Manifest",
   "description": "Schema for open-form.json project manifest files",
-  "additionalProperties": false,
   "type": "object",
   "properties": {
     "$schema": {
-      "format": "uri",
       "description": "JSON Schema URI for validation",
-      "type": "string"
+      "type": "string",
+      "format": "uri"
     },
     "name": {
-      "pattern": "^@[a-z0-9-]+/[a-z0-9-]+$",
+      "description": "Scoped package name (@org/repo-name)",
+      "type": "string",
       "minLength": 3,
       "maxLength": 214,
-      "description": "Scoped package name (@org/repo-name)",
-      "type": "string"
+      "pattern": "^@[a-z0-9-]+\\/[a-z0-9-]+$"
     },
     "title": {
-      "minLength": 1,
-      "maxLength": 200,
       "description": "Human-readable project title",
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
     },
     "description": {
-      "maxLength": 1000,
       "description": "Project description",
-      "type": "string"
+      "type": "string",
+      "maxLength": 1000
     },
     "visibility": {
-      "type": "string",
-      "enum": [
-        "public",
-        "private"
-      ],
+      "description": "Project visibility",
       "default": "private",
-      "description": "Project visibility"
+      "anyOf": [
+        {
+          "type": "string",
+          "const": "public"
+        },
+        {
+          "type": "string",
+          "const": "private"
+        }
+      ]
     },
     "registries": {
       "description": "Custom registries for this project (overrides global config)",
       "type": "object",
-      "patternProperties": {
-        "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$": {
-          "description": "Registry configuration - URL string or object with authentication",
-          "anyOf": [
-            {
-              "format": "uri",
-              "description": "Simple registry URL",
-              "type": "string"
-            },
-            {
-              "description": "Registry configuration with authentication options",
-              "type": "object",
-              "properties": {
-                "url": {
-                  "format": "uri",
-                  "description": "Registry base URL",
+      "propertyNames": {
+        "description": "Registry namespace (must start with @)",
+        "type": "string",
+        "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+      },
+      "additionalProperties": {
+        "description": "Registry configuration - URL string or object with authentication",
+        "anyOf": [
+          {
+            "description": "Simple registry URL",
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "description": "Registry configuration with authentication options",
+            "type": "object",
+            "properties": {
+              "url": {
+                "description": "Registry base URL",
+                "type": "string",
+                "format": "uri"
+              },
+              "headers": {
+                "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
+                "type": "object",
+                "propertyNames": {
                   "type": "string"
                 },
-                "headers": {
-                  "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
-                  "type": "object",
-                  "patternProperties": {
-                    "^(.*)$": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "params": {
-                  "description": "Query parameters to include in requests",
-                  "type": "object",
-                  "patternProperties": {
-                    "^(.*)$": {
-                      "type": "string"
-                    }
-                  }
+                "additionalProperties": {
+                  "type": "string"
                 }
               },
-              "required": [
-                "url"
-              ]
-            }
-          ]
-        }
+              "params": {
+                "description": "Query parameters to include in requests",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        ]
       }
     },
     "artifacts": {
@@ -91,27 +101,34 @@
       "type": "object",
       "properties": {
         "dir": {
-          "minLength": 1,
-          "maxLength": 256,
           "description": "Directory for installed artifacts (default: \"artifacts\")",
           "default": "artifacts",
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
         },
         "format": {
-          "type": "string",
-          "enum": [
-            "json",
-            "yaml"
-          ],
           "description": "Default output format for artifacts (default: \"yaml\")",
-          "default": "yaml"
+          "default": "yaml",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "json"
+            },
+            {
+              "type": "string",
+              "const": "yaml"
+            }
+          ]
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
   "required": [
     "name",
     "title",
     "visibility"
-  ]
+  ],
+  "additionalProperties": false
 }

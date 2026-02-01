@@ -18,8 +18,7 @@ export default defineConfig({
     "@open-form/serialization",
     "@open-form/types",
     // Mark runtime dependencies as external (they're in package.json dependencies)
-    "ajv",
-    "ajv-formats",
+    "zod",
     "yaml",
     "expr-eval-fork",
     "@standard-schema/spec",

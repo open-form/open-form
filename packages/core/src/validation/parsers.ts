@@ -2,7 +2,7 @@
  * Primitive Parsers
  *
  * Ready-to-use parse functions for all OpenForm primitives.
- * These handle coercion, validation, and error formatting.
+ * These use Zod schemas directly for strict validation.
  */
 
 import type {
@@ -16,39 +16,39 @@ import type {
 	Organization,
 	Person,
 	Phone,
-} from '@open-form/types';
-import { extractSchema } from '@open-form/schemas';
-import { coerceTypes } from './coerce';
+} from '@open-form/types'
 import {
-	validateAddress,
-	validateBbox,
-	validateCoordinate,
-	validateDuration,
-	validateIdentification,
-	validateMetadata,
-	validateMoney,
-	validateOrganization,
-	validatePerson,
-	validatePhone,
-} from './validators';
-
-type ValidatorFn = ((data: unknown) => boolean) & { errors?: unknown[] };
+	AddressSchema,
+	BboxSchema,
+	CoordinateSchema,
+	DurationSchema,
+	IdentificationSchema,
+	MetadataSchema,
+	MoneySchema,
+	OrganizationSchema,
+	PersonSchema,
+	PhoneSchema,
+} from '@open-form/schemas'
+import { type ZodType, type ZodError } from 'zod'
 
 interface ParserOptions {
 	/** Fields that must be finite numbers (not NaN or Infinity) */
-	finiteNumbers?: string[];
+	finiteNumbers?: string[]
 	/** Fields that must not be NaN */
-	noNaN?: string[];
+	noNaN?: string[]
 	/** Custom validation after schema validation */
-	postValidate?: (data: unknown) => void;
+	postValidate?: (data: unknown) => void
 }
 
 /**
- * Extract error message from AJV validator
+ * Format Zod error for display
  */
-function getErrorMessage(validator: ValidatorFn): string {
-	const firstError = validator.errors?.[0] as { message?: string } | undefined;
-	return firstError?.message || 'validation failed';
+function formatZodError(error: ZodError, schemaName: string): string {
+	const firstIssue = error.issues[0]
+	if (!firstIssue) return `Invalid ${schemaName}: validation failed`
+
+	const path = firstIssue.path.length > 0 ? ` at ${firstIssue.path.join('.')}` : ''
+	return `Invalid ${schemaName}${path}: ${firstIssue.message}`
 }
 
 /**
@@ -61,111 +61,97 @@ function checkNumericFields(
 ): void {
 	if (options.finiteNumbers) {
 		for (const field of options.finiteNumbers) {
-			const value = data[field];
+			const value = data[field]
 			if (typeof value === 'number') {
 				if (isNaN(value)) {
-					throw new Error(`Invalid ${typeName}: ${field} must be a valid number`);
+					throw new Error(`Invalid ${typeName}: ${field} must be a valid number`)
 				}
 				if (!isFinite(value)) {
-					throw new Error(`Invalid ${typeName}: ${field} cannot be Infinity`);
+					throw new Error(`Invalid ${typeName}: ${field} cannot be Infinity`)
 				}
 			}
 		}
 	}
 	if (options.noNaN) {
 		for (const field of options.noNaN) {
-			const value = data[field];
+			const value = data[field]
 			if (typeof value === 'number' && isNaN(value)) {
-				throw new Error(`Invalid ${typeName}: ${field} must be a valid number`);
+				throw new Error(`Invalid ${typeName}: ${field} must be a valid number`)
 			}
 		}
 	}
 }
 
 /**
- * Factory to create a parser function for a schema-based primitive
+ * Factory to create a parser function using Zod schema directly
  */
 function createParser<T>(
 	schemaName: string,
-	validator: ValidatorFn,
+	schema: ZodType<T>,
 	options: ParserOptions = {},
 ): (input: unknown) => T {
-	// Lazy schema extraction - cached by extractSchema internally
-	let schema: Record<string, unknown> | null = null;
-
 	return (input: unknown): T => {
-		if (!schema) {
-			schema = extractSchema(schemaName) as Record<string, unknown>;
+		const result = schema.safeParse(input)
+
+		if (!result.success) {
+			throw new Error(formatZodError(result.error, schemaName))
 		}
 
-		const coerced = coerceTypes(schema, input) as Record<string, unknown>;
+		const data = result.data as Record<string, unknown>
 
 		// Check numeric fields
-		checkNumericFields(coerced, schemaName, options);
-
-		// Run AJV validation
-		if (!validator(coerced)) {
-			throw new Error(`Invalid ${schemaName}: ${getErrorMessage(validator)}`);
-		}
+		checkNumericFields(data, schemaName, options)
 
 		// Run custom post-validation if provided
 		if (options.postValidate) {
-			options.postValidate(coerced);
+			options.postValidate(data)
 		}
 
-		return coerced as unknown as T;
-	};
+		return data as T
+	}
 }
 
 // ─────────────────────────────────────────────────────────────
 // Primitive Parsers
 // ─────────────────────────────────────────────────────────────
 
-export const parseMoney = createParser<Money>('Money', validateMoney, {
+export const parseMoney = createParser<Money>('Money', MoneySchema, {
 	finiteNumbers: ['amount'],
-});
+})
 
-export const parseCoordinate = createParser<Coordinate>('Coordinate', validateCoordinate, {
+export const parseCoordinate = createParser<Coordinate>('Coordinate', CoordinateSchema, {
 	noNaN: ['lat', 'lon'],
-});
+})
 
-export const parseBbox = createParser<Bbox>('Bbox', validateBbox, {
+export const parseBbox = createParser<Bbox>('Bbox', BboxSchema, {
 	postValidate: (data) => {
-		const bbox = data as Bbox;
+		const bbox = data as Bbox
 		if (bbox.southWest.lat >= bbox.northEast.lat) {
 			throw new Error(
 				`Invalid Bbox: southWest.lat (${bbox.southWest.lat}) must be less than northEast.lat (${bbox.northEast.lat})`,
-			);
+			)
 		}
 		if (bbox.southWest.lon >= bbox.northEast.lon) {
 			throw new Error(
 				`Invalid Bbox: southWest.lon (${bbox.southWest.lon}) must be less than northEast.lon (${bbox.northEast.lon})`,
-			);
+			)
 		}
 	},
-});
+})
 
-export const parseAddress = createParser<Address>('Address', validateAddress);
+export const parseAddress = createParser<Address>('Address', AddressSchema)
 
-export const parsePerson = createParser<Person>('Person', validatePerson);
+export const parsePerson = createParser<Person>('Person', PersonSchema)
 
-export const parseOrganization = createParser<Organization>('Organization', validateOrganization);
+export const parseOrganization = createParser<Organization>('Organization', OrganizationSchema)
 
-export const parsePhone = createParser<Phone>('Phone', validatePhone);
+export const parsePhone = createParser<Phone>('Phone', PhoneSchema)
 
 export const parseIdentification = createParser<Identification>(
 	'Identification',
-	validateIdentification,
-);
+	IdentificationSchema,
+)
 
-export const parseMetadata = createParser<Metadata>('Metadata', validateMetadata);
+export const parseMetadata = createParser<Metadata>('Metadata', MetadataSchema)
 
-/**
- * Duration parser - no coercion needed, just validation
- */
-export function parseDuration(input: unknown): Duration {
-	if (!validateDuration(input)) {
-		throw new Error(`Invalid Duration: ${getErrorMessage(validateDuration)}`);
-	}
-	return input as Duration;
-}
+export const parseDuration = createParser<Duration>('Duration', DurationSchema)

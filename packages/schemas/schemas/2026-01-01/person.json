@@ -1,48 +1,49 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/person.json",
-  "title": "Person",
-  "description": "Person with full name (required) and optional name components (title, first name, middle name, last name, suffix)",
+  "id": "Person",
   "type": "object",
   "properties": {
     "fullName": {
       "description": "Person's full name (complete name as a single string)",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 200,
-      "type": "string"
+      "maxLength": 200
     },
     "title": {
       "description": "Name prefix or title (e.g., Mr., Mrs., Dr., Prof.)",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 50,
-      "type": "string"
+      "maxLength": 50
     },
     "firstName": {
       "description": "Person's first or given name",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 100,
-      "type": "string"
+      "maxLength": 100
     },
     "middleName": {
       "description": "Person's middle name or initial",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 100,
-      "type": "string"
+      "maxLength": 100
     },
     "lastName": {
       "description": "Person's last name or surname",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 100,
-      "type": "string"
+      "maxLength": 100
     },
     "suffix": {
       "description": "Name suffix (e.g., Jr., Sr., III, Esq.)",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 50,
-      "type": "string"
+      "maxLength": 50
     }
   },
   "required": [
     "fullName"
-  ]
+  ],
+  "additionalProperties": false,
+  "title": "Person"
 }

@@ -21,7 +21,7 @@
 
 ## Package overview
 
-JSON Schema definitions for OpenForm artifacts.
+Zod schemas for OpenForm artifacts, forms, documents, and primitives.
 
 ## Installation
 
@@ -32,18 +32,16 @@ npm install @open-form/schemas
 ## Usage
 
 ```typescript
-import jsonSchema from "@open-form/schemas/schema.json";
+import { FormSchema, DocumentSchema, BundleSchema } from "@open-form/schemas";
 
-// Use with any JSON Schema validator
-import Ajv from "ajv";
-
-const ajv = new Ajv();
-const validate = ajv.compile(jsonSchema);
-
-const isValid = validate(myOpenFormDocument);
-if (!isValid) {
-  console.log(validate.errors);
+// Validate form data
+const result = FormSchema.safeParse(myFormData);
+if (!result.success) {
+  console.log(result.error.issues);
 }
+
+// Parse and validate (throws on error)
+const form = FormSchema.parse(myFormData);
 ```
 
 ## Changelog
@@ -68,4 +66,4 @@ See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for m
 
 Built with these excellent libraries:
 
-- [TypeBox](https://github.com/sinclairzx81/typebox) - JSON Schema Type Builder
+- [Zod](https://github.com/colinhacks/zod) - TypeScript-first schema validation

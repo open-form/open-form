@@ -74,7 +74,7 @@ describe('Person', () => {
 					expect(() => person(input)).toThrow();
 				});
 
-				test('strips additional properties (TypeBox behavior)', () => {
+				test('strips additional properties', () => {
 					const input = {
 						fullName: 'John Doe',
 						extra: 'field',

@@ -1,31 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/attachment.json",
-  "title": "Attachment",
-  "additionalProperties": false,
-  "description": "Attachment data representing an attached document. The key in the record is the annex identifier (the key from form.annexes).",
   "type": "object",
   "properties": {
     "name": {
       "description": "Original file name",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 255,
-      "type": "string"
+      "maxLength": 255
     },
     "mimeType": {
       "description": "MIME type of the attached file",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 100,
-      "type": "string"
+      "maxLength": 100
     },
     "checksum": {
       "description": "SHA-256 checksum for integrity verification",
-      "pattern": "^sha256:[a-f0-9]{64}$",
-      "type": "string"
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
     }
   },
   "required": [
     "name",
     "mimeType"
-  ]
+  ],
+  "additionalProperties": false,
+  "id": "Attachment",
+  "title": "Attachment"
 }

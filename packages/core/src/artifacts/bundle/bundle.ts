@@ -956,7 +956,12 @@ function createBundleBuilder(): BundleBuilderInterface {
 		inline(key: string, artifact: Buildable<Document | Form | Checklist | Bundle>, _include?: CondExpr) {
 			const contents = (_def.contents as BundleContentItem[]) || []
 			const resolvedArtifact = resolveBuildable(artifact)
-			const item: BundleContentItem = { type: 'inline', key, artifact: resolvedArtifact }
+			// Extract raw artifact data if it's an instance (has _data property)
+			// This ensures we store plain data without methods for structuredClone compatibility
+			const rawArtifact = '_data' in resolvedArtifact
+				? (resolvedArtifact as { _data: Document | Form | Checklist | Bundle })._data
+				: resolvedArtifact
+			const item: BundleContentItem = { type: 'inline', key, artifact: rawArtifact }
 			contents.push(parseBundleContentItem(item) as BundleContentItem)
 			_def.contents = contents
 			return builder

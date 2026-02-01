@@ -16,7 +16,8 @@ import type { ValidateOptions } from '@/types'
 
 type ArtifactKind = 'form' | 'document' | 'checklist' | 'bundle'
 
-interface AjvError {
+// Error format from validators (compatible with both AJV and Zod)
+interface ValidatorError {
   instancePath?: string
   message?: string
   keyword?: string
@@ -32,9 +33,9 @@ const validatorMap: Record<ArtifactKind, (data: unknown) => boolean> = {
 }
 
 /**
- * Map AJV errors to Standard Schema issues
+ * Map validator errors to Standard Schema issues
  */
-function mapErrors(errors: AjvError[] | null | undefined): StandardSchemaV1.Issue[] {
+function mapErrors(errors: ValidatorError[] | null | undefined): StandardSchemaV1.Issue[] {
   if (!Array.isArray(errors) || errors.length === 0) {
     return [{ message: 'Validation failed', path: [] }]
   }
@@ -101,7 +102,7 @@ export function validateSchema<T = unknown>(artifact: unknown): StandardSchemaV1
   // Get the validator for this artifact kind
   const validate = validatorMap[kind as ArtifactKind]
 
-  // Validate using pre-generated AJV validators
+  // Validate using Zod validators
   const valid = validate(artifactToValidate)
 
   if (valid) {
@@ -111,7 +112,7 @@ export function validateSchema<T = unknown>(artifact: unknown): StandardSchemaV1
   }
 
   // Map errors to Standard Schema issues
-  const errors = (validate as unknown as { errors: AjvError[] }).errors
+  const errors = (validate as unknown as { errors: ValidatorError[] }).errors
   return {
     issues: mapErrors(errors),
   }

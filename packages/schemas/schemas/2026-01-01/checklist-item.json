@@ -1,41 +1,38 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/checklistitem.json",
-  "title": "ChecklistItem",
-  "additionalProperties": false,
-  "description": "A single item in a checklist artifact. Each item has an ID, title, optional description, and an optional status specification (boolean or enum). If status is omitted, a default boolean status may be assumed (implementation-defined).",
   "type": "object",
   "properties": {
     "id": {
       "description": "Unique identifier for the checklist item (e.g., \"task-1\", \"step-a\"). Used to link to runtime status.",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 128,
-      "type": "string"
+      "maxLength": 128
     },
     "title": {
       "description": "Title or label for the checklist item",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 500,
-      "type": "string"
+      "maxLength": 500
     },
     "description": {
       "description": "Detailed description or instructions for the item",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 2000,
-      "type": "string"
+      "maxLength": 2000
     },
     "status": {
       "title": "StatusSpec",
       "description": "Specification for how checklist item status should be represented (boolean or enum).",
-      "anyOf": [
+      "oneOf": [
         {
           "title": "BooleanStatusSpec",
           "description": "Boolean status (e.g., incomplete/complete) with an optional default value.",
           "type": "object",
           "properties": {
             "kind": {
-              "const": "boolean",
-              "type": "string"
+              "type": "string",
+              "const": "boolean"
             },
             "default": {
               "description": "Default status value (true/false) for new instances",
@@ -44,7 +41,8 @@
           },
           "required": [
             "kind"
-          ]
+          ],
+          "additionalProperties": false
         },
         {
           "title": "EnumStatusSpec",
@@ -52,54 +50,54 @@
           "type": "object",
           "properties": {
             "kind": {
-              "const": "enum",
-              "type": "string"
+              "type": "string",
+              "const": "enum"
             },
             "options": {
-              "minItems": 1,
               "description": "Allowed status options",
+              "minItems": 1,
               "type": "array",
               "items": {
-                "title": "EnumStatusOption",
-                "additionalProperties": false,
                 "type": "object",
                 "properties": {
                   "value": {
                     "description": "Internal status value (e.g., \"todo\", \"in-progress\", \"done\")",
+                    "type": "string",
                     "minLength": 1,
-                    "maxLength": 64,
-                    "type": "string"
+                    "maxLength": 64
                   },
                   "label": {
                     "description": "Human-readable label for the status option",
+                    "type": "string",
                     "minLength": 1,
-                    "maxLength": 256,
-                    "type": "string"
+                    "maxLength": 256
                   },
                   "description": {
                     "description": "Optional description or help text for this status option",
+                    "type": "string",
                     "minLength": 1,
-                    "maxLength": 2000,
-                    "type": "string"
+                    "maxLength": 2000
                   }
                 },
                 "required": [
                   "value",
                   "label"
-                ]
+                ],
+                "additionalProperties": false
               }
             },
             "default": {
               "description": "Default status value for new instances (must match one of the option values)",
+              "type": "string",
               "minLength": 1,
-              "maxLength": 64,
-              "type": "string"
+              "maxLength": 64
             }
           },
           "required": [
             "kind",
             "options"
-          ]
+          ],
+          "additionalProperties": false
         }
       ]
     }
@@ -107,5 +105,8 @@
   "required": [
     "id",
     "title"
-  ]
+  ],
+  "additionalProperties": false,
+  "id": "ChecklistItem",
+  "title": "ChecklistItem"
 }

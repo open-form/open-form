@@ -1,33 +1,50 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/formannex.json",
-  "title": "FormAnnex",
-  "additionalProperties": false,
-  "description": "Defines an annex slot where a document must or may be attached at runtime",
   "type": "object",
   "properties": {
     "title": {
       "description": "Title or heading for the annex slot",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 200,
-      "type": "string"
+      "maxLength": 200
     },
     "description": {
       "description": "Description of what document should be attached",
+      "type": "string",
       "minLength": 1,
-      "maxLength": 1000,
-      "type": "string"
+      "maxLength": 1000
     },
     "required": {
-      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
     },
     "visible": {
-      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
     },
     "order": {
-      "minimum": 0,
       "description": "Display order for rendering",
-      "type": "number"
+      "type": "number",
+      "minimum": 0
     }
-  }
+  },
+  "additionalProperties": false,
+  "id": "FormAnnex",
+  "$defs": {
+    "CondExpr": {
+      "id": "CondExpr",
+      "anyOf": [
+        {
+          "description": "Literal boolean value",
+          "type": "boolean"
+        },
+        {
+          "description": "Expression string - either inline expression or reference to a logic key",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      ]
+    }
+  },
+  "title": "FormAnnex"
 }

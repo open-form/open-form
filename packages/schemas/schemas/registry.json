@@ -1,38 +1,35 @@
 {
-  "$id": "https://schema.open-form.dev/registry.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OpenForm Registry Index",
-  "description": "Schema for registry.json index file",
-  "additionalProperties": false,
+  "$id": "https://schema.open-form.dev/registry.json",
   "type": "object",
   "properties": {
     "$schema": {
-      "format": "uri",
       "description": "JSON Schema URI for validation",
-      "type": "string"
+      "type": "string",
+      "format": "uri"
     },
     "name": {
-      "minLength": 1,
-      "maxLength": 100,
       "description": "Registry name/identifier",
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
     },
     "homepage": {
-      "format": "uri",
       "description": "Homepage URL for the registry",
-      "type": "string"
+      "type": "string",
+      "format": "uri"
     },
     "description": {
-      "maxLength": 2000,
       "description": "Description of the registry",
-      "type": "string"
+      "type": "string",
+      "maxLength": 2000
     },
     "artifactsPath": {
-      "pattern": "^/[a-zA-Z0-9/_-]*$",
-      "maxLength": 100,
       "description": "Path prefix for artifact files (e.g., \"/r\" or \"/artifacts\"). Defaults to \"/r\" if not specified.",
       "default": "/r",
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "pattern": "^\\/[a-zA-Z0-9/_-]*$"
     },
     "items": {
       "description": "List of all artifacts in the registry",
@@ -43,48 +40,48 @@
         "type": "object",
         "properties": {
           "name": {
-            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$",
+            "description": "Artifact name (unique within registry)",
+            "type": "string",
             "minLength": 1,
             "maxLength": 128,
-            "description": "Artifact name (unique within registry)",
-            "type": "string"
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
           },
           "kind": {
             "description": "Artifact kind",
             "anyOf": [
               {
-                "const": "form",
-                "type": "string"
+                "type": "string",
+                "const": "form"
               },
               {
-                "const": "document",
-                "type": "string"
+                "type": "string",
+                "const": "document"
               },
               {
-                "const": "checklist",
-                "type": "string"
+                "type": "string",
+                "const": "checklist"
               },
               {
-                "const": "bundle",
-                "type": "string"
+                "type": "string",
+                "const": "bundle"
               }
             ]
           },
           "version": {
-            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+",
             "description": "Semantic version",
-            "type": "string"
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
           },
           "title": {
-            "minLength": 1,
-            "maxLength": 200,
             "description": "Human-readable title",
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "description": {
-            "maxLength": 2000,
             "description": "Brief description of the artifact",
-            "type": "string"
+            "type": "string",
+            "maxLength": 2000
           },
           "layers": {
             "description": "Available layer keys",
@@ -98,10 +95,10 @@
             "description": "Tags for search and filtering",
             "type": "array",
             "items": {
-              "minLength": 1,
-              "maxLength": 50,
               "description": "Tag for categorization",
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
             }
           }
         },
@@ -109,12 +106,14 @@
           "name",
           "kind",
           "version"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
   },
   "required": [
     "name",
     "items"
-  ]
+  ],
+  "additionalProperties": false
 }

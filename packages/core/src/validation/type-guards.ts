@@ -79,9 +79,6 @@ const _validateOrganization = validateOrganization
 const _validatePerson = validatePerson
 const _validatePhone = validatePhone
 
-// Re-export coerce utility
-export { coerceTypes } from './coerce'
-
 // =============================================================================
 // Artifact Type Guards
 // =============================================================================

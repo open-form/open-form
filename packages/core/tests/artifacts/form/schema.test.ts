@@ -458,7 +458,7 @@ describe('Form', () => {
           expect(() => form(input)).toThrow()
         })
 
-        test('strips additional properties', () => {
+        test('rejects additional properties (strict validation)', () => {
           const input = {
             kind: 'form',
             version: '1.0.0',
@@ -466,8 +466,7 @@ describe('Form', () => {
             title: 'Test',
             extra: 'should be removed',
           } as any
-          const result = form(input)
-          expect(result).not.toHaveProperty('extra')
+          expect(() => form(input)).toThrow()
         })
 
         test('throws error when input is null', () => {
@@ -630,13 +629,10 @@ describe('Form', () => {
           expect(result.success).toBe(false)
         })
 
-        test('strips additional properties', () => {
+        test('rejects additional properties (strict validation)', () => {
           const input = { kind: 'form', version: '1.0.0', name: 'test', title: 'Test', extra: 'removed' }
           const result = form.safeFrom(input)
-          expect(result.success).toBe(true)
-          if (result.success) {
-            expect(result.data.toJSON({ includeSchema: false })).not.toHaveProperty('extra')
-          }
+          expect(result.success).toBe(false)
         })
       })
     })

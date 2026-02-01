@@ -4,6 +4,9 @@
   "title": "Artifact",
   "description": "Root schema for all OpenForm artifacts (containers and documents).",
   "type": "object",
+  "required": [
+    "name"
+  ],
   "properties": {
     "$schema": {
       "format": "uri",
@@ -50,8 +53,5 @@
     "metadata": {
       "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Metadata"
     }
-  },
-  "required": [
-    "name"
-  ]
+  }
 }

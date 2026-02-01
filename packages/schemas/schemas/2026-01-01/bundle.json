@@ -1,214 +1,1045 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/bundle.json",
-  "title": "Bundle",
-  "unevaluatedProperties": false,
-  "description": "A bundle artifact that groups together related artifacts into a single distributable unit. Bundles can contain documents, forms, checklists, and other bundles.",
   "type": "object",
-  "allOf": [
-    {
-      "title": "Artifact",
-      "description": "Root schema for all OpenForm artifacts (containers and documents).",
-      "type": "object",
-      "properties": {
-        "$schema": {
-          "format": "uri",
-          "description": "JSON Schema URI for this artifact instance.",
-          "type": "string"
-        },
-        "name": {
-          "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
-          "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
-          "minLength": 1,
-          "maxLength": 128,
-          "type": "string"
-        },
-        "version": {
-          "description": "Artifact version (semantic versioning). Required for publishing to registry.",
-          "minLength": 1,
-          "maxLength": 200,
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "type": "string"
-        },
-        "title": {
-          "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
-          "minLength": 1,
-          "maxLength": 200,
-          "type": "string"
-        },
-        "description": {
-          "description": "Detailed description or context for the artifact.",
-          "minLength": 0,
-          "maxLength": 2000,
-          "type": "string"
-        },
-        "code": {
-          "description": "Optional user-defined internal code.",
-          "minLength": 1,
-          "maxLength": 200,
-          "type": "string"
-        },
-        "releaseDate": {
-          "format": "date",
-          "description": "Artifact release date",
-          "type": "string"
-        },
-        "metadata": {
-          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Metadata"
-        }
-      },
-      "required": [
-        "name"
-      ]
+  "properties": {
+    "$schema": {
+      "description": "JSON Schema URI for this artifact instance.",
+      "type": "string",
+      "format": "uri"
     },
-    {
+    "name": {
+      "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$"
+    },
+    "version": {
+      "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "title": {
+      "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "description": "Detailed description or context for the artifact.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 2000
+    },
+    "code": {
+      "description": "Optional user-defined internal code.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "releaseDate": {
+      "description": "Artifact release date",
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "metadata": {
+      "description": "Custom key-value pairs for storing domain-specific or organizational metadata",
       "type": "object",
-      "properties": {
-        "kind": {
-          "const": "bundle",
-          "type": "string"
-        },
-        "logic": {
-          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/LogicSection"
-        },
-        "contents": {
-          "description": "Ordered bundle contents. Each item has a key and is either an inline artifact, path reference, or registry reference.",
-          "minItems": 0,
-          "type": "array",
-          "items": {
-            "description": "Bundle content item: an inline artifact, path reference, or registry reference with optional include condition",
-            "anyOf": [
-              {
-                "additionalProperties": false,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 500
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "kind": {
+      "type": "string",
+      "const": "bundle"
+    },
+    "logic": {
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/LogicSection"
+    },
+    "contents": {
+      "description": "Ordered bundle contents. Each item has a key and is either an inline artifact, path reference, or registry reference.",
+      "type": "array",
+      "items": {
+        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/BundleContentItem"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "kind",
+    "contents"
+  ],
+  "additionalProperties": false,
+  "id": "Bundle",
+  "$defs": {
+    "LogicSection": {
+      "id": "LogicSection",
+      "type": "object",
+      "propertyNames": {
+        "description": "Logic expression identifier",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "additionalProperties": {
+        "title": "LogicExpression",
+        "description": "A typed computed value with optional metadata (label, description). The type property determines the expected result type and value schema.",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "boolean"
+              },
+              "value": {
+                "description": "Expression that evaluates to a boolean",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "string"
+              },
+              "value": {
+                "description": "Expression that evaluates to a string",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "number"
+              },
+              "value": {
+                "description": "Expression that evaluates to a number",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "integer"
+              },
+              "value": {
+                "description": "Expression that evaluates to an integer",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "percentage"
+              },
+              "value": {
+                "description": "Expression that evaluates to a percentage (0-100)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "rating"
+              },
+              "value": {
+                "description": "Expression that evaluates to a rating value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "date"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 date (YYYY-MM-DD)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "time"
+              },
+              "value": {
+                "description": "Expression that evaluates to a time (HH:MM:SS)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "datetime"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 datetime",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "duration"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 duration string",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "money"
+              },
+              "value": {
+                "description": "Money object with amount and currency expressions",
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "currency": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "address"
+              },
+              "value": {
+                "description": "Address object with component expressions",
+                "type": "object",
+                "properties": {
+                  "line1": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "line2": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "locality": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "region": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "postalCode": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "country": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "line1",
+                  "locality",
+                  "region",
+                  "postalCode",
+                  "country"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "phone"
+              },
+              "value": {
+                "description": "Phone object with number and optional type/extension expressions",
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "type": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "extension": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "coordinate"
+              },
+              "value": {
+                "description": "Coordinate object with latitude and longitude expressions",
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "lon": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lon"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "bbox"
+              },
+              "value": {
+                "description": "Bounding box with north, south, east, west boundary expressions",
+                "type": "object",
+                "properties": {
+                  "north": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "south": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "east": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "west": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "north",
+                  "south",
+                  "east",
+                  "west"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "person"
+              },
+              "value": {
+                "description": "Person object with name component expressions",
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "title": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "firstName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "middleName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "lastName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "suffix": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "fullName"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "organization"
+              },
+              "value": {
+                "description": "Organization object with component expressions",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "legalName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "domicile": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "entityType": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "entityId": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "taxId": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "identification"
+              },
+              "value": {
+                "description": "Identification object with type, number, and optional issuer/date expressions",
                 "type": "object",
                 "properties": {
                   "type": {
-                    "const": "inline",
-                    "type": "string"
-                  },
-                  "key": {
-                    "description": "Unique identifier for this content item, used to reference it in logic expressions",
+                    "description": "Expression string to evaluate",
+                    "type": "string",
                     "minLength": 1,
-                    "maxLength": 100,
-                    "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                    "type": "string"
+                    "maxLength": 2000
                   },
-                  "artifact": {
-                    "description": "Inline artifact definition (document, form, checklist, or nested bundle)",
-                    "anyOf": [
-                      {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Document"
-                      },
-                      {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Form"
-                      },
-                      {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Checklist"
-                      },
-                      {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Bundle"
-                      }
-                    ]
+                  "number": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "issuer": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "issueDate": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "expiryDate": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
                   }
                 },
                 "required": [
                   "type",
-                  "key",
-                  "artifact"
-                ]
-              },
-              {
-                "unevaluatedProperties": false,
-                "type": "object",
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "key": {
-                        "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                        "minLength": 1,
-                        "maxLength": 100,
-                        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                        "type": "string"
-                      },
-                      "include": {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
-                      }
-                    },
-                    "required": [
-                      "key"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "const": "path",
-                        "type": "string"
-                      },
-                      "path": {
-                        "description": "Absolute path from repo root to the artifact file",
-                        "minLength": 1,
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "type",
-                      "path"
-                    ]
-                  }
-                ]
-              },
-              {
-                "unevaluatedProperties": false,
-                "type": "object",
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "key": {
-                        "description": "Unique identifier for this content item, used to reference it in logic expressions",
-                        "minLength": 1,
-                        "maxLength": 100,
-                        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-                        "type": "string"
-                      },
-                      "include": {
-                        "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/CondExpr"
-                      }
-                    },
-                    "required": [
-                      "key"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "const": "registry",
-                        "type": "string"
-                      },
-                      "slug": {
-                        "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
-                        "minLength": 1,
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "type",
-                      "slug"
-                    ]
-                  }
-                ]
+                  "number"
+                ],
+                "additionalProperties": false
               }
-            ]
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
           }
+        ]
+      }
+    },
+    "BundleContentItem": {
+      "id": "BundleContentItem",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "inline"
+            },
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+            },
+            "artifact": {
+              "description": "Inline artifact definition (document, form, checklist, or nested bundle)"
+            }
+          },
+          "required": [
+            "type",
+            "key",
+            "artifact"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+            },
+            "include": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+            },
+            "type": {
+              "type": "string",
+              "const": "path"
+            },
+            "path": {
+              "description": "Absolute path from repo root to the artifact file",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "key",
+            "type",
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "description": "Unique identifier for this content item, used to reference it in logic expressions",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+            },
+            "include": {
+              "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+            },
+            "type": {
+              "type": "string",
+              "const": "registry"
+            },
+            "slug": {
+              "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "key",
+            "type",
+            "slug"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "kind",
-        "contents"
+      ]
+    },
+    "CondExpr": {
+      "id": "CondExpr",
+      "anyOf": [
+        {
+          "description": "Literal boolean value",
+          "type": "boolean"
+        },
+        {
+          "description": "Expression string - either inline expression or reference to a logic key",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
       ]
     }
-  ]
+  },
+  "title": "Bundle"
 }

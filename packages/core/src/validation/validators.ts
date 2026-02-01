@@ -1,47 +1,85 @@
 /**
- * Runtime AJV Validators
+ * Runtime Zod Validators
  *
- * These validators compile schemas on-demand using AJV and cache the compiled
- * validators for performance. This replaces the standalone codegen approach.
+ * These validators use Zod schemas from @open-form/schemas for validation.
+ * Each validator exposes a .errors property after validation for error access.
  */
 
-import type { ValidateFunction } from 'ajv'
-import { ajv } from './ajv-instance'
-import { extractSchema } from '@open-form/schemas'
-
-// Cache for compiled validators
-const validatorCache = new Map<string, ValidateFunction>()
+import {
+	FormSchema,
+	DocumentSchema,
+	BundleSchema,
+	ChecklistSchema,
+	BundleContentItemSchema,
+	ChecklistItemSchema,
+	FormFieldSchema,
+	FormAnnexSchema,
+	FormFieldsetSchema,
+	FormPartySchema,
+	LayerSchema,
+	SignatureSchema,
+	AttachmentSchema,
+	AddressSchema,
+	BboxSchema,
+	CoordinateSchema,
+	DurationSchema,
+	IdentificationSchema,
+	MetadataSchema,
+	MoneySchema,
+	OrganizationSchema,
+	PersonSchema,
+	PhoneSchema,
+} from '@open-form/schemas'
+import type { ZodSchema, ZodError } from 'zod'
 
 /**
- * Get a compiled validator for a schema, compiling and caching if needed.
- *
- * @param schemaName - Schema name in $defs (e.g., "Form", "Field", "Coordinate")
- * @returns Compiled AJV validator function
+ * Validation error format compatible with AJV
  */
-function getValidator(schemaName: string): ValidateFunction {
-	if (!validatorCache.has(schemaName)) {
-		// Check if AJV already has this schema compiled (from pre-loading)
-		// The schema was added with its name as the key in ajv-instance.ts
-		let validator = ajv.getSchema(schemaName)
+export interface ValidatorError {
+	instancePath: string
+	message: string
+	keyword: string
+	params?: Record<string, unknown>
+	data?: unknown
+}
 
-		if (!validator) {
-			// Schema not yet compiled, extract and compile it
-			const schema = extractSchema(schemaName)
-			// Remove $id temporarily to avoid conflicts since we're managing it via addSchema
-			const schemaId = schema.$id as string | undefined
-			if (schemaId) {
-				delete schema.$id
-			}
-			validator = ajv.compile(schema)
-			// Restore $id if it was removed
-			if (schemaId) {
-				schema.$id = schemaId
-			}
+/**
+ * Create a validator function from a Zod schema
+ * The validator exposes .errors property after validation
+ */
+function createValidator<T>(
+	schema: ZodSchema<T>
+): ((data: unknown) => boolean) & { errors?: ValidatorError[] } {
+	const fn = function (data: unknown): boolean {
+		const result = schema.safeParse(data)
+
+		if (result.success) {
+			;(fn as { errors?: ValidatorError[] }).errors = undefined
+			return true
 		}
 
-		validatorCache.set(schemaName, validator)
-	}
-	return validatorCache.get(schemaName)!
+		// Map Zod errors to AJV-compatible format
+		;(fn as { errors?: ValidatorError[] }).errors = mapZodErrors(result.error)
+		return false
+	} as ((data: unknown) => boolean) & { errors?: ValidatorError[] }
+
+	return fn
+}
+
+/**
+ * Map Zod errors to AJV-compatible format
+ */
+function mapZodErrors(error: ZodError): ValidatorError[] {
+	return error.issues.map((issue) => {
+		const path = issue.path.join('/')
+		return {
+			instancePath: path ? `/${path}` : '',
+			message: issue.message,
+			keyword: issue.code,
+			params: 'expected' in issue ? { expected: issue.expected } : undefined,
+			data: 'received' in issue ? issue.received : undefined,
+		}
+	})
 }
 
 // Map schema names from $defs (PascalCase) to validator keys (camelCase)
@@ -58,12 +96,11 @@ const schemaNameMap: Record<string, string> = {
 	FormAnnex: 'formAnnex',
 	FormFieldset: 'formFieldset',
 	FormParty: 'formParty',
-	// Note: FormSignature is not here - it's inlined in FormParty schema
 	Layer: 'layer',
 	// Runtime types
 	Signature: 'signature',
 	Attachment: 'attachment',
-	// Primitives (only those available in bundled schema)
+	// Primitives
 	Address: 'address',
 	Bbox: 'bbox',
 	Coordinate: 'coordinate',
@@ -76,62 +113,84 @@ const schemaNameMap: Record<string, string> = {
 	Phone: 'phone',
 }
 
-/**
- * Helper to create a validator function that exposes errors
- */
-function createValidator(schemaName: string): ((data: unknown) => boolean) & { errors?: unknown[] } {
-	const fn = function(data: unknown): boolean {
-		const validator = getValidator(schemaName)
-		const result = validator(data)
-		// Expose errors on the function for access after validation
-		;(fn as { errors?: unknown[] }).errors = validator.errors || undefined
-		return result
-	} as ((data: unknown) => boolean) & { errors?: unknown[] }
-	return fn
+// Schema map for getValidatorErrors lookup
+const schemaMap: Record<string, ZodSchema> = {
+	Form: FormSchema,
+	Document: DocumentSchema,
+	Bundle: BundleSchema,
+	BundleContentItem: BundleContentItemSchema,
+	Checklist: ChecklistSchema,
+	ChecklistItem: ChecklistItemSchema,
+	FormField: FormFieldSchema,
+	FormAnnex: FormAnnexSchema,
+	FormFieldset: FormFieldsetSchema,
+	FormParty: FormPartySchema,
+	Layer: LayerSchema,
+	Signature: SignatureSchema,
+	Attachment: AttachmentSchema,
+	Address: AddressSchema,
+	Bbox: BboxSchema,
+	Coordinate: CoordinateSchema,
+	Duration: DurationSchema,
+	Identification: IdentificationSchema,
+	Metadata: MetadataSchema,
+	Money: MoneySchema,
+	Organization: OrganizationSchema,
+	Person: PersonSchema,
+	Phone: PhoneSchema,
 }
 
-// Create validator functions for each schema
-// These functions validate and expose errors via the validator's .errors property
+// Validator cache for getValidatorErrors
+const validatorCache = new Map<string, ReturnType<typeof createValidator>>()
+
+function getCachedValidator(schemaName: string): ReturnType<typeof createValidator> | undefined {
+	if (!validatorCache.has(schemaName)) {
+		const schema = schemaMap[schemaName]
+		if (schema) {
+			validatorCache.set(schemaName, createValidator(schema))
+		}
+	}
+	return validatorCache.get(schemaName)
+}
 
 // Artifacts
-export const validateForm = createValidator('Form')
-export const validateDocument = createValidator('Document')
-export const validateBundle = createValidator('Bundle')
-export const validateChecklist = createValidator('Checklist')
+export const validateForm = createValidator(FormSchema)
+export const validateDocument = createValidator(DocumentSchema)
+export const validateBundle = createValidator(BundleSchema)
+export const validateChecklist = createValidator(ChecklistSchema)
 
 // Blocks (design-time form components)
-export const validateFormField = createValidator('FormField')
-export const validateFormAnnex = createValidator('FormAnnex')
-export const validateFormFieldset = createValidator('FormFieldset')
-export const validateFormParty = createValidator('FormParty')
-// Note: validateFormSignature removed - FormSignature is inlined in FormParty
-export const validateLayer = createValidator('Layer')
-export const validateChecklistItem = createValidator('ChecklistItem')
-export const validateBundleContentItem = createValidator('BundleContentItem')
+export const validateFormField = createValidator(FormFieldSchema)
+export const validateFormAnnex = createValidator(FormAnnexSchema)
+export const validateFormFieldset = createValidator(FormFieldsetSchema)
+export const validateFormParty = createValidator(FormPartySchema)
+export const validateLayer = createValidator(LayerSchema)
+export const validateChecklistItem = createValidator(ChecklistItemSchema)
+export const validateBundleContentItem = createValidator(BundleContentItemSchema)
 
 // Runtime types
-export const validateSignature = createValidator('Signature')
-export const validateAttachment = createValidator('Attachment')
+export const validateSignature = createValidator(SignatureSchema)
+export const validateAttachment = createValidator(AttachmentSchema)
 
-// Primitives (only those available in bundled schema)
-export const validateAddress = createValidator('Address')
-export const validateBbox = createValidator('Bbox')
-export const validateCoordinate = createValidator('Coordinate')
-export const validateDuration = createValidator('Duration')
-export const validateIdentification = createValidator('Identification')
-export const validateMetadata = createValidator('Metadata')
-export const validateMoney = createValidator('Money')
-export const validateOrganization = createValidator('Organization')
-export const validatePerson = createValidator('Person')
-export const validatePhone = createValidator('Phone')
-// Note: File, FileContent, ResourceRef, TextContent not in bundled schema
+// Primitives
+export const validateAddress = createValidator(AddressSchema)
+export const validateBbox = createValidator(BboxSchema)
+export const validateCoordinate = createValidator(CoordinateSchema)
+export const validateDuration = createValidator(DurationSchema)
+export const validateIdentification = createValidator(IdentificationSchema)
+export const validateMetadata = createValidator(MetadataSchema)
+export const validateMoney = createValidator(MoneySchema)
+export const validateOrganization = createValidator(OrganizationSchema)
+export const validatePerson = createValidator(PersonSchema)
+export const validatePhone = createValidator(PhoneSchema)
 
-
-// Export function to get errors for a validator by schema name
-// This accesses the .errors property on the compiled validator
-export function getValidatorErrors(validatorName: string): unknown[] | null | undefined {
+/**
+ * Get errors for a validator by schema name
+ * This accesses the .errors property on the cached validator
+ */
+export function getValidatorErrors(validatorName: string): ValidatorError[] | null | undefined {
 	const schemaName = Object.entries(schemaNameMap).find(([, key]) => key === validatorName)?.[0]
 	if (!schemaName) return null
-	const validator = getValidator(schemaName)
-	return validator.errors || null
+	const validator = getCachedValidator(schemaName)
+	return validator?.errors || null
 }

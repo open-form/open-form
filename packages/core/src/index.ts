@@ -246,8 +246,6 @@ export {
   validateOrganization,
   validatePerson,
   validatePhone,
-  // Coercion
-  coerceTypes,
   // Party validation
   validatePartyForRole,
   isPartyTypeAllowed,

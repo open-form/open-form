@@ -2,7 +2,7 @@
  * Artifact Parsers
  *
  * Ready-to-use parse functions for all OpenForm artifacts and blocks.
- * These handle coercion, validation, and error formatting.
+ * These use Zod schemas directly for strict validation.
  */
 
 import type {
@@ -18,55 +18,47 @@ import type {
 	Checklist,
 	ChecklistItem,
 } from '@open-form/types'
-import { extractSchema } from '@open-form/schemas'
-import { coerceTypes } from './coerce'
 import {
-	validateForm,
-	validateFormField,
-	validateFormAnnex,
-	validateFormFieldset,
-	validateFormParty,
-	validateLayer,
-	validateBundle,
-	validateBundleContentItem,
-	validateDocument,
-	validateChecklist,
-	validateChecklistItem,
-} from './validators'
-
-type ValidatorFn = ((data: unknown) => boolean) & { errors?: unknown[] }
+	FormSchema,
+	DocumentSchema,
+	BundleSchema,
+	ChecklistSchema,
+	FormFieldSchema,
+	FormAnnexSchema,
+	FormFieldsetSchema,
+	FormPartySchema,
+	LayerSchema,
+	BundleContentItemSchema,
+	ChecklistItemSchema,
+} from '@open-form/schemas'
+import { type ZodType, type ZodError } from 'zod'
 
 /**
- * Extract error message from AJV validator
+ * Format Zod error for display
  */
-function getErrorMessage(validator: ValidatorFn): string {
-	const firstError = validator.errors?.[0] as { message?: string } | undefined
-	return firstError?.message || 'validation failed'
+function formatZodError(error: ZodError, schemaName: string): string {
+	const firstIssue = error.issues[0]
+	if (!firstIssue) return `Invalid ${schemaName}: validation failed`
+
+	const path = firstIssue.path.length > 0 ? ` at ${firstIssue.path.join('.')}` : ''
+	return `Invalid ${schemaName}${path}: ${firstIssue.message}`
 }
 
 /**
- * Factory to create a parser function for artifact schemas
+ * Factory to create a parser function using Zod schema directly
  */
 function createArtifactParser<T>(
 	schemaName: string,
-	validator: ValidatorFn,
+	schema: ZodType<T>,
 ): (input: unknown) => T {
-	// Lazy schema extraction - cached by extractSchema internally
-	let schema: Record<string, unknown> | null = null
-
 	return (input: unknown): T => {
-		if (!schema) {
-			schema = extractSchema(schemaName) as Record<string, unknown>
+		const result = schema.safeParse(input)
+
+		if (!result.success) {
+			throw new Error(formatZodError(result.error, schemaName))
 		}
 
-		const coerced = coerceTypes(schema, input) as Record<string, unknown>
-
-		// Run AJV validation
-		if (!validator(coerced)) {
-			throw new Error(`Invalid ${schemaName}: ${getErrorMessage(validator)}`)
-		}
-
-		return coerced as unknown as T
+		return result.data
 	}
 }
 
@@ -74,27 +66,27 @@ function createArtifactParser<T>(
 // Artifact Parsers
 // ─────────────────────────────────────────────────────────────
 
-export const parseForm = createArtifactParser<Form>('Form', validateForm)
+export const parseForm = createArtifactParser<Form>('Form', FormSchema)
 
-export const parseBundle = createArtifactParser<Bundle>('Bundle', validateBundle)
+export const parseBundle = createArtifactParser<Bundle>('Bundle', BundleSchema)
 
-export const parseDocument = createArtifactParser<Document>('Document', validateDocument)
+export const parseDocument = createArtifactParser<Document>('Document', DocumentSchema)
 
-export const parseChecklist = createArtifactParser<Checklist>('Checklist', validateChecklist)
+export const parseChecklist = createArtifactParser<Checklist>('Checklist', ChecklistSchema)
 
 // ─────────────────────────────────────────────────────────────
 // Block Parsers (Form components)
 // ─────────────────────────────────────────────────────────────
 
-export const parseFormField = createArtifactParser<FormField>('FormField', validateFormField)
+export const parseFormField = createArtifactParser<FormField>('FormField', FormFieldSchema)
 
-export const parseFormAnnex = createArtifactParser<FormAnnex>('FormAnnex', validateFormAnnex)
+export const parseFormAnnex = createArtifactParser<FormAnnex>('FormAnnex', FormAnnexSchema)
 
-export const parseFormFieldset = createArtifactParser<FormFieldset>('FormFieldset', validateFormFieldset)
+export const parseFormFieldset = createArtifactParser<FormFieldset>('FormFieldset', FormFieldsetSchema)
 
-export const parseFormParty = createArtifactParser<FormParty>('FormParty', validateFormParty)
+export const parseFormParty = createArtifactParser<FormParty>('FormParty', FormPartySchema)
 
-export const parseLayer = createArtifactParser<Layer>('Layer', validateLayer)
+export const parseLayer = createArtifactParser<Layer>('Layer', LayerSchema)
 
 // ─────────────────────────────────────────────────────────────
 // Collection Item Parsers
@@ -102,10 +94,10 @@ export const parseLayer = createArtifactParser<Layer>('Layer', validateLayer)
 
 export const parseBundleContentItem = createArtifactParser<BundleContentItem>(
 	'BundleContentItem',
-	validateBundleContentItem,
+	BundleContentItemSchema,
 )
 
 export const parseChecklistItem = createArtifactParser<ChecklistItem>(
 	'ChecklistItem',
-	validateChecklistItem,
+	ChecklistItemSchema,
 )

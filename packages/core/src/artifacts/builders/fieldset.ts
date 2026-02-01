@@ -5,33 +5,18 @@
  */
 
 import type { FormField, FormFieldset } from '@open-form/types';
-import { extractSchema } from '@open-form/schemas';
-import { coerceTypes } from '@/validation/coerce';
-import { validateFormFieldset, validateFormField } from '@/validation';
+import { parseFormFieldset, parseFormField } from '@/validation/artifact-parsers';
 
 // ============================================================================
 // Validation
 // ============================================================================
 
-const fieldsetSchema = extractSchema('FormFieldset') as Record<string, unknown>;
-const fieldSchema = extractSchema('FormField') as Record<string, unknown>;
-
 function parseFieldset(input: unknown): FormFieldset {
-	const coerced = coerceTypes(fieldsetSchema, input) as Record<string, unknown>;
-	if (!validateFormFieldset(coerced)) {
-		const errors = (validateFormFieldset as unknown as { errors: Array<{ message?: string }> }).errors;
-		throw new Error(`Invalid FormFieldset: ${errors?.[0]?.message || 'validation failed'}`);
-	}
-	return coerced as unknown as FormFieldset;
+	return parseFormFieldset(input);
 }
 
 function parseField(input: unknown): FormField {
-	const coerced = coerceTypes(fieldSchema, input) as Record<string, unknown>;
-	if (!validateFormField(coerced)) {
-		const errors = (validateFormField as unknown as { errors: Array<{ message?: string }> }).errors;
-		throw new Error(`Invalid FormField: ${errors?.[0]?.message || 'validation failed'}`);
-	}
-	return coerced as unknown as FormField;
+	return parseFormField(input);
 }
 
 // ============================================================================

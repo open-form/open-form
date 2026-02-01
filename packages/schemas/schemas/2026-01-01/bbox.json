@@ -1,22 +1,47 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/bbox.json",
-  "title": "Bbox",
-  "description": "Geographic bounding box defined by southwest (minimum) and northeast (maximum) corner coordinates",
-  "additionalProperties": false,
   "type": "object",
   "properties": {
     "southWest": {
       "description": "Southwest corner coordinate (minimum latitude and longitude)",
-      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Coordinate"
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
     },
     "northEast": {
       "description": "Northeast corner coordinate (maximum latitude and longitude)",
-      "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Coordinate"
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
     }
   },
   "required": [
     "southWest",
     "northEast"
-  ]
+  ],
+  "additionalProperties": false,
+  "id": "Bbox",
+  "$defs": {
+    "Coordinate": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "description": "Latitude in decimal degrees (WGS84), range -90 (South Pole) to 90 (North Pole)",
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "lon": {
+          "description": "Longitude in decimal degrees (WGS84), range -180 (west) to 180 (east)",
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "additionalProperties": false,
+      "id": "Coordinate"
+    }
+  },
+  "title": "Bbox"
 }

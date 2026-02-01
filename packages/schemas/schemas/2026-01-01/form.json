@@ -1,127 +1,3497 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/form.json",
-  "title": "Form",
-  "unevaluatedProperties": false,
-  "description": "A form artifact that defines a data contract with field definitions, optional layers for rendering, and optional annexes. Forms are the primary artifact type for structured data collection and document generation.",
   "type": "object",
-  "allOf": [
-    {
-      "title": "Artifact",
-      "description": "Root schema for all OpenForm artifacts (containers and documents).",
+  "properties": {
+    "$schema": {
+      "description": "JSON Schema URI for this artifact instance.",
+      "type": "string",
+      "format": "uri"
+    },
+    "name": {
+      "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$"
+    },
+    "version": {
+      "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "title": {
+      "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "description": "Detailed description or context for the artifact.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 2000
+    },
+    "code": {
+      "description": "Optional user-defined internal code.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "releaseDate": {
+      "description": "Artifact release date",
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "metadata": {
+      "description": "Custom key-value pairs for storing domain-specific or organizational metadata",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 500
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "kind": {
+      "type": "string",
+      "const": "form"
+    },
+    "logic": {
+      "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/LogicSection"
+    },
+    "fields": {
+      "description": "Form field definitions keyed by field identifier. Fields define the input structure and validation rules for the form",
+      "type": "object",
+      "propertyNames": {
+        "description": "Field identifier",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "additionalProperties": {
+        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/FormField"
+      }
+    },
+    "layers": {
+      "description": "Named layers for rendering this form into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
+      "type": "object",
+      "propertyNames": {
+        "description": "Layer identifier (user-defined key)",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "additionalProperties": {
+        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Layer"
+      }
+    },
+    "defaultLayer": {
+      "description": "Key of the default layer to use when none specified at render time",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "allowAdditionalAnnexes": {
+      "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes record",
+      "default": false,
+      "type": "boolean"
+    },
+    "annexes": {
+      "description": "Predefined annex slots keyed by identifier. Each slot can be marked as required (must be filled at runtime) or optional",
+      "type": "object",
+      "propertyNames": {
+        "description": "Annex identifier (e.g., exhibit-a, schedule-1)",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/FormAnnex"
+      }
+    },
+    "parties": {
+      "description": "Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.",
+      "type": "object",
+      "propertyNames": {
+        "description": "Party role identifier (e.g., buyer, seller, landlord)",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50,
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/FormParty"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "kind"
+  ],
+  "additionalProperties": false,
+  "id": "Form",
+  "$defs": {
+    "LogicSection": {
+      "id": "LogicSection",
+      "type": "object",
+      "propertyNames": {
+        "description": "Logic expression identifier",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "additionalProperties": {
+        "title": "LogicExpression",
+        "description": "A typed computed value with optional metadata (label, description). The type property determines the expected result type and value schema.",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "boolean"
+              },
+              "value": {
+                "description": "Expression that evaluates to a boolean",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "string"
+              },
+              "value": {
+                "description": "Expression that evaluates to a string",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "number"
+              },
+              "value": {
+                "description": "Expression that evaluates to a number",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "integer"
+              },
+              "value": {
+                "description": "Expression that evaluates to an integer",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "percentage"
+              },
+              "value": {
+                "description": "Expression that evaluates to a percentage (0-100)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "rating"
+              },
+              "value": {
+                "description": "Expression that evaluates to a rating value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "date"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 date (YYYY-MM-DD)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "time"
+              },
+              "value": {
+                "description": "Expression that evaluates to a time (HH:MM:SS)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "datetime"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 datetime",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "duration"
+              },
+              "value": {
+                "description": "Expression that evaluates to an ISO 8601 duration string",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "money"
+              },
+              "value": {
+                "description": "Money object with amount and currency expressions",
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "currency": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "address"
+              },
+              "value": {
+                "description": "Address object with component expressions",
+                "type": "object",
+                "properties": {
+                  "line1": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "line2": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "locality": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "region": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "postalCode": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "country": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "line1",
+                  "locality",
+                  "region",
+                  "postalCode",
+                  "country"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "phone"
+              },
+              "value": {
+                "description": "Phone object with number and optional type/extension expressions",
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "type": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "extension": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "coordinate"
+              },
+              "value": {
+                "description": "Coordinate object with latitude and longitude expressions",
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "lon": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lon"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "bbox"
+              },
+              "value": {
+                "description": "Bounding box with north, south, east, west boundary expressions",
+                "type": "object",
+                "properties": {
+                  "north": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "south": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "east": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "west": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "north",
+                  "south",
+                  "east",
+                  "west"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "person"
+              },
+              "value": {
+                "description": "Person object with name component expressions",
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "title": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "firstName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "middleName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "lastName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "suffix": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "fullName"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "organization"
+              },
+              "value": {
+                "description": "Organization object with component expressions",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "legalName": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "domicile": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "entityType": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "entityId": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "taxId": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "Display label for the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "description": {
+                "description": "Description or documentation of the computed value",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "type": {
+                "type": "string",
+                "const": "identification"
+              },
+              "value": {
+                "description": "Identification object with type, number, and optional issuer/date expressions",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "number": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "issuer": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "issueDate": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "expiryDate": {
+                    "description": "Expression string to evaluate",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "type",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "FormField": {
+      "id": "FormField",
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "text"
+                },
+                "minLength": {
+                  "description": "Minimum length",
+                  "type": "number"
+                },
+                "maxLength": {
+                  "description": "Maximum length",
+                  "type": "number"
+                },
+                "pattern": {
+                  "description": "Regular expression pattern for validation",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "boolean"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "number"
+                },
+                "min": {
+                  "description": "Minimum value",
+                  "type": "number"
+                },
+                "max": {
+                  "description": "Maximum value",
+                  "type": "number"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "coordinate"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "bbox"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Bbox"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "money"
+                },
+                "min": {
+                  "description": "Minimum amount",
+                  "type": "number"
+                },
+                "max": {
+                  "description": "Maximum amount",
+                  "type": "number"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Money"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "address"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Address"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "phone"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Phone"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "duration"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Duration"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "email"
+                },
+                "minLength": {
+                  "description": "Minimum length",
+                  "type": "number"
+                },
+                "maxLength": {
+                  "description": "Maximum length",
+                  "type": "number"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "uuid"
+                },
+                "minLength": {
+                  "description": "Minimum length",
+                  "type": "number"
+                },
+                "maxLength": {
+                  "description": "Maximum length",
+                  "type": "number"
+                },
+                "pattern": {
+                  "description": "Regular expression pattern for validation",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "uri"
+                },
+                "minLength": {
+                  "description": "Minimum length",
+                  "type": "number"
+                },
+                "maxLength": {
+                  "description": "Maximum length",
+                  "type": "number"
+                },
+                "pattern": {
+                  "description": "Regular expression pattern for validation",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "enum"
+                },
+                "enum": {
+                  "description": "Array of allowed values for the enum field",
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                "default": {
+                  "description": "Default value",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "enum"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "date"
+                },
+                "min": {
+                  "description": "Minimum date (ISO 8601: YYYY-MM-DD)",
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "max": {
+                  "description": "Maximum date (ISO 8601: YYYY-MM-DD)",
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "datetime"
+                },
+                "min": {
+                  "description": "Minimum datetime (ISO 8601)",
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                },
+                "max": {
+                  "description": "Maximum datetime (ISO 8601)",
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "time"
+                },
+                "min": {
+                  "description": "Minimum time (HH:MM:SS)",
+                  "type": "string"
+                },
+                "max": {
+                  "description": "Maximum time (HH:MM:SS)",
+                  "type": "string"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "person"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Person"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "organization"
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Organization"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "identification"
+                },
+                "allowedTypes": {
+                  "description": "Allowed ID types (e.g., passport, drivers_license)",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "default": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Identification"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "multiselect"
+                },
+                "enum": {
+                  "description": "Available options",
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                "min": {
+                  "description": "Minimum selections required",
+                  "type": "number"
+                },
+                "max": {
+                  "description": "Maximum selections allowed",
+                  "type": "number"
+                },
+                "default": {
+                  "description": "Default selected values",
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "enum"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "percentage"
+                },
+                "min": {
+                  "description": "Minimum value (default: 0)",
+                  "type": "number"
+                },
+                "max": {
+                  "description": "Maximum value (default: 100)",
+                  "type": "number"
+                },
+                "precision": {
+                  "description": "Decimal places (default: 2)",
+                  "type": "number"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "description": "Display label for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "description": "Description or help text for the field",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "required": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "visible": {
+                  "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                },
+                "type": {
+                  "type": "string",
+                  "const": "rating"
+                },
+                "min": {
+                  "description": "Minimum value (default: 1)",
+                  "type": "number"
+                },
+                "max": {
+                  "description": "Maximum value (default: 5)",
+                  "type": "number"
+                },
+                "step": {
+                  "description": "Increment step (e.g., 0.5 for half stars, default: 1)",
+                  "type": "number"
+                },
+                "default": {
+                  "description": "Default value",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/FieldsetField"
+        }
+      ]
+    },
+    "CondExpr": {
+      "id": "CondExpr",
+      "anyOf": [
+        {
+          "description": "Literal boolean value",
+          "type": "boolean"
+        },
+        {
+          "description": "Expression string - either inline expression or reference to a logic key",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      ]
+    },
+    "Coordinate": {
       "type": "object",
       "properties": {
-        "$schema": {
-          "format": "uri",
-          "description": "JSON Schema URI for this artifact instance.",
-          "type": "string"
+        "lat": {
+          "description": "Latitude in decimal degrees (WGS84), range -90 (South Pole) to 90 (North Pole)",
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
         },
-        "name": {
-          "description": "Unique artifact identifier. Must start with a letter or digit, can contain letters, numbers, and hyphens (no leading/trailing/consecutive hyphens).",
-          "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
-          "minLength": 1,
-          "maxLength": 128,
-          "type": "string"
+        "lon": {
+          "description": "Longitude in decimal degrees (WGS84), range -180 (west) to 180 (east)",
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "additionalProperties": false,
+      "id": "Coordinate"
+    },
+    "Bbox": {
+      "type": "object",
+      "properties": {
+        "southWest": {
+          "description": "Southwest corner coordinate (minimum latitude and longitude)",
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
         },
-        "version": {
-          "description": "Artifact version (semantic versioning). Required for publishing to registry.",
+        "northEast": {
+          "description": "Northeast corner coordinate (maximum latitude and longitude)",
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
+        }
+      },
+      "required": [
+        "southWest",
+        "northEast"
+      ],
+      "additionalProperties": false,
+      "id": "Bbox"
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "description": "Monetary amount in the smallest currency unit (e.g., cents for USD) or as a decimal (e.g., 99.99 for USD). Negative values allowed for debts/credits",
+          "type": "number"
+        },
+        "currency": {
+          "description": "ISO 4217 alpha-3 currency code (e.g., USD, EUR, GBP)",
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "id": "Money"
+    },
+    "Address": {
+      "type": "object",
+      "properties": {
+        "line1": {
+          "description": "Primary address line",
+          "type": "string",
           "minLength": 1,
-          "maxLength": 200,
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "type": "string"
+          "maxLength": 200
+        },
+        "line2": {
+          "description": "Secondary address line",
+          "type": "string",
+          "maxLength": 200
+        },
+        "locality": {
+          "description": "City or locality name",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "region": {
+          "description": "State, province, or region name",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "postalCode": {
+          "description": "Postal or ZIP code",
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 20,
+          "pattern": "^[A-Z0-9\\s-]+$"
+        },
+        "country": {
+          "description": "ISO 3166-1 country code (e.g., \"US\", \"GB\", \"FRA\") or full country name",
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "line1",
+        "locality",
+        "region",
+        "postalCode",
+        "country"
+      ],
+      "additionalProperties": false,
+      "id": "Address"
+    },
+    "Phone": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "description": "Phone number in E.164 international format (e.g., +14155552671)",
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 16,
+          "pattern": "^\\+[1-9]\\d{1,14}$"
+        },
+        "type": {
+          "description": "Type or category of phone number (e.g., mobile, work, home)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "extension": {
+          "description": "Phone extension or extension number",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        }
+      },
+      "required": [
+        "number"
+      ],
+      "additionalProperties": false,
+      "id": "Phone"
+    },
+    "Duration": {
+      "id": "Duration",
+      "type": "string",
+      "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+(?:\\.\\d+)?S)?)?$"
+    },
+    "Person": {
+      "id": "Person",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "description": "Person's full name (complete name as a single string)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
         },
         "title": {
-          "description": "Human-readable title. Recommended for published/shared artifacts and directory browsing.",
+          "description": "Name prefix or title (e.g., Mr., Mrs., Dr., Prof.)",
+          "type": "string",
           "minLength": 1,
-          "maxLength": 200,
-          "type": "string"
+          "maxLength": 50
         },
-        "description": {
-          "description": "Detailed description or context for the artifact.",
-          "minLength": 0,
-          "maxLength": 2000,
-          "type": "string"
-        },
-        "code": {
-          "description": "Optional user-defined internal code.",
+        "firstName": {
+          "description": "Person's first or given name",
+          "type": "string",
           "minLength": 1,
-          "maxLength": 200,
-          "type": "string"
+          "maxLength": 100
         },
-        "releaseDate": {
-          "format": "date",
-          "description": "Artifact release date",
-          "type": "string"
+        "middleName": {
+          "description": "Person's middle name or initial",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
         },
-        "metadata": {
-          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Metadata"
+        "lastName": {
+          "description": "Person's last name or surname",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "suffix": {
+          "description": "Name suffix (e.g., Jr., Sr., III, Esq.)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        }
+      },
+      "required": [
+        "fullName"
+      ],
+      "additionalProperties": false
+    },
+    "Organization": {
+      "id": "Organization",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Organization name",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "legalName": {
+          "description": "Legal or registered name of the organization",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "domicile": {
+          "description": "Domicile",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "entityType": {
+          "description": "Legal entity type of the organization",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "entityId": {
+          "description": "Business identification number",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "taxId": {
+          "description": "Tax identification number",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
         }
       },
       "required": [
         "name"
-      ]
+      ],
+      "additionalProperties": false
     },
-    {
+    "Identification": {
       "type": "object",
       "properties": {
-        "kind": {
-          "const": "form",
-          "type": "string"
+        "type": {
+          "description": "Type of identification document (e.g., ssn, passport, license, ein)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
         },
-        "logic": {
-          "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/LogicSection"
+        "number": {
+          "description": "Identification number or identifier",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "issuer": {
+          "description": "Issuing authority, country, or state (e.g., US, CA, DMV)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "issueDate": {
+          "description": "Issue date in ISO 8601 format (YYYY-MM-DD)",
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "expiryDate": {
+          "description": "Expiry date in ISO 8601 format (YYYY-MM-DD)",
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        }
+      },
+      "required": [
+        "type",
+        "number"
+      ],
+      "additionalProperties": false,
+      "id": "Identification"
+    },
+    "FieldsetField": {
+      "id": "FieldsetField",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Display label for the field",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "description": "Description or help text for the field",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "required": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+        },
+        "visible": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+        },
+        "type": {
+          "type": "string",
+          "const": "fieldset"
         },
         "fields": {
-          "description": "Form field definitions keyed by field identifier. Fields define the input structure and validation rules for the form",
           "type": "object",
-          "patternProperties": {
-            "^(.*)$": {
-              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormField"
-            }
-          }
-        },
-        "layers": {
-          "description": "Named layers for rendering this form into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)",
-          "type": "object",
-          "patternProperties": {
-            "^(.*)$": {
-              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/Layer"
-            }
-          }
-        },
-        "defaultLayer": {
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "Key of the default layer to use when none specified at render time",
-          "type": "string"
-        },
-        "allowAdditionalAnnexes": {
-          "default": false,
-          "description": "Whether additional ad-hoc annexes can be attached beyond those defined in the annexes record",
-          "type": "boolean"
-        },
-        "annexes": {
-          "description": "Predefined annex slots keyed by identifier. Each slot can be marked as required (must be filled at runtime) or optional",
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z0-9][a-zA-Z0-9_-]*$": {
-              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormAnnex"
-            }
-          }
-        },
-        "parties": {
-          "description": "Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.",
-          "type": "object",
-          "patternProperties": {
-            "^[a-z][a-z0-9_-]*$": {
-              "$ref": "https://schema.open-form.dev/2026-01-01.json#/$defs/FormParty"
-            }
+          "propertyNames": {
+            "description": "Nested field identifier",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "text"
+                      },
+                      "minLength": {
+                        "description": "Minimum length",
+                        "type": "number"
+                      },
+                      "maxLength": {
+                        "description": "Maximum length",
+                        "type": "number"
+                      },
+                      "pattern": {
+                        "description": "Regular expression pattern for validation",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "boolean"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "number"
+                      },
+                      "min": {
+                        "description": "Minimum value",
+                        "type": "number"
+                      },
+                      "max": {
+                        "description": "Maximum value",
+                        "type": "number"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "coordinate"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Coordinate"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "bbox"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Bbox"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "money"
+                      },
+                      "min": {
+                        "description": "Minimum amount",
+                        "type": "number"
+                      },
+                      "max": {
+                        "description": "Maximum amount",
+                        "type": "number"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Money"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "address"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Address"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "phone"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Phone"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "duration"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Duration"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "email"
+                      },
+                      "minLength": {
+                        "description": "Minimum length",
+                        "type": "number"
+                      },
+                      "maxLength": {
+                        "description": "Maximum length",
+                        "type": "number"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "uuid"
+                      },
+                      "minLength": {
+                        "description": "Minimum length",
+                        "type": "number"
+                      },
+                      "maxLength": {
+                        "description": "Maximum length",
+                        "type": "number"
+                      },
+                      "pattern": {
+                        "description": "Regular expression pattern for validation",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "uri"
+                      },
+                      "minLength": {
+                        "description": "Minimum length",
+                        "type": "number"
+                      },
+                      "maxLength": {
+                        "description": "Maximum length",
+                        "type": "number"
+                      },
+                      "pattern": {
+                        "description": "Regular expression pattern for validation",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "enum"
+                      },
+                      "enum": {
+                        "description": "Array of allowed values for the enum field",
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "enum"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "date"
+                      },
+                      "min": {
+                        "description": "Minimum date (ISO 8601: YYYY-MM-DD)",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "max": {
+                        "description": "Maximum date (ISO 8601: YYYY-MM-DD)",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "datetime"
+                      },
+                      "min": {
+                        "description": "Minimum datetime (ISO 8601)",
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      "max": {
+                        "description": "Maximum datetime (ISO 8601)",
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "time"
+                      },
+                      "min": {
+                        "description": "Minimum time (HH:MM:SS)",
+                        "type": "string"
+                      },
+                      "max": {
+                        "description": "Maximum time (HH:MM:SS)",
+                        "type": "string"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "person"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Person"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "organization"
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Organization"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "identification"
+                      },
+                      "allowedTypes": {
+                        "description": "Allowed ID types (e.g., passport, drivers_license)",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "default": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/Identification"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "multiselect"
+                      },
+                      "enum": {
+                        "description": "Available options",
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "min": {
+                        "description": "Minimum selections required",
+                        "type": "number"
+                      },
+                      "max": {
+                        "description": "Maximum selections allowed",
+                        "type": "number"
+                      },
+                      "default": {
+                        "description": "Default selected values",
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "enum"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "percentage"
+                      },
+                      "min": {
+                        "description": "Minimum value (default: 0)",
+                        "type": "number"
+                      },
+                      "max": {
+                        "description": "Maximum value (default: 100)",
+                        "type": "number"
+                      },
+                      "precision": {
+                        "description": "Decimal places (default: 2)",
+                        "type": "number"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "description": "Display label for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "description": "Description or help text for the field",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "required": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "visible": {
+                        "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "rating"
+                      },
+                      "min": {
+                        "description": "Minimum value (default: 1)",
+                        "type": "number"
+                      },
+                      "max": {
+                        "description": "Maximum value (default: 5)",
+                        "type": "number"
+                      },
+                      "step": {
+                        "description": "Increment step (e.g., 0.5 for half stars, default: 1)",
+                        "type": "number"
+                      },
+                      "default": {
+                        "description": "Default value",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/FieldsetField"
+              }
+            ]
           }
         }
       },
       "required": [
-        "kind"
+        "type",
+        "fields"
+      ],
+      "additionalProperties": false
+    },
+    "Layer": {
+      "id": "Layer",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mimeType": {
+              "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "title": {
+              "description": "Human-readable title for this layer",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": {
+              "description": "Description of what this layer represents",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "checksum": {
+              "description": "SHA-256 checksum for integrity verification",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "bindings": {
+              "description": "Mapping from form field names to template target identifiers",
+              "type": "object",
+              "propertyNames": {
+                "description": "Form field name (semantic identifier)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "additionalProperties": {
+                "description": "Target identifier in the template",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "kind": {
+              "type": "string",
+              "const": "inline"
+            },
+            "text": {
+              "description": "Layer content with interpolation placeholders (e.g., {{fieldName}})",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000000
+            }
+          },
+          "required": [
+            "mimeType",
+            "kind",
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mimeType": {
+              "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "title": {
+              "description": "Human-readable title for this layer",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": {
+              "description": "Description of what this layer represents",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "checksum": {
+              "description": "SHA-256 checksum for integrity verification",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "bindings": {
+              "description": "Mapping from form field names to template target identifiers",
+              "type": "object",
+              "propertyNames": {
+                "description": "Form field name (semantic identifier)",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "additionalProperties": {
+                "description": "Target identifier in the template",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "kind": {
+              "type": "string",
+              "const": "file"
+            },
+            "path": {
+              "description": "Absolute path from repo root to the layer file",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "mimeType",
+            "kind",
+            "path"
+          ],
+          "additionalProperties": false
+        }
       ]
+    },
+    "FormAnnex": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "description": "Title or heading for the annex slot",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "description": "Description of what document should be attached",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "required": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+        },
+        "visible": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+        },
+        "order": {
+          "description": "Display order for rendering",
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "id": "FormAnnex"
+    },
+    "FormParty": {
+      "id": "FormParty",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Display name for this role",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "description": "Description of this role",
+          "type": "string",
+          "maxLength": 500
+        },
+        "partyType": {
+          "description": "Constraint on party type",
+          "default": "any",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "person"
+            },
+            {
+              "type": "string",
+              "const": "organization"
+            },
+            {
+              "type": "string",
+              "const": "any"
+            }
+          ]
+        },
+        "min": {
+          "description": "Minimum parties required",
+          "default": 1,
+          "type": "number",
+          "minimum": 0
+        },
+        "max": {
+          "description": "Maximum parties allowed",
+          "default": 1,
+          "type": "number",
+          "minimum": 1
+        },
+        "required": {
+          "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
+        },
+        "signature": {
+          "title": "FormSignature",
+          "description": "Design-time signature requirements for a party role",
+          "type": "object",
+          "properties": {
+            "required": {
+              "description": "Whether signature is required for this role",
+              "default": false,
+              "type": "boolean"
+            },
+            "witnesses": {
+              "description": "Number of witnesses required for this signature",
+              "default": 0,
+              "type": "number",
+              "minimum": 0
+            },
+            "notarized": {
+              "description": "Whether at least one witness must be a notary",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false
     }
-  ]
+  },
+  "title": "Form"
 }

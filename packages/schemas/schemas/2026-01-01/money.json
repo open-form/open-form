@@ -1,9 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/money.json",
-  "title": "Money",
-  "description": "Monetary value with currency code. Represents an amount in a specific currency, supporting both positive and negative values",
-  "additionalProperties": false,
   "type": "object",
   "properties": {
     "amount": {
@@ -12,14 +9,17 @@
     },
     "currency": {
       "description": "ISO 4217 alpha-3 currency code (e.g., USD, EUR, GBP)",
+      "type": "string",
       "minLength": 3,
       "maxLength": 3,
-      "pattern": "^[A-Z]{3}$",
-      "type": "string"
+      "pattern": "^[A-Z]{3}$"
     }
   },
   "required": [
     "amount",
     "currency"
-  ]
+  ],
+  "additionalProperties": false,
+  "id": "Money",
+  "title": "Money"
 }

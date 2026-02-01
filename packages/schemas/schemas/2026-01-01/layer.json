@@ -1,152 +1,132 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/layer.json",
-  "title": "Layer",
-  "description": "Layer specification — inline content or file reference",
-  "anyOf": [
+  "id": "Layer",
+  "oneOf": [
     {
-      "title": "InlineLayer",
-      "description": "Inline layer with embedded content",
-      "unevaluatedProperties": false,
       "type": "object",
-      "allOf": [
-        {
-          "type": "object",
-          "properties": {
-            "mimeType": {
-              "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
-              "minLength": 1,
-              "maxLength": 100,
-              "type": "string"
-            },
-            "title": {
-              "description": "Human-readable title for this layer",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "description": {
-              "description": "Description of what this layer represents",
-              "minLength": 1,
-              "maxLength": 2000,
-              "type": "string"
-            },
-            "checksum": {
-              "description": "SHA-256 checksum for integrity verification",
-              "pattern": "^sha256:[a-f0-9]{64}$",
-              "minLength": 1,
-              "maxLength": 100,
-              "type": "string"
-            },
-            "bindings": {
-              "description": "Mapping from form field names to template target identifiers",
-              "type": "object",
-              "patternProperties": {
-                "^(.*)$": {
-                  "minLength": 1,
-                  "maxLength": 500,
-                  "description": "Target identifier in the template",
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "required": [
-            "mimeType"
-          ]
+      "properties": {
+        "mimeType": {
+          "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
         },
-        {
+        "title": {
+          "description": "Human-readable title for this layer",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "description": "Description of what this layer represents",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "checksum": {
+          "description": "SHA-256 checksum for integrity verification",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "bindings": {
+          "description": "Mapping from form field names to template target identifiers",
           "type": "object",
-          "properties": {
-            "kind": {
-              "const": "inline",
-              "type": "string"
-            },
-            "text": {
-              "description": "Layer content with interpolation placeholders (e.g., {{fieldName}})",
-              "minLength": 1,
-              "maxLength": 1000000,
-              "type": "string"
-            }
+          "propertyNames": {
+            "description": "Form field name (semantic identifier)",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
-          "required": [
-            "kind",
-            "text"
-          ]
+          "additionalProperties": {
+            "description": "Target identifier in the template",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "kind": {
+          "type": "string",
+          "const": "inline"
+        },
+        "text": {
+          "description": "Layer content with interpolation placeholders (e.g., {{fieldName}})",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000000
         }
-      ]
+      },
+      "required": [
+        "mimeType",
+        "kind",
+        "text"
+      ],
+      "additionalProperties": false
     },
     {
-      "title": "FileLayer",
-      "description": "File-backed layer with path reference",
-      "unevaluatedProperties": false,
       "type": "object",
-      "allOf": [
-        {
-          "type": "object",
-          "properties": {
-            "mimeType": {
-              "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
-              "minLength": 1,
-              "maxLength": 100,
-              "type": "string"
-            },
-            "title": {
-              "description": "Human-readable title for this layer",
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "description": {
-              "description": "Description of what this layer represents",
-              "minLength": 1,
-              "maxLength": 2000,
-              "type": "string"
-            },
-            "checksum": {
-              "description": "SHA-256 checksum for integrity verification",
-              "pattern": "^sha256:[a-f0-9]{64}$",
-              "minLength": 1,
-              "maxLength": 100,
-              "type": "string"
-            },
-            "bindings": {
-              "description": "Mapping from form field names to template target identifiers",
-              "type": "object",
-              "patternProperties": {
-                "^(.*)$": {
-                  "minLength": 1,
-                  "maxLength": 500,
-                  "description": "Target identifier in the template",
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "required": [
-            "mimeType"
-          ]
+      "properties": {
+        "mimeType": {
+          "description": "MIME type of the layer content (e.g., text/markdown, application/pdf)",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
         },
-        {
+        "title": {
+          "description": "Human-readable title for this layer",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "description": "Description of what this layer represents",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "checksum": {
+          "description": "SHA-256 checksum for integrity verification",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "bindings": {
+          "description": "Mapping from form field names to template target identifiers",
           "type": "object",
-          "properties": {
-            "kind": {
-              "const": "file",
-              "type": "string"
-            },
-            "path": {
-              "description": "Absolute path from repo root to the layer file",
-              "minLength": 1,
-              "maxLength": 1000,
-              "type": "string"
-            }
+          "propertyNames": {
+            "description": "Form field name (semantic identifier)",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
-          "required": [
-            "kind",
-            "path"
-          ]
+          "additionalProperties": {
+            "description": "Target identifier in the template",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "kind": {
+          "type": "string",
+          "const": "file"
+        },
+        "path": {
+          "description": "Absolute path from repo root to the layer file",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
         }
-      ]
+      },
+      "required": [
+        "mimeType",
+        "kind",
+        "path"
+      ],
+      "additionalProperties": false
     }
-  ]
+  ],
+  "title": "Layer"
 }

@@ -1,15 +1,12 @@
 {
-  "$id": "https://schema.open-form.dev/lock.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OpenForm Lock File",
-  "description": "Schema for .open-form/lock.json lock file",
-  "additionalProperties": false,
+  "$id": "https://schema.open-form.dev/lock.json",
   "type": "object",
   "properties": {
     "$schema": {
-      "format": "uri",
       "description": "JSON Schema URI for validation",
-      "type": "string"
+      "type": "string",
+      "format": "uri"
     },
     "version": {
       "description": "Lock file format version",
@@ -19,90 +16,99 @@
     "artifacts": {
       "description": "Installed artifacts by reference",
       "type": "object",
-      "patternProperties": {
-        "^@[a-zA-Z0-9][a-zA-Z0-9-_]*/[a-zA-Z0-9][a-zA-Z0-9-_]*$": {
-          "title": "LockedArtifact",
-          "description": "Information about an installed artifact",
-          "type": "object",
-          "properties": {
-            "version": {
-              "description": "Installed artifact version",
-              "type": "string"
-            },
-            "resolved": {
-              "format": "uri",
-              "description": "Full URL used to fetch the artifact",
-              "type": "string"
-            },
-            "integrity": {
-              "pattern": "^sha256:[a-f0-9]{64}$",
-              "description": "SHA-256 integrity hash of the artifact JSON",
-              "type": "string"
-            },
-            "installedAt": {
-              "format": "date-time",
-              "description": "ISO 8601 timestamp when artifact was installed",
-              "type": "string"
-            },
-            "format": {
-              "description": "Format the artifact was saved in",
-              "anyOf": [
-                {
-                  "const": "json",
-                  "type": "string"
-                },
-                {
-                  "const": "yaml",
-                  "type": "string"
-                }
-              ]
-            },
-            "path": {
-              "description": "Relative path to the artifact file from project root",
-              "type": "string"
-            },
-            "layers": {
-              "description": "Installed layers and their metadata",
-              "type": "object",
-              "patternProperties": {
-                "^(.*)$": {
-                  "title": "LockedLayer",
-                  "description": "Information about an installed layer file",
-                  "type": "object",
-                  "properties": {
-                    "integrity": {
-                      "pattern": "^sha256:[a-f0-9]{64}$",
-                      "description": "SHA-256 integrity hash of the layer file",
-                      "type": "string"
-                    },
-                    "path": {
-                      "description": "Relative path to the layer file from project root",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "integrity",
-                    "path"
-                  ]
-                }
-              }
-            }
+      "propertyNames": {
+        "description": "Artifact reference (@namespace/name)",
+        "type": "string",
+        "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*\\/[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+      },
+      "additionalProperties": {
+        "title": "LockedArtifact",
+        "description": "Information about an installed artifact",
+        "type": "object",
+        "properties": {
+          "version": {
+            "description": "Installed artifact version",
+            "type": "string"
           },
-          "required": [
-            "version",
-            "resolved",
-            "integrity",
-            "installedAt",
-            "format",
-            "path",
-            "layers"
-          ]
-        }
+          "resolved": {
+            "description": "Full URL used to fetch the artifact",
+            "type": "string",
+            "format": "uri"
+          },
+          "integrity": {
+            "description": "SHA-256 integrity hash of the artifact JSON",
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "installedAt": {
+            "description": "ISO 8601 timestamp when artifact was installed",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "format": {
+            "description": "Format the artifact was saved in",
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "json"
+              },
+              {
+                "type": "string",
+                "const": "yaml"
+              }
+            ]
+          },
+          "path": {
+            "description": "Relative path to the artifact file from project root",
+            "type": "string"
+          },
+          "layers": {
+            "description": "Installed layers and their metadata",
+            "type": "object",
+            "propertyNames": {
+              "description": "Layer key",
+              "type": "string"
+            },
+            "additionalProperties": {
+              "title": "LockedLayer",
+              "description": "Information about an installed layer file",
+              "type": "object",
+              "properties": {
+                "integrity": {
+                  "description": "SHA-256 integrity hash of the layer file",
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "path": {
+                  "description": "Relative path to the layer file from project root",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "integrity",
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "version",
+          "resolved",
+          "integrity",
+          "installedAt",
+          "format",
+          "path",
+          "layers"
+        ],
+        "additionalProperties": false
       }
     }
   },
   "required": [
     "version",
     "artifacts"
-  ]
+  ],
+  "additionalProperties": false
 }

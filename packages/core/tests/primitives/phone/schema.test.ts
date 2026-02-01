@@ -198,27 +198,23 @@ describe('Phone', () => {
 					expect(() => phone(input)).toThrow();
 				});
 
-				test('coerces number type to string (TypeBox behavior)', () => {
+				test('rejects number type (strict validation)', () => {
 					const input = { number: '+14155552671', type: 123 } as any;
-					const result = phone(input);
-					expect(result).toEqual({ number: '+14155552671', type: '123' });
+					expect(() => phone(input)).toThrow();
 				});
 
-				test('coerces number extension to string (TypeBox behavior)', () => {
+				test('rejects number extension (strict validation)', () => {
 					const input = { number: '+14155552671', extension: 123 } as any;
-					const result = phone(input);
-					expect(result).toEqual({ number: '+14155552671', extension: '123' });
+					expect(() => phone(input)).toThrow();
 				});
 
-				test('strips additional properties (TypeBox behavior)', () => {
+				test('rejects additional properties (strict validation)', () => {
 					const input = {
 						number: '+14155552671',
 						type: 'mobile',
 						extra: 'field',
 					} as any;
-					const result = phone(input);
-					expect(result).toEqual({ number: '+14155552671', type: 'mobile' });
-					expect(result).not.toHaveProperty('extra');
+					expect(() => phone(input)).toThrow();
 				});
 
 				test('throws error when input is null', () => {
@@ -309,15 +305,13 @@ describe('Phone', () => {
 					expect(() => phone.parse(input)).toThrow();
 				});
 
-				test('strips additional properties (TypeBox behavior)', () => {
+				test('rejects additional properties (strict validation)', () => {
 					const input = {
 						number: '+14155552671',
 						type: 'mobile',
 						extra: 'value',
 					};
-					const result = phone.parse(input);
-					expect(result).toEqual({ number: '+14155552671', type: 'mobile' });
-					expect(result).not.toHaveProperty('extra');
+					expect(() => phone.parse(input)).toThrow();
 				});
 
 				test('throws error when input is null', () => {
@@ -486,7 +480,7 @@ describe('Phone', () => {
 					}
 				});
 
-				test('strips additional properties (TypeBox behavior)', () => {
+				test('rejects additional properties (strict validation)', () => {
 					const input = {
 						number: '+14155552671',
 						type: 'mobile',
@@ -494,11 +488,7 @@ describe('Phone', () => {
 					};
 					const result = phone.safeParse(input);
 
-					expect(result.success).toBe(true);
-					if (result.success) {
-						expect(result.data).toEqual({ number: '+14155552671', type: 'mobile' });
-						expect(result.data).not.toHaveProperty('extra');
-					}
+					expect(result.success).toBe(false);
 				});
 
 				test('returns error when input is null', () => {

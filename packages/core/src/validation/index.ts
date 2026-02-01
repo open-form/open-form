@@ -2,7 +2,7 @@
  * Validation module - type guards, validators, coercion
  */
 
-// AJV validators
+// Zod validators
 export {
   validateForm,
   validateDocument,
@@ -29,6 +29,7 @@ export {
   validatePhone,
   getValidatorErrors,
 } from './validators'
+export type { ValidatorError } from './validators'
 
 // Type guards
 export {
@@ -55,9 +56,6 @@ export {
   isPerson,
   isPhone,
 } from './type-guards'
-
-// Coercion
-export { coerceTypes } from './coerce'
 
 // Party validation
 export {
@@ -87,8 +85,13 @@ export type {
   ValidateOptions,
 } from '@/types'
 
-// AJV instance
-export { ajv } from './ajv-instance'
+// Zod schemas re-exported from @open-form/schemas
+export {
+  FormSchema,
+  DocumentSchema,
+  BundleSchema,
+  ChecklistSchema,
+} from '@open-form/schemas'
 
 // Primitive parsers (ready-to-use parse functions)
 export {
