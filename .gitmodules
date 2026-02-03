@@ -4,3 +4,6 @@
 [submodule "incubator"]
 	path = incubator
 	url = https://github.com/open-form/incubator.git
+[submodule "artifacts"]
+	path = artifacts
+	url = https://github.com/open-form/artifacts.git
