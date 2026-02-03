@@ -5,6 +5,7 @@ packages:
   - "platform/packages/*"
   - "incubator/apps/*"
   - "incubator/packages/*"
+  - "artifacts/*"
 
 catalog:
   tsup: "^8.4.0"
