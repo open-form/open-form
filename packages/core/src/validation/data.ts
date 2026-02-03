@@ -202,7 +202,11 @@ export function validateFormData<F extends Form>(
 		// Zod 4 has different issue codes than Zod 3
 		if (issue.code === 'invalid_type') {
 			const invalidTypeIssue = issue as { expected?: string; received?: string }
-			if (invalidTypeIssue.received === 'undefined') {
+			// Check for undefined - Zod 4 may report as 'undefined' string or include it in the message
+			const isUndefined =
+				invalidTypeIssue.received === 'undefined' ||
+				message.includes('received undefined')
+			if (isUndefined) {
 				message = `Missing required field: ${field}`
 			} else if (invalidTypeIssue.expected && invalidTypeIssue.received) {
 				message = `Expected type ${invalidTypeIssue.expected}, received ${invalidTypeIssue.received}`
