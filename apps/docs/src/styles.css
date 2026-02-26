@@ -66,7 +66,7 @@
   --tracking-normal: 0em;
   --spacing: 0.25rem;
   /* Fumadocs overrides */
-  --color-fd-card: oklch(0.9738 0.0045 78.2982);
+  --color-fd-card: oklch(0.9838 0.0045 78.2982);
   --color-fd-card-foreground: oklch(0.3345 0.0198 86.4456);
   --color-fd-border: oklch(0.9067 0 0);
   --color-fd-muted: oklch(0.9738 0.0045 78.2982);
@@ -88,7 +88,7 @@
   --primary-foreground: oklch(0.9702 0 0);
   --secondary: oklch(0.374 0.015 52);
   --secondary-foreground: oklch(0.7257 0.01 52);
-  --muted: oklch(0.374 0.015 52);
+  --muted: oklch(0.25 0.015 52);
   --muted-foreground: oklch(0.7575 0.012 52);
   --accent: oklch(0.374 0.015 52);
   --accent-foreground: oklch(0.9663 0.0076 50);

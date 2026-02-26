@@ -90,10 +90,10 @@ describe('Text Layers Guide', () => {
       smokingAllowed: false,
     },
     parties: {
-      landlord: { id: 'landlord-1', fullName: 'Alice Chen' },
+      landlord: { id: 'landlord-1', name: 'Alice Chen' },
       tenant: [
-        { id: 'tenant-1', fullName: 'Bob Smith' },
-        { id: 'tenant-2', fullName: 'Carol Johnson' },
+        { id: 'tenant-1', name: 'Bob Smith' },
+        { id: 'tenant-2', name: 'Carol Johnson' },
       ],
     },
   })

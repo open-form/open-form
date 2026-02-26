@@ -1,6 +1,7 @@
 {
   "title": "Artifacts",
   "pages": [
+    "index",
     "document",
     "form",
     "checklist",

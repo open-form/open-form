@@ -7,3 +7,6 @@
 [submodule "artifacts"]
 	path = artifacts
 	url = https://github.com/open-form/artifacts.git
+[submodule "skills"]
+	path = skills
+	url = https://github.com/open-form/skills.git

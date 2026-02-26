@@ -59,6 +59,18 @@ Examples include a loan closing checklist, document review checklist, or onboard
     isOptional: true,
   },
   {
+    name: 'instructions',
+    type: 'ContentRef',
+    description: 'Domain or compliance reference content (e.g., regulatory guidance)',
+    isOptional: true,
+  },
+  {
+    name: 'agentInstructions',
+    type: 'ContentRef',
+    description: 'LLM/agent prompts for presentation guidance',
+    isOptional: true,
+  },
+  {
     name: 'items',
     type: 'ChecklistItem[]',
     description: 'Ordered list of checklist items',

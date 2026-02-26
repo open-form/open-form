@@ -8,6 +8,20 @@ import mdx from "fumadocs-mdx/vite";
 import * as MdxConfig from "./source.config";
 
 const config = defineConfig({
+  ssr: {
+    optimizeDeps: {
+      include: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "react-dom/server",
+        "lucide-react",
+        "fumadocs-core/source",
+        "fumadocs-mdx/runtime/server",
+      ],
+    },
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     viteTsConfigPaths({

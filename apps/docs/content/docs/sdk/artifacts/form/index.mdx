@@ -1,5 +1,5 @@
 ---
-title: form
+title: Form Builder
 description: Create Form artifacts with fields, parties, and signing flows
 ---
 
@@ -48,6 +48,25 @@ const form = open.form()
   .annex('photoId', annex().title('Photo ID').required().build())
   .inlineLayer('html', { mimeType: 'text/html', text: '<p>Tenant: {{tenantName}}</p>' })
   .defaultLayer('html')
+  .build()
+```
+
+## Adding instructions
+
+```ts
+// Inline instructions
+const form = open.form({
+  name: 'w9-form',
+  instructions: { kind: 'inline', text: 'See IRS instructions for Form W-9...' },
+  agentInstructions: { kind: 'inline', text: 'Present fields in this order: name, TIN, address.' },
+  // ...fields, parties, layers
+})
+
+// File-backed instructions (builder pattern)
+const form = open.form()
+  .name('w9-form')
+  .instructions({ kind: 'file', path: './w9-instructions.md', mimeType: 'text/markdown' })
+  .agentInstructions({ kind: 'inline', text: 'Present fields in this order: name, TIN, address.' })
   .build()
 ```
 
@@ -117,7 +136,10 @@ open.form(input: FormInput): FormInstance
   { name: 'code', type: 'string', description: 'Internal code or reference number', isOptional: true },
   { name: 'releaseDate', type: 'string', description: 'ISO date when artifact was released', isOptional: true },
   { name: 'metadata', type: 'Metadata', description: 'Custom metadata map', isOptional: true },
-  { name: 'logic', type: 'LogicSection', description: 'Named expressions for conditional logic', isOptional: true },
+  { name: 'instructions', type: 'ContentRef', description: 'Domain or compliance reference content', isOptional: true },
+  { name: 'agentInstructions', type: 'ContentRef', description: 'LLM/agent prompts for presentation guidance', isOptional: true },
+  { name: 'defs', type: 'DefsSection', description: 'Named typed computed values for conditional logic', isOptional: true },
+  { name: 'rules', type: 'RulesSection', description: 'Form-level validation rules', isOptional: true },
   { name: 'fields', type: 'Record<string, FormField>', description: 'Field definitions keyed by identifier', isOptional: true },
   { name: 'layers', type: 'Record<string, Layer>', description: 'Named layers for rendering', isOptional: true },
   { name: 'defaultLayer', type: 'string', description: 'Key of default layer for rendering', isOptional: true },
@@ -139,7 +161,9 @@ Returns a `FormInstance` with the following properties and methods:
   { name: 'code', type: 'string | undefined', description: 'Internal code' },
   { name: 'releaseDate', type: 'string | undefined', description: 'ISO date string' },
   { name: 'metadata', type: 'Metadata | undefined', description: 'Custom metadata map' },
-  { name: 'logic', type: 'LogicSection | undefined', description: 'Named logic expressions' },
+  { name: 'instructions', type: 'ContentRef | undefined', description: 'Domain or compliance reference content' },
+  { name: 'agentInstructions', type: 'ContentRef | undefined', description: 'LLM/agent prompts for presentation guidance' },
+  { name: 'defs', type: 'DefsSection | undefined', description: 'Named typed computed values' },
   { name: 'fields', type: 'Record<string, FormField> | undefined', description: 'Field definitions' },
   { name: 'layers', type: 'Record<string, Layer> | undefined', description: 'Render layers' },
   { name: 'defaultLayer', type: 'string | undefined', description: 'Default layer key' },
@@ -172,8 +196,10 @@ Chain methods to build a form incrementally:
     { name: 'code', params: 'value: string', description: 'Set external reference code' },
     { name: 'releaseDate', params: 'value: string', description: 'Set release date (ISO format)' },
     { name: 'metadata', params: 'value: Metadata', description: 'Set custom metadata' },
-    { name: 'logic', params: 'value: LogicSection', description: 'Set logic expressions' },
-    { name: 'expr', params: 'name: string, expression: string', description: 'Add a single logic expression' },
+    { name: 'instructions', params: 'value: ContentRef', description: 'Set domain/compliance reference content' },
+    { name: 'agentInstructions', params: 'value: ContentRef', description: 'Set LLM/agent presentation guidance' },
+    { name: 'defs', params: 'value: DefsSection', description: 'Set all typed computed values' },
+    { name: 'def', params: 'name: string, expression: string | Expression', description: 'Add a single typed computed value' },
     { name: 'field', params: 'id: string, field: FormField', description: 'Add a single field' },
     { name: 'fields', params: 'fields: Record<string, FormField>', description: 'Set all fields at once' },
     { name: 'layers', params: 'value: Record<string, Layer>', description: 'Set all layers at once' },

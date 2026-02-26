@@ -57,9 +57,21 @@ Examples include a loan application packet, new hire paperwork, or compliance su
     isOptional: true,
   },
   {
-    name: 'logic',
-    type: 'LogicSection',
-    description: 'Named logic expressions that can be referenced in include conditions',
+    name: 'instructions',
+    type: 'ContentRef',
+    description: 'Domain or compliance reference content (e.g., regulatory guidance)',
+    isOptional: true,
+  },
+  {
+    name: 'agentInstructions',
+    type: 'ContentRef',
+    description: 'LLM/agent prompts for presentation guidance',
+    isOptional: true,
+  },
+  {
+    name: 'defs',
+    type: 'DefsSection',
+    description: 'Named typed computed values that can be referenced in include conditions',
     isOptional: true,
   },
   {
@@ -155,8 +167,10 @@ name: loan-application
 version: "1.0.0"
 title: Loan Application Packet
 
-logic:
-  needsW9: "applicant.type == 'contractor'"
+defs:
+  needsW9:
+    type: boolean
+    value: "applicant.type == 'contractor'"
 
 contents:
   # Inline artifact
@@ -185,8 +199,11 @@ contents:
   "name": "loan-application",
   "version": "1.0.0",
   "title": "Loan Application Packet",
-  "logic": {
-    "needsW9": "applicant.type == 'contractor'"
+  "defs": {
+    "needsW9": {
+      "type": "boolean",
+      "value": "applicant.type == 'contractor'"
+    }
   },
   "contents": [
     {
@@ -215,4 +232,6 @@ contents:
 
 # Related
 
-- [Logic](/schemas/artifacts/shared/logic) - Conditional expressions for include conditions
+- [Form](/schemas/artifacts/form) - Interactive form artifact
+- [Document](/schemas/artifacts/document) - Static document artifact
+- [Checklist](/schemas/artifacts/checklist) - Task tracking artifact

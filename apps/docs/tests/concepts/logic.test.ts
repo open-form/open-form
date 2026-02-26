@@ -44,14 +44,14 @@ describe('Logic Concept', () => {
         drivingLicense: { type: 'text', visible: 'isAdult', required: 'isAdult' },
         parentConsent: { type: 'boolean', visible: 'not isAdult', required: 'not isAdult' },
       })
-      .logic({
+      .defs({
         isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
       })
       .build()
 
     test('defines named logic expressions', () => {
-      expect(form.logic).toBeDefined()
-      expect(form.logic!.isAdult).toEqual({ type: 'boolean', value: 'fields.age.value >= 18' })
+      expect(form.defs).toBeDefined()
+      expect(form.defs!.isAdult).toEqual({ type: 'boolean', value: 'fields.age.value >= 18' })
       expect(form.fields!.drivingLicense.visible).toBe('isAdult')
       expect(form.fields!.parentConsent.visible).toBe('not isAdult')
     })

@@ -1,6 +1,7 @@
 {
   "title": "Primitives",
   "pages": [
+    "index",
     "address",
     "bbox",
     "coordinate",

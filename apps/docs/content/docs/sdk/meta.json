@@ -1,6 +1,7 @@
 {
   "title": "SDK",
   "pages": [
+    "index",
     "artifacts",
     "primitives",
     "renderers",

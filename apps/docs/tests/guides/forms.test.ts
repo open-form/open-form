@@ -116,8 +116,8 @@ describe('Forms Guide', () => {
 
     const filled = lease.fill({
       parties: {
-        landlord: { id: 'landlord-1', fullName: 'Jane Smith' },
-        tenant: { id: 'tenant-1', fullName: 'John Doe' },
+        landlord: { id: 'landlord-1', name: 'Jane Smith' },
+        tenant: { id: 'tenant-1', name: 'John Doe' },
       },
       fields: {
         address: {

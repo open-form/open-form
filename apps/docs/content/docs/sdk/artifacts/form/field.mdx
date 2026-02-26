@@ -265,12 +265,12 @@ All fields share these base properties:
 
 # Conditional Logic
 
-The `required`, `visible`, and `disabled` properties can be expressions that reference logic keys:
+The `required`, `visible`, and `disabled` properties can be expressions that reference defs keys:
 
 ```ts
 const form = open.form()
   .name('age-form')
-  .expr('isAdult', 'age >= 18')
+  .def('isAdult', 'age >= 18')
   .field('age', field.number().label('Age').required().build())
   .field('drivingLicense', field.text()
     .label('Driving License')

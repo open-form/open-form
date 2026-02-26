@@ -1,5 +1,5 @@
 ---
-title: Artifacts
+title: Artifact Builders
 description: Builder functions for top-level OpenForm artifacts
 ---
 
@@ -39,3 +39,5 @@ All artifact builders share common functionality:
 - `kind` - Artifact type discriminator
 - `name` - Artifact name
 - `version` - Semantic version
+- `instructions` - Domain/compliance reference content ([ContentRef](/schemas/artifacts/shared/content-ref))
+- `agentInstructions` - LLM/agent presentation guidance ([ContentRef](/schemas/artifacts/shared/content-ref))

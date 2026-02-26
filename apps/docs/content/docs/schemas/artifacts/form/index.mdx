@@ -1,5 +1,5 @@
 ---
-title: Form
+title: Form Schema
 description: An artifact for dynamic documents with fields, annexes, and parties
 ---
 
@@ -60,9 +60,27 @@ It can be used to create a simple consent form with a few fields to complex form
     isOptional: true,
   },
   {
-    name: 'logic',
-    type: 'LogicSection',
-    description: 'Named logic expressions that can be referenced in field/annex conditions',
+    name: 'instructions',
+    type: 'ContentRef',
+    description: 'Domain or compliance reference content (e.g., IRS instructions, regulatory guidance)',
+    isOptional: true,
+  },
+  {
+    name: 'agentInstructions',
+    type: 'ContentRef',
+    description: 'LLM/agent prompts for field ordering, grouping, tone, and presentation guidance',
+    isOptional: true,
+  },
+  {
+    name: 'defs',
+    type: 'DefsSection',
+    description: 'Named typed computed values that can be referenced in field/annex conditions',
+    isOptional: true,
+  },
+  {
+    name: 'rules',
+    type: 'RulesSection',
+    description: 'Form-level validation rules evaluated at fill time',
     isOptional: true,
   },
   {
@@ -121,8 +139,10 @@ version: "1.0.0"
 title: Residential Lease Agreement
 description: Standard residential lease agreement
 
-logic:
-  hasPets: "fields.petsAllowed.value == true"
+defs:
+  hasPets:
+    type: boolean
+    value: "fields.petsAllowed == true"
 
 fields:
   propertyAddress:
@@ -201,8 +221,11 @@ annexes:
   "version": "1.0.0",
   "title": "Residential Lease Agreement",
   "description": "Standard residential lease agreement",
-  "logic": {
-    "hasPets": "fields.petsAllowed.value == true"
+  "defs": {
+    "hasPets": {
+      "type": "boolean",
+      "value": "fields.petsAllowed == true"
+    }
   },
   "fields": {
     "propertyAddress": {
@@ -293,4 +316,3 @@ annexes:
 # Related
 
 - [Layer](/schemas/artifacts/shared/layer) - Layer specification
-- [Logic](/schemas/artifacts/shared/logic) - Logic section and expressions

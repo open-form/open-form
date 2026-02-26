@@ -1,0 +1,59 @@
+---
+title: registry add
+description: Add or update a registry configuration
+ogTitle: ofm registry add
+ogDescription: Configure a new OpenForm artifact registry
+---
+
+Add or update a registry configuration.
+
+# Usage
+
+```bash
+ofm registry add <namespace> <url> [options]
+```
+
+# Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `namespace` | Registry namespace (e.g., `@acme`) |
+| `url` | Registry base URL |
+
+# Options
+
+| Option | Description |
+|--------|-------------|
+| `--header <header>` | Add HTTP header (format: "Name: Value"). Can be used multiple times. |
+| `--global` | Save to global config (~/.open-form/config.json) |
+| `--project` | Save to project config (open-form.json) |
+
+# Description
+
+Adds a registry to your configuration. If neither `--global` nor `--project` is specified, you will be prompted to choose. When not in a project directory, defaults to global config.
+
+# Examples
+
+Add a public registry:
+
+```bash
+ofm registry add @acme https://registry.acme.com
+```
+
+Add with authentication:
+
+```bash
+ofm registry add @private https://registry.example.com \
+  --header "Authorization: Bearer ${REGISTRY_TOKEN}"
+```
+
+Add to global config:
+
+```bash
+ofm registry add @company https://registry.company.com --global
+```
+
+# See also
+
+- [registry remove](/cli/commands/registry/remove) - Remove a registry
+- [registry list](/cli/commands/registry/list) - List configured registries

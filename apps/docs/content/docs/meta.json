@@ -7,7 +7,9 @@
     "guides",
     "--- Reference ---",
     "schemas",
-    "sdk"
+    "sdk",
+    "cli",
+    "mcp"
   ],
   "defaultOpen": true
 }

@@ -1,5 +1,5 @@
 ---
-title: Artifacts
+title: Artifact Schemas
 description: The four artifact types in OpenForm
 ---
 
@@ -69,5 +69,39 @@ All artifacts share the same base properties:
         ],
       },
     ],
+  },
+  {
+    name: 'instructions',
+    type: 'ContentRef',
+    description: 'Domain or compliance reference content (e.g., IRS instructions, regulatory guidance)',
+    isOptional: true,
+    properties: [
+      {
+        type: 'InlineContentRef',
+        description: 'Inline text content',
+        parameters: [
+          { name: 'kind', type: "'inline'", description: 'Discriminator for inline content' },
+          { name: 'text', type: 'string', description: 'The text content' },
+        ],
+      },
+      {
+        type: 'FileContentRef',
+        description: 'File-backed content reference',
+        parameters: [
+          { name: 'kind', type: "'file'", description: 'Discriminator for file content' },
+          { name: 'path', type: 'string', description: 'Path to the content file' },
+          { name: 'mimeType', type: 'string', description: 'MIME type of the file content' },
+          { name: 'title', type: 'string', description: 'Human-readable title', isOptional: true },
+          { name: 'description', type: 'string', description: 'Description of the content', isOptional: true },
+          { name: 'checksum', type: 'string', description: 'SHA-256 checksum for integrity verification', isOptional: true },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'agentInstructions',
+    type: 'ContentRef',
+    description: 'LLM/agent prompts for field ordering, grouping, tone, and presentation guidance',
+    isOptional: true,
   },
 ]} />

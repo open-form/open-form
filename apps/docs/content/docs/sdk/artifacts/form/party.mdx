@@ -233,12 +233,12 @@ const filled = form.fill({
 
 # Conditional Parties
 
-Use logic expressions for conditional party requirements:
+Use defs for conditional party requirements:
 
 ```ts
 const form = open.form()
   .name('loan-application')
-  .expr('needsGuarantor', 'loanAmount > 100000')
+  .def('needsGuarantor', 'loanAmount > 100000')
   .party('borrower', party()
     .label('Borrower')
     .signature({ required: true })

@@ -1,0 +1,44 @@
+---
+title: registry remove
+description: Remove a registry configuration
+ogTitle: ofm registry remove
+ogDescription: Remove a configured OpenForm registry
+---
+
+Remove a registry configuration.
+
+# Usage
+
+```bash
+ofm registry remove <namespace> [options]
+ofm registry rm <namespace> [options]
+```
+
+# Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `namespace` | Registry namespace to remove |
+
+# Options
+
+| Option | Description |
+|--------|-------------|
+| `--global` | Remove from global config |
+| `--project` | Remove from project config |
+
+# Description
+
+Removes a registry from your configuration. If neither `--global` nor `--project` is specified, you will be prompted to choose. When not in a project directory, defaults to global config.
+
+# Examples
+
+```bash
+ofm registry remove @acme
+ofm registry rm @acme --global
+```
+
+# See also
+
+- [registry add](/cli/commands/registry/add) - Add a registry
+- [registry list](/cli/commands/registry/list) - List configured registries

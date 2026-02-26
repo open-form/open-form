@@ -58,8 +58,8 @@ describe('Quickstart Guide', () => {
       date: '2025-03-01',
     },
     parties: {
-      buyer: { id: 'buyer-1', fullName: 'Alice Johnson' },
-      seller: { id: 'seller-1', fullName: 'Bob Smith' },
+      buyer: { id: 'buyer-1', name: 'Alice Johnson' },
+      seller: { id: 'seller-1', name: 'Bob Smith' },
     },
   })
 

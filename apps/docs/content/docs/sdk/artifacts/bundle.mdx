@@ -15,7 +15,7 @@ const bundle = open.bundle({
   name: 'lease-package',
   version: '1.0.0',
   title: 'Residential Lease Package',
-  logic: { hasPets: 'data.pets.length > 0' },
+  defs: { hasPets: { type: 'boolean', value: 'data.pets.length > 0' } },
   contents: [
     { type: 'registry', key: 'lease', slug: 'residential-lease@1.0.0' },
     { type: 'path', key: 'addendum', path: './pet-addendum.json', include: 'hasPets' },
@@ -28,7 +28,7 @@ const bundle = open.bundle()
   .name('lease-package')
   .version('1.0.0')
   .title('Residential Lease Package')
-  .expr('hasPets', 'data.pets.length > 0')
+  .def('hasPets', 'data.pets.length > 0')
   .registry('lease', 'residential-lease@1.0.0')
   .path('addendum', './pet-addendum.json', 'hasPets')
   .inline('disclosure', disclosureDoc)
@@ -100,7 +100,9 @@ open.bundle(input: BundleInput): BundleInstance
   { name: 'code', type: 'string', description: 'Internal code or reference number', isOptional: true },
   { name: 'releaseDate', type: 'string', description: 'ISO date string indicating when the artifact was released', isOptional: true },
   { name: 'metadata', type: 'Metadata', description: 'Custom metadata map (keys must be alphanumeric with hyphens)', isOptional: true },
-  { name: 'logic', type: 'LogicSection', description: 'Named expressions for conditional includes', isOptional: true },
+  { name: 'instructions', type: 'ContentRef', description: 'Domain or compliance reference content', isOptional: true },
+  { name: 'agentInstructions', type: 'ContentRef', description: 'LLM/agent prompts for presentation guidance', isOptional: true },
+  { name: 'defs', type: 'DefsSection', description: 'Named typed computed values for conditional includes', isOptional: true },
   { name: 'contents', type: 'BundleContentItem[]', description: 'Ordered list of bundle content items' },
 ]} />
 
@@ -117,7 +119,9 @@ Returns a `BundleInstance` with the following properties and methods:
   { name: 'code', type: 'string | undefined', description: 'Internal code or reference number' },
   { name: 'releaseDate', type: 'string | undefined', description: 'ISO date string' },
   { name: 'metadata', type: 'Metadata | undefined', description: 'Custom metadata map' },
-  { name: 'logic', type: 'LogicSection | undefined', description: 'Named logic expressions' },
+  { name: 'instructions', type: 'ContentRef | undefined', description: 'Domain or compliance reference content' },
+  { name: 'agentInstructions', type: 'ContentRef | undefined', description: 'LLM/agent prompts for presentation guidance' },
+  { name: 'defs', type: 'DefsSection | undefined', description: 'Named typed computed values' },
   { name: 'contents', type: 'BundleContentItem[]', description: 'Bundle content items' },
   { name: 'validate', type: '(options?: ValidateOptions) => StandardSchemaV1.Result', description: 'Validate the bundle definition', isMethod: true },
   { name: 'isValid', type: '(options?: ValidateOptions) => boolean', description: 'Check if bundle is valid', isMethod: true },
@@ -142,8 +146,10 @@ Chain methods to build a bundle incrementally:
     { name: 'code', params: 'value: string', description: 'Set external reference code' },
     { name: 'releaseDate', params: 'value: string', description: 'Set release date (ISO format)' },
     { name: 'metadata', params: 'value: Metadata', description: 'Set custom metadata' },
-    { name: 'logic', params: 'logicDef: LogicSection', description: 'Set all logic expressions' },
-    { name: 'expr', params: 'name: string, expression: string', description: 'Add a named logic expression' },
+    { name: 'instructions', params: 'value: ContentRef', description: 'Set domain/compliance reference content' },
+    { name: 'agentInstructions', params: 'value: ContentRef', description: 'Set LLM/agent presentation guidance' },
+    { name: 'defs', params: 'defsDef: DefsSection', description: 'Set all typed computed values' },
+    { name: 'def', params: 'name: string, expression: string | Expression', description: 'Add a single typed computed value' },
     { name: 'registry', params: 'key: string, slug: string, include?: CondExpr', description: 'Add registry reference' },
     { name: 'path', params: 'key: string, path: string, include?: CondExpr', description: 'Add path reference' },
     { name: 'inline', params: 'key: string, artifact: Artifact', description: 'Add inline artifact' },
@@ -219,14 +225,14 @@ Reference a published artifact by slug:
 
 ## Conditional Includes
 
-Path and registry items support conditional inclusion using logic expressions:
+Path and registry items support conditional inclusion using defs:
 
 ```ts
 const bundle = open.bundle()
   .name('lease-package')
-  // Define logic expressions
-  .expr('hasPets', 'data.pets.length > 0')
-  .expr('hasVehicles', 'data.vehicles.length > 0')
+  // Define typed computed values
+  .def('hasPets', 'data.pets.length > 0')
+  .def('hasVehicles', 'data.vehicles.length > 0')
   // Always include
   .registry('lease', 'residential-lease@1.0.0')
   // Include only if hasPets evaluates to true
