@@ -2,10 +2,28 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@open-form/types",
+      "@open-form/schemas",
+      "@open-form/core",
+      "@open-form/serialization",
+      "@open-form/resolvers",
+      "@open-form/renderer-text",
+      "@open-form/renderer-pdf",
+      "@open-form/renderer-docx",
+      "@open-form/renderers",
+      "@open-form/sdk",
+      "@open-form/cli",
+      "open-form"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
 }
