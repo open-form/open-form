@@ -1,6 +1,6 @@
 {
   "name": "open-form",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "CLI tool for OpenForm framework",
   "bin": {
     "ofm": "./node_modules/@open-form/cli/dist/index.js",

@@ -1,5 +1,18 @@
 # @open-form/renderers
 
+## 0.3.0
+
+### Minor Changes
+
+- c9e6405: Minor version bump for all OpenForm packages and CLI
+
+### Patch Changes
+
+- Updated dependencies [c9e6405]
+  - @open-form/renderer-docx@0.3.0
+  - @open-form/renderer-text@0.3.0
+  - @open-form/renderer-pdf@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

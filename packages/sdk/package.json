@@ -1,6 +1,6 @@
 {
   "name": "@open-form/sdk",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Umbrella package for OpenForm framework - re-exports @open-form/core, @open-form/renderers, and @open-form/serialization",
   "type": "module",
   "main": "./dist/index.js",

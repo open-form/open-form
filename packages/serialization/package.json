@@ -1,6 +1,6 @@
 {
   "name": "@open-form/serialization",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Primitive serialization package for OpenForm framework",
   "type": "module",
   "main": "./dist/index.js",

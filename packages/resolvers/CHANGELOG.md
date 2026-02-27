@@ -1,5 +1,16 @@
 # @open-form/resolvers
 
+## 0.3.0
+
+### Minor Changes
+
+- c9e6405: Minor version bump for all OpenForm packages and CLI
+
+### Patch Changes
+
+- Updated dependencies [c9e6405]
+  - @open-form/types@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

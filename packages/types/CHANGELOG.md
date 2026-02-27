@@ -1,5 +1,11 @@
 # @open-form/types
 
+## 0.3.0
+
+### Minor Changes
+
+- c9e6405: Minor version bump for all OpenForm packages and CLI
+
 ## 0.2.1
 
 ### Patch Changes

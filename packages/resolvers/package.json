@@ -1,6 +1,6 @@
 {
 	"name": "@open-form/resolvers",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "Environment-specific resolvers for OpenForm - filesystem, S3, HTTP, etc.",
 	"type": "module",
 	"exports": {

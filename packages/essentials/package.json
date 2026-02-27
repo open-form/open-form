@@ -1,7 +1,7 @@
 {
   "name": "@open-form/essentials",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Ready-to-use OpenForm artifacts for common business forms — IRS, NACHA, USCIS, HIPAA, ACORD, and more",
   "type": "module",
   "main": "./dist/index.js",
