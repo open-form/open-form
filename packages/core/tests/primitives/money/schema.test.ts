@@ -700,12 +700,7 @@ describe('Money', () => {
 					expect(result.amount).toBe(123.456789);
 				});
 
-				test.skip('handles negative zero', () => {
-					const result = money().amount(-0).currency('USD').build();
-					expect(result).toEqual({ amount: 0, currency: 'USD' });
-				});
-
-				test('handles Infinity amount (should throw on build)', () => {
+					test('handles Infinity amount (should throw on build)', () => {
 					expect(() => money().amount(Infinity).currency('USD').build()).toThrow();
 				});
 

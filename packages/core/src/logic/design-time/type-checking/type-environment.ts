@@ -21,7 +21,7 @@ export interface FunctionSignature {
  * Type environment containing variables and functions.
  */
 export interface TypeEnvironment {
-  /** Maps variable paths to their inferred types (e.g., 'fields.age.value' -> number) */
+  /** Maps variable paths to their inferred types (e.g., 'fields.age' -> number) */
   variables: Map<string, TypeInferenceResult>
   /** Maps function names to their signatures */
   functions: Map<string, FunctionSignature>
@@ -84,7 +84,7 @@ export function createTypeEnvironment(): TypeEnvironment {
  * Gets a variable's type from the environment.
  *
  * @param env - The type environment
- * @param path - The variable path (e.g., 'fields.age.value', 'isAdult')
+ * @param path - The variable path (e.g., 'fields.age', 'isAdult')
  * @returns The inferred type, or unknown if not found
  */
 export function getVariableType(env: TypeEnvironment, path: string): TypeInferenceResult {

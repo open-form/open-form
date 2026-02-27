@@ -3,6 +3,7 @@
  */
 
 import type { Metadata } from "../../primitives";
+import type { ContentRef } from "./content-ref";
 
 /**
  * Base properties for all artifact types.
@@ -23,4 +24,8 @@ export interface ArtifactBase {
   releaseDate?: string;
   /** Optional custom metadata map. */
   metadata?: Metadata;
+  /** Domain or compliance reference content (e.g., IRS instructions, regulatory guidance). */
+  instructions?: ContentRef;
+  /** LLM/agent prompts for field ordering, grouping, tone, and presentation guidance. */
+  agentInstructions?: ContentRef;
 }

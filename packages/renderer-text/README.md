@@ -56,7 +56,7 @@ const output = renderText({
     tenantName: {
       firstName: "Sarah",
       lastName: "Johnson",
-      fullName: "Sarah Johnson",
+      name: "Sarah Johnson",
     },
     monthlyRent: {
       amount: 1500,
@@ -101,7 +101,7 @@ const output = await leaseForm
       tenantName: {
         firstName: "Sarah",
         lastName: "Johnson",
-        fullName: "Sarah Johnson",
+        name: "Sarah Johnson",
       },
       monthlyRent: {
         amount: 1500,

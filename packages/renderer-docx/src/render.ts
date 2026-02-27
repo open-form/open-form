@@ -103,6 +103,7 @@ export async function renderDocx({
     additionalJsContext: {
       signature: signatureHelpers.signature,
       initials: signatureHelpers.initials,
+      signatureDate: signatureHelpers.signatureDate,
     },
   })
 

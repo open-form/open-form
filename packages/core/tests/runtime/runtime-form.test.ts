@@ -208,7 +208,7 @@ describe('DraftForm', () => {
   // ============================================================================
 
   describe('isValid()', () => {
-    test('always returns true (data is validated at construction)', () => {
+    test('returns true when no rules are defined', () => {
       const formInstance = createFormWithFields()
       const filled = formInstance.fill({
         fields: { name: 'John', email: 'john@example.com' },
@@ -217,13 +217,13 @@ describe('DraftForm', () => {
       expect(filled.isValid()).toBe(true)
     })
 
-    test('return type is exactly true', () => {
+    test('return type is boolean', () => {
       const formInstance = createFormWithFields()
       const filled = formInstance.fill({
         fields: { name: 'John', email: 'john@example.com' },
       } as any)
 
-      const result: true = filled.isValid()
+      const result: boolean = filled.isValid()
       expect(result).toBe(true)
     })
   })
@@ -647,7 +647,7 @@ describe('DraftForm', () => {
         .name('conditional-form')
         .version('1.0.0')
         .title('Conditional Form')
-        .logic({ isAdult: { type: 'boolean', value: 'fields.age.value >= 18' } })
+        .defs({ isAdult: { type: 'boolean', value: 'fields.age >= 18' } })
         .field('age', { type: 'number', label: 'Age' })
         .field('drivingLicense', {
           type: 'text',
@@ -667,7 +667,7 @@ describe('DraftForm', () => {
         .name('required-form')
         .version('1.0.0')
         .title('Required Form')
-        .logic({ isAdult: { type: 'boolean', value: 'fields.age.value >= 18' } })
+        .defs({ isAdult: { type: 'boolean', value: 'fields.age >= 18' } })
         .field('age', { type: 'number', label: 'Age', required: true })
         .field('drivingLicense', {
           type: 'text',
@@ -691,11 +691,11 @@ describe('DraftForm', () => {
         .name('form-with-annexes')
         .version('1.0.0')
         .title('Form with Annexes')
-        .logic({ isAdult: { type: 'boolean', value: 'fields.age.value >= 18' } })
+        .defs({ isAdult: { type: 'boolean', value: 'fields.age >= 18' } })
         .field('age', { type: 'number', label: 'Age' })
-        .annex('id-proof', { title: 'ID Proof' })
-        .annex('drivers-license', { title: 'Drivers License', visible: 'isAdult' })
-        .annex('parent-consent', { title: 'Parent Consent', visible: 'not isAdult' })
+        .annex('idProof', { title: 'ID Proof' })
+        .annex('driversLicense', { title: 'Drivers License', visible: 'isAdult' })
+        .annex('parentConsent', { title: 'Parent Consent', visible: 'not isAdult' })
         .build()
 
     describe('runtimeState getter', () => {
@@ -708,7 +708,7 @@ describe('DraftForm', () => {
         expect(state).toBeDefined()
         expect(state.fields).toBeInstanceOf(Map)
         expect(state.annexes).toBeInstanceOf(Map)
-        expect(state.logicValues).toBeInstanceOf(Map)
+        expect(state.defsValues).toBeInstanceOf(Map)
       })
 
       test('caches runtime state on subsequent accesses', () => {
@@ -941,10 +941,10 @@ describe('DraftForm', () => {
         const formInstance = createFormWithAnnexes()
         const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
-        const annexState = filled.getAnnexState('id-proof')
+        const annexState = filled.getAnnexState('idProof')
 
         expect(annexState).toBeDefined()
-        expect(annexState?.annexId).toBe('id-proof')
+        expect(annexState?.annexId).toBe('idProof')
       })
 
       test('returns undefined for non-existent annex', () => {
@@ -960,7 +960,7 @@ describe('DraftForm', () => {
         const formInstance = createFormWithAnnexes()
         const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
-        const annexState = filled.getAnnexState('id-proof')
+        const annexState = filled.getAnnexState('idProof')
 
         expect(annexState).toBeDefined()
         expect(typeof annexState?.visible).toBe('boolean')
@@ -973,18 +973,18 @@ describe('DraftForm', () => {
         const formInstance = createFormWithAnnexes()
         const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
-        expect(filled.isAnnexVisible('id-proof')).toBe(true)
-        expect(filled.isAnnexVisible('drivers-license')).toBe(true)
-        expect(filled.isAnnexVisible('parent-consent')).toBe(false)
+        expect(filled.isAnnexVisible('idProof')).toBe(true)
+        expect(filled.isAnnexVisible('driversLicense')).toBe(true)
+        expect(filled.isAnnexVisible('parentConsent')).toBe(false)
       })
 
       test('returns true for visible annex (minor case)', () => {
         const formInstance = createFormWithAnnexes()
         const filled = formInstance.fill({ fields:  { age: 16 } } as any)
 
-        expect(filled.isAnnexVisible('id-proof')).toBe(true)
-        expect(filled.isAnnexVisible('drivers-license')).toBe(false)
-        expect(filled.isAnnexVisible('parent-consent')).toBe(true)
+        expect(filled.isAnnexVisible('idProof')).toBe(true)
+        expect(filled.isAnnexVisible('driversLicense')).toBe(false)
+        expect(filled.isAnnexVisible('parentConsent')).toBe(true)
       })
 
       test('returns true for non-existent annex (default behavior)', () => {
@@ -1004,9 +1004,9 @@ describe('DraftForm', () => {
         const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
         // All annexes have no required expression, so all default to false
-        expect(filled.isAnnexRequired('id-proof')).toBe(false)
-        expect(filled.isAnnexRequired('drivers-license')).toBe(false)
-        expect(filled.isAnnexRequired('parent-consent')).toBe(false)
+        expect(filled.isAnnexRequired('idProof')).toBe(false)
+        expect(filled.isAnnexRequired('driversLicense')).toBe(false)
+        expect(filled.isAnnexRequired('parentConsent')).toBe(false)
       })
 
       test('returns false for non-existent annex (default behavior)', () => {
@@ -1044,10 +1044,10 @@ describe('DraftForm', () => {
           .name('multi-logic')
           .version('1.0.0')
           .title('Multi Logic')
-          .logic({
-            isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
-            isSenior: { type: 'boolean', value: 'fields.age.value >= 65' },
-            isTeenager: { type: 'boolean', value: 'fields.age.value >= 13 and fields.age.value < 20' },
+          .defs({
+            isAdult: { type: 'boolean', value: 'fields.age >= 18' },
+            isSenior: { type: 'boolean', value: 'fields.age >= 65' },
+            isTeenager: { type: 'boolean', value: 'fields.age >= 13 and fields.age < 20' },
           })
           .field('age', { type: 'number', label: 'Age' })
           .build()

@@ -46,8 +46,8 @@ export interface FieldsetBuilder {
 // Factory Function
 // ============================================================================
 
-export function fieldsetBuilder(id: string): FieldsetBuilder {
-	const _def: Record<string, unknown> = { id, fields: {} };
+export function fieldsetBuilder(): FieldsetBuilder {
+	const _def: Record<string, unknown> = { fields: {} };
 
 	const self: FieldsetBuilder = {
 		from(value: FormFieldset) {
@@ -97,23 +97,23 @@ export function fieldsetBuilder(id: string): FieldsetBuilder {
 // ============================================================================
 
 export type FieldsetAPI = {
-	(id: string): FieldsetBuilder;
+	(): FieldsetBuilder;
 	(fieldsObj: Record<string, FormField>): FieldsetBuilder;
 	(input: FormFieldset): FormFieldset;
 	parse(input: unknown): FormFieldset;
 	safeParse(input: unknown): { success: true; data: FormFieldset } | { success: false; error: Error };
 };
 
-function fieldsetImpl(id: string): FieldsetBuilder;
+function fieldsetImpl(): FieldsetBuilder;
 function fieldsetImpl(fieldsObj: Record<string, FormField>): FieldsetBuilder;
 function fieldsetImpl(input: FormFieldset): FormFieldset;
-function fieldsetImpl(input: string | Record<string, FormField> | FormFieldset): FieldsetBuilder | FormFieldset {
-	if (typeof input === 'string') {
-		return fieldsetBuilder(input);
+function fieldsetImpl(input?: Record<string, FormField> | FormFieldset): FieldsetBuilder | FormFieldset {
+	if (input === undefined) {
+		return fieldsetBuilder();
 	}
-	if (typeof input === 'object' && input !== null && !('id' in input)) {
-		// It's a fields object, create a builder with empty id and set fields
-		const builder = fieldsetBuilder('');
+	if (typeof input === 'object' && input !== null && !('fields' in input)) {
+		// It's a fields object, create a builder and set fields
+		const builder = fieldsetBuilder();
 		return builder.fields(input as Record<string, FormField>);
 	}
 	return parseFieldset(input);
@@ -124,7 +124,7 @@ function fieldsetImpl(input: string | Record<string, FormField> | FormFieldset):
  *
  * @example
  * ```ts
- * const addressFieldset = fieldset('address')
+ * const addressFieldset = fieldset()
  *   .title('Address')
  *   .fields({
  *     street: { type: 'text', label: 'Street' },

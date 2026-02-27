@@ -2,7 +2,7 @@ import type { FormField, FieldsetField } from '@open-form/types'
 
 /**
  * Maps complex field types to their nested property names.
- * These properties are accessible at runtime via dot notation (e.g., fields.rent.value.amount).
+ * These properties are accessible at runtime via dot notation (e.g., fields.rent.amount).
  */
 const COMPLEX_TYPE_PROPERTIES: Record<string, string[]> = {
   money: ['amount', 'currency'],
@@ -11,7 +11,7 @@ const COMPLEX_TYPE_PROPERTIES: Record<string, string[]> = {
   coordinate: ['lat', 'lon'],
   bbox: ['north', 'south', 'east', 'west'],
   duration: ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'],
-  person: ['fullName', 'firstName', 'middleName', 'lastName', 'suffix', 'title'],
+  person: ['name', 'firstName', 'middleName', 'lastName', 'suffix', 'title'],
   organization: ['name', 'legalName', 'entityType', 'domicile'],
   identification: ['idType', 'idNumber', 'issuingAuthority', 'issuedDate', 'expiryDate'],
 }
@@ -22,7 +22,7 @@ const COMPLEX_TYPE_PROPERTIES: Record<string, string[]> = {
  *
  * @param fields - Record of field definitions
  * @param prefix - Path prefix (default: 'fields')
- * @returns Set of valid field paths (e.g., 'fields.name.value', 'fields.address.street.value')
+ * @returns Set of valid field paths (e.g., 'fields.name', 'fields.address.street')
  *
  * @example
  * ```typescript
@@ -38,7 +38,7 @@ const COMPLEX_TYPE_PROPERTIES: Record<string, string[]> = {
  * }
  *
  * collectFieldPaths(fields)
- * // Set { 'fields.name.value', 'fields.address.value', 'fields.address.street.value', 'fields.address.city.value' }
+ * // Set { 'fields.name', 'fields.address.street', 'fields.address.city' }
  * ```
  */
 export function collectFieldPaths(
@@ -49,17 +49,16 @@ export function collectFieldPaths(
   if (!fields) return paths
 
   for (const [key, field] of Object.entries(fields)) {
-    const basePath = `${prefix}.${key}`
-    const valuePath = `${basePath}.value`
+    const fieldPath = `${prefix}.${key}`
 
-    // All fields have a .value property at runtime
-    paths.add(valuePath)
+    // All fields are directly accessible at runtime
+    paths.add(fieldPath)
 
     // Add nested property paths for complex types
     const nestedProps = COMPLEX_TYPE_PROPERTIES[field.type]
     if (nestedProps) {
       for (const prop of nestedProps) {
-        paths.add(`${valuePath}.${prop}`)
+        paths.add(`${fieldPath}.${prop}`)
       }
     }
 
@@ -67,7 +66,7 @@ export function collectFieldPaths(
     if (field.type === 'fieldset') {
       const fieldset = field as FieldsetField
       if (fieldset.fields) {
-        const nestedPaths = collectFieldPaths(fieldset.fields, basePath)
+        const nestedPaths = collectFieldPaths(fieldset.fields, fieldPath)
         nestedPaths.forEach((p) => paths.add(p))
       }
     }

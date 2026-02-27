@@ -63,6 +63,29 @@ export function renderText(options: {
   // Register signature and initials helpers
   registerSignatureHelpers(handlebars, options.signatureOptions);
 
+  // Register comparison and logic helpers
+  handlebars.registerHelper('eq', (a, b) => a === b);
+  handlebars.registerHelper('ne', (a, b) => a !== b);
+  handlebars.registerHelper('gt', (a, b) => a > b);
+  handlebars.registerHelper('gte', (a, b) => a >= b);
+  handlebars.registerHelper('lt', (a, b) => a < b);
+  handlebars.registerHelper('lte', (a, b) => a <= b);
+  handlebars.registerHelper('not', (a) => !a);
+  handlebars.registerHelper('and', (...args: unknown[]) => {
+    args.pop(); // remove Handlebars options argument
+    return args.every(Boolean);
+  });
+  handlebars.registerHelper('or', (...args: unknown[]) => {
+    args.pop(); // remove Handlebars options argument
+    return args.some(Boolean);
+  });
+  handlebars.registerHelper('contains', (arr, value) =>
+    Array.isArray(arr) ? arr.includes(value) : false
+  );
+  handlebars.registerHelper('default', (value, defaultValue) =>
+    value != null && value !== '' ? value : defaultValue
+  );
+
   // Use provided serializers or default to USA serializers
   const serializers = options.serializers || usaSerializers;
 

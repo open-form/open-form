@@ -6,7 +6,7 @@
  */
 
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { Artifact, Metadata } from '@open-form/types'
+import type { Artifact, Metadata, ContentRef } from '@open-form/types'
 import { validate as validateArtifact } from '@/validation/artifact'
 import { toYAML } from '@/serialization/serialization'
 import { OPENFORM_SCHEMA_URL } from '@open-form/schemas'
@@ -42,6 +42,12 @@ export interface ArtifactMethods<T extends Artifact> {
 
 	/** Custom metadata */
 	readonly metadata: Metadata | undefined
+
+	/** Domain or compliance reference content */
+	readonly instructions: ContentRef | undefined
+
+	/** LLM/agent prompts for presentation guidance */
+	readonly agentInstructions: ContentRef | undefined
 
 	/**
 	 * Validates the artifact schema definition.
@@ -99,6 +105,8 @@ export function withArtifactMethods<T extends Artifact>(data: T): ArtifactMethod
 		code: data.code,
 		releaseDate: data.releaseDate,
 		metadata: data.metadata,
+		instructions: data.instructions,
+		agentInstructions: data.agentInstructions,
 
 		// Validation
 		validate(options?: ValidateOptions): StandardSchemaV1.Result<T> {

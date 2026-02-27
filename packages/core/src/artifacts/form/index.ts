@@ -3,7 +3,7 @@
  * Barrel export
  */
 
-export { form, runtimeFormFromJSON, FormValidationError } from './form'
+export { form, runtimeFormFromJSON, FormValidationError, FormRuleViolationError } from './form'
 export type {
 	FormInstance,
 	RuntimeForm,
@@ -18,5 +18,8 @@ export type {
 	PartyRoleKeys,
 	CaptureOptions,
 	FormBuilderInterface,
+	FillValidationOptions,
+	SafeFillResult,
+	FormValidationResult,
 } from './form'
 export type { LayerRenderOptions } from '../shared/render-layer'

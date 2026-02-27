@@ -245,14 +245,14 @@ const form = open.form({
 
         <h2>Tenants</h2>
         {{#each parties.tenant}}
-        <p>Name: {{fullName}}</p>
+        <p>Name: {{name}}</p>
         <p>Signature: {{signature "final-sig"}}</p>
         <p>Initials: {{initials "page-init"}}</p>
         {{/each}}
 
         <h2>Landlord</h2>
         {{#each parties.landlord.signatories}}
-        <p>{{signer.person.fullName}}, {{capacity}}</p>
+        <p>{{signer.person.name}}, {{capacity}}</p>
         <p>Signature: {{signature "final-sig"}}</p>
         {{/each}}
       `

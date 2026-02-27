@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ContentRefSchema } from './content-ref';
 
 export const ArtifactSchema = z.object({
 	$schema: z.url()
@@ -45,6 +46,12 @@ export const ArtifactSchema = z.object({
 			z.null(),
 		]),
 	).describe('Custom key-value pairs for storing domain-specific or organizational metadata')
+		.optional(),
+	instructions: ContentRefSchema
+		.describe('Domain or compliance reference content (e.g., IRS instructions, regulatory guidance)')
+		.optional(),
+	agentInstructions: ContentRefSchema
+		.describe('LLM/agent prompts for field ordering, grouping, tone, and presentation guidance')
 		.optional(),
 }).meta({
 	title: 'Artifact',

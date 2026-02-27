@@ -1,0 +1,89 @@
+{
+  "name": "@open-form/essentials",
+  "private": true,
+  "version": "0.2.1",
+  "description": "Ready-to-use OpenForm artifacts for common business forms — IRS, NACHA, USCIS, HIPAA, ACORD, and more",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "forms",
+    "artifacts",
+    "irs",
+    "w9",
+    "1099",
+    "nacha",
+    "ach",
+    "uscis",
+    "i9",
+    "hipaa",
+    "acord",
+    "nda",
+    "business-forms"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "OpenForm",
+    "url": "https://open-form.dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "packages/essentials"
+  },
+  "homepage": "https://open-form.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "pnpm run clean",
+    "pack:dry": "pnpm run build && npm pack --dry-run",
+    "prepublishOnly": "pnpm run build",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "check": "pnpm lint && pnpm check-types && echo \"✅ All checks passed\" || echo \"❌ Checks failed\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@open-form/core": "workspace:^",
+    "@open-form/types": "workspace:^"
+  },
+  "devDependencies": {
+    "@open-form/eslint-config": "workspace:*",
+    "@open-form/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

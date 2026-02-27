@@ -43,7 +43,7 @@ export interface FormEvaluationOptions {
 interface EvaluationState {
   fields: Map<string, FieldRuntimeState>
   annexes: Map<string, AnnexRuntimeState>
-  logicValues: Map<string, unknown>
+  defsValues: Map<string, unknown>
   issues: EvaluationIssue[]
 }
 
@@ -135,7 +135,7 @@ function evaluateAnnexes(
  * Evaluates all form expressions and produces runtime state.
  *
  * This function:
- * 1. Builds the evaluation context (field values + logic keys)
+ * 1. Builds the evaluation context (field values + defs keys)
  * 2. Evaluates visible/required/disabled for each field
  * 3. Evaluates visible/required for each annex
  * 4. Returns the complete runtime state
@@ -156,51 +156,51 @@ function evaluateAnnexes(
  *     age: { type: 'number' },
  *     drivingLicense: {
  *       type: 'text',
- *       visible: 'fields.age.value >= 18',
+ *       visible: 'fields.age >= 18',
  *       required: 'isAdult'
  *     }
  *   },
- *   logic: {
+ *   defs: {
  *     isAdult: {
  *       type: 'boolean',
  *       label: 'Adult Status',
- *       value: 'fields.age.value >= 18'
+ *       value: 'fields.age >= 18'
  *     }
  *   }
  * }
  *
- * const result = evaluateFormLogic(form, { fields: { age: 25 } })
+ * const result = evaluateFormDefs(form, { fields: { age: 25 } })
  *
  * if ('value' in result) {
  *   const state = result.value
  *   console.log(state.fields.get('drivingLicense')?.visible) // true
  *   console.log(state.fields.get('drivingLicense')?.required) // true
- *   console.log(state.logicValues.get('isAdult')) // true
+ *   console.log(state.defsValues.get('isAdult')) // true
  * }
  * ```
  */
-export function evaluateFormLogic(
+export function evaluateFormDefs(
   form: Form,
   data: FormDataPayload,
   options: FormEvaluationOptions = {}
 ): FormEvaluationResult {
   try {
-    // Build evaluation context (includes evaluated logic keys)
+    // Build evaluation context (includes evaluated defs keys)
     const context = buildFormContext(form, data)
 
     // Initialize evaluation state
     const state: EvaluationState = {
       fields: new Map(),
       annexes: new Map(),
-      logicValues: new Map(),
+      defsValues: new Map(),
       issues: [],
     }
 
-    // Extract logic values from context
-    if (form.logic) {
-      for (const key of Object.keys(form.logic)) {
+    // Extract defs values from context
+    if (form.defs) {
+      for (const key of Object.keys(form.defs)) {
         const value = (context as Record<string, unknown>)[key]
-        state.logicValues.set(key, value)
+        state.defsValues.set(key, value)
       }
     }
 
@@ -214,7 +214,7 @@ export function evaluateFormLogic(
     const runtimeState: FormRuntimeState = {
       fields: state.fields,
       annexes: state.annexes,
-      logicValues: state.logicValues,
+      defsValues: state.defsValues,
     }
 
     return { value: runtimeState }

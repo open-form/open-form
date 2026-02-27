@@ -19,8 +19,13 @@ export function assertParty(value: unknown): void {
 	}
 
 	// Party is a union, so we check if it matches either Person or Organization pattern
-	const hasPersonFields = 'firstName' in value || 'lastName' in value || 'fullName' in value
-	const hasOrgFields = 'name' in value && !('firstName' in value)
+	const hasOrgFields =
+		'legalName' in value ||
+		'domicile' in value ||
+		'entityType' in value ||
+		'entityId' in value ||
+		'taxId' in value
+	const hasPersonFields = 'firstName' in value || 'lastName' in value || 'name' in value
 
 	if (!hasPersonFields && !hasOrgFields) {
 		throw new Error('Invalid party: must be either a Person or Organization')

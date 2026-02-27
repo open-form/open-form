@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'vitest'
-import { validateFormLogic, validateBundleLogic } from '@/logic/design-time/validation'
+import { validateFormDefs, validateBundleDefs } from '@/logic/design-time/validation'
 import type { Form, Bundle } from '@open-form/types'
 import type { LogicValidationIssue } from '@/logic/design-time/validation/validate-form-logic'
 
 describe('Expression Type Checking', () => {
-	describe('validateFormLogic - type checking', () => {
+	describe('validateFormDefs - type checking', () => {
 		test('passes when visible expression returns boolean (comparison)', () => {
 			const form: Form = {
 				kind: 'form',
@@ -16,12 +16,12 @@ describe('Expression Type Checking', () => {
 					consent: {
 						type: 'boolean',
 						label: 'Consent',
-						visible: 'fields.age.value >= 18',
+						visible: 'fields.age >= 18',
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 			expect('value' in result && result.value).toBeDefined()
 		})
@@ -32,8 +32,8 @@ describe('Expression Type Checking', () => {
 				version: '1.0.0',
 				name: 'test-form',
 				title: 'Test Form',
-				logic: {
-					isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+				defs: {
+					isAdult: { type: 'boolean', value: 'fields.age >= 18' },
 				},
 				fields: {
 					age: { type: 'number', label: 'Age' },
@@ -45,7 +45,7 @@ describe('Expression Type Checking', () => {
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 			expect('value' in result && result.value).toBeDefined()
 		})
@@ -66,7 +66,7 @@ describe('Expression Type Checking', () => {
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -82,17 +82,17 @@ describe('Expression Type Checking', () => {
 					canDrive: {
 						type: 'boolean',
 						label: 'Can Drive',
-						visible: 'fields.age.value >= 16 and fields.hasLicense.value',
+						visible: 'fields.age >= 16 and fields.hasLicense',
 					},
 					needsParent: {
 						type: 'boolean',
 						label: 'Needs Parent',
-						visible: 'not (fields.age.value >= 18)',
+						visible: 'not (fields.age >= 18)',
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -107,12 +107,12 @@ describe('Expression Type Checking', () => {
 					info: {
 						type: 'text',
 						label: 'Info',
-						visible: 'fields.age.value + 10', // Returns number, not boolean
+						visible: 'fields.age + 10', // Returns number, not boolean
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeDefined()
 			expect(result.issues?.length).toBeGreaterThan(0)
 
@@ -134,13 +134,13 @@ describe('Expression Type Checking', () => {
 					info: {
 						type: 'text',
 						label: 'Info',
-						// Text field .value returns string, not boolean
-						required: 'fields.name.value',
+						// Text field returns string, not boolean
+						required: 'fields.name',
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeDefined()
 
 			const issue = result.issues?.[0] as LogicValidationIssue
@@ -154,9 +154,9 @@ describe('Expression Type Checking', () => {
 				version: '1.0.0',
 				name: 'test-form',
 				title: 'Test Form',
-				logic: {
+				defs: {
 					// This logic key returns a number, not boolean
-					ageCalc: { type: 'boolean', value: 'fields.age.value + 10' },
+					ageCalc: { type: 'boolean', value: 'fields.age + 10' },
 				},
 				fields: {
 					age: { type: 'number', label: 'Age' },
@@ -169,7 +169,7 @@ describe('Expression Type Checking', () => {
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeDefined()
 
 			const issue = result.issues?.[0] as LogicValidationIssue
@@ -183,9 +183,9 @@ describe('Expression Type Checking', () => {
 				version: '1.0.0',
 				name: 'test-form',
 				title: 'Test Form',
-				logic: {
-					isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
-					isVeryOld: { type: 'boolean', value: 'fields.age.value >= 65' },
+				defs: {
+					isAdult: { type: 'boolean', value: 'fields.age >= 18' },
+					isVeryOld: { type: 'boolean', value: 'fields.age >= 65' },
 					needsSpecialForm: { type: 'boolean', value: 'isAdult and isVeryOld' },
 				},
 				fields: {
@@ -198,7 +198,7 @@ describe('Expression Type Checking', () => {
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -220,7 +220,7 @@ describe('Expression Type Checking', () => {
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			// Should have issues (unknown variable + type warning)
 			expect(result.issues).toBeDefined()
 			expect(result.issues?.length).toBeGreaterThan(0)
@@ -245,19 +245,19 @@ describe('Expression Type Checking', () => {
 							city: {
 								type: 'text',
 								label: 'City',
-								visible: 'fields.age.value >= 18', // Valid boolean
+								visible: 'fields.age >= 18', // Valid boolean
 							},
 							state: {
 								type: 'text',
 								label: 'State',
-								visible: 'fields.age.value + 1', // Invalid - returns number
+								visible: 'fields.age + 1', // Invalid - returns number
 							},
 						},
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeDefined()
 
 			// Should have error for the state field
@@ -280,16 +280,16 @@ describe('Expression Type Checking', () => {
 				annexes: {
 					receipt: {
 						title: 'Receipt',
-						required: 'fields.amount.value > 100', // Valid boolean
+						required: 'fields.amount > 100', // Valid boolean
 					},
 					invoice: {
 						title: 'Invoice',
-						visible: 'fields.amount.value * 2', // Invalid - returns number
+						visible: 'fields.amount * 2', // Invalid - returns number
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeDefined()
 
 			const invoiceIssue = result.issues?.find(
@@ -300,7 +300,7 @@ describe('Expression Type Checking', () => {
 		})
 	})
 
-	describe('validateBundleLogic - type checking', () => {
+	describe('validateBundleDefs - type checking', () => {
 		test('passes when include expression returns boolean', () => {
 			const form: Form = {
 				kind: 'form',
@@ -317,8 +317,8 @@ describe('Expression Type Checking', () => {
 				version: '1.0.0',
 				name: 'test-bundle',
 				title: 'Test Bundle',
-				logic: {
-					isHighValue: { type: 'boolean', value: 'forms.main.fields.amount.value > 1000' },
+				defs: {
+					isHighValue: { type: 'boolean', value: 'forms.main.fields.amount > 1000' },
 				},
 				contents: [
 					{ type: 'inline', key: 'main', artifact: form },
@@ -326,7 +326,7 @@ describe('Expression Type Checking', () => {
 				],
 			}
 
-			const result = validateBundleLogic(bundle)
+			const result = validateBundleDefs(bundle)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -346,9 +346,9 @@ describe('Expression Type Checking', () => {
 				version: '1.0.0',
 				name: 'test-bundle',
 				title: 'Test Bundle',
-				logic: {
+				defs: {
 					// This returns a number, not boolean
-					amountCalc: { type: 'boolean', value: 'forms.main.fields.amount.value + 100' },
+					amountCalc: { type: 'boolean', value: 'forms.main.fields.amount + 100' },
 				},
 				contents: [
 					{ type: 'inline', key: 'main', artifact: form },
@@ -356,7 +356,7 @@ describe('Expression Type Checking', () => {
 				],
 			}
 
-			const result = validateBundleLogic(bundle)
+			const result = validateBundleDefs(bundle)
 			expect(result.issues).toBeDefined()
 
 			const issue = result.issues?.find(
@@ -380,12 +380,12 @@ describe('Expression Type Checking', () => {
 					isPositive: {
 						type: 'boolean',
 						label: 'Is Positive',
-						visible: 'fields.count.value > 0', // number comparison -> boolean
+						visible: 'fields.count > 0', // number comparison -> boolean
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -402,12 +402,12 @@ describe('Expression Type Checking', () => {
 						type: 'boolean',
 						label: 'Has Name',
 						// String comparison returns boolean
-						visible: 'fields.name.value != ""',
+						visible: 'fields.name != ""',
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 
@@ -423,12 +423,12 @@ describe('Expression Type Checking', () => {
 						type: 'text',
 						label: 'Info',
 						// Boolean field value is already boolean
-						visible: 'fields.accepted.value',
+						visible: 'fields.accepted',
 					},
 				},
 			}
 
-			const result = validateFormLogic(form)
+			const result = validateFormDefs(form)
 			expect(result.issues).toBeUndefined()
 		})
 	})
@@ -445,22 +445,22 @@ describe('Expression Type Checking', () => {
 					field1: {
 						type: 'text',
 						label: 'Field 1',
-						visible: 'fields.age.value + 1', // Error 1
+						visible: 'fields.age + 1', // Error 1
 					},
 					field2: {
 						type: 'text',
 						label: 'Field 2',
-						visible: 'fields.age.value * 2', // Error 2
+						visible: 'fields.age * 2', // Error 2
 					},
 					field3: {
 						type: 'text',
 						label: 'Field 3',
-						required: 'fields.age.value - 5', // Error 3
+						required: 'fields.age - 5', // Error 3
 					},
 				},
 			}
 
-			const result = validateFormLogic(form, { collectAllErrors: true })
+			const result = validateFormDefs(form, { collectAllErrors: true })
 			expect(result.issues).toBeDefined()
 			// Should have collected all 3 type errors
 			expect(result.issues?.length).toBeGreaterThanOrEqual(3)
@@ -477,17 +477,17 @@ describe('Expression Type Checking', () => {
 					field1: {
 						type: 'text',
 						label: 'Field 1',
-						visible: 'fields.age.value + 1', // Error 1
+						visible: 'fields.age + 1', // Error 1
 					},
 					field2: {
 						type: 'text',
 						label: 'Field 2',
-						visible: 'fields.age.value * 2', // Error 2
+						visible: 'fields.age * 2', // Error 2
 					},
 				},
 			}
 
-			const result = validateFormLogic(form, { collectAllErrors: false })
+			const result = validateFormDefs(form, { collectAllErrors: false })
 			expect(result.issues).toBeDefined()
 			// Should stop at first error
 			expect(result.issues?.length).toBe(1)

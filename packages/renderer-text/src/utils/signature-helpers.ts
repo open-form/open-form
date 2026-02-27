@@ -17,12 +17,12 @@
  * Example template:
  * ```handlebars
  * {{#each parties.tenant}}
- * Name: {{fullName}}
+ * Name: {{name}}
  * Signature: {{signature "final-sig"}}
  * {{/each}}
  *
  * {{#each parties.landlord.signatories}}
- * {{signer.person.fullName}}, {{capacity}}
+ * {{signer.person.name}}, {{capacity}}
  * Signature: {{signature "final-sig"}}
  * {{/each}}
  * ```
@@ -53,6 +53,8 @@ export interface TextSignatureOptions {
     signature?: SignaturePlaceholderValue
     /** Placeholder for initials. String or function. */
     initials?: SignaturePlaceholderValue
+    /** Placeholder for signature date. String or function. */
+    signatureDate?: SignaturePlaceholderValue
   }
 
   /** Captured options (after capture) */
@@ -61,6 +63,8 @@ export interface TextSignatureOptions {
     signature?: SignatureCapturedValue
     /** Text/rendering for captured initials. String or function. */
     initials?: SignatureCapturedValue
+    /** Text/rendering for captured signature date. String or function. */
+    signatureDate?: SignatureCapturedValue
   }
 
   /** Alt text for signature images (html format only) */
@@ -69,10 +73,11 @@ export interface TextSignatureOptions {
   cssClass?: string
 }
 
-const DEFAULT_PLACEHOLDER_SIGNATURE = '[SIGNATURE REQUIRED]'
-const DEFAULT_PLACEHOLDER_INITIALS = '[INITIALS REQUIRED]'
-const DEFAULT_CAPTURED_SIGNATURE = '[Signature captured]'
-const DEFAULT_CAPTURED_INITIALS = '[Initials captured]'
+const DEFAULT_PLACEHOLDER_SIGNATURE = '[SIGNATURE]'
+const DEFAULT_PLACEHOLDER_INITIALS = '[INITIALS]'
+const DEFAULT_PLACEHOLDER_DATE = '[DATE]'
+const DEFAULT_CAPTURED_SIGNATURE = '[Signed]'
+const DEFAULT_CAPTURED_INITIALS = '[Initialed]'
 
 /**
  * Augmented party type with _role and signatories
@@ -328,12 +333,12 @@ function renderAsMarkdown(
  * @example
  * ```handlebars
  * {{#each parties.tenant}}
- * Name: {{fullName}}
+ * Name: {{name}}
  * Signature: {{signature "final-sig"}}
  * {{/each}}
  *
  * {{#each parties.landlord.signatories}}
- * {{signer.person.fullName}}, {{capacity}}
+ * {{signer.person.name}}, {{capacity}}
  * Signature: {{signature "final-sig"}}
  * {{/each}}
  * ```
@@ -501,7 +506,114 @@ export function createInitialsHelper(options: TextSignatureOptions = {}): Helper
 }
 
 /**
- * Register signature and initials helpers with a Handlebars instance
+ * Create the signatureDate helper function (1-argument pattern)
+ *
+ * Template usage: {{signatureDate "locationId"}}
+ *
+ * Renders the date a signature was captured, or a placeholder if not yet signed.
+ * Looks for a capture of type 'signature' at the locationId (date accompanies signature).
+ *
+ * @example
+ * ```handlebars
+ * {{#each parties.tenant}}
+ * Signed: {{signatureDate "final-sig"}}
+ * {{/each}}
+ * ```
+ */
+export function createSignatureDateHelper(options: TextSignatureOptions = {}): HelperDelegate {
+  return function (
+    this: Record<string, unknown>,
+    locationId: string,
+    handlebarsOptions?: { data?: { root?: Record<string, unknown> } }
+  ): string {
+    if (typeof locationId !== 'string') {
+      return '[Invalid signatureDate helper: expected (locationId)]'
+    }
+
+    const sigCtx = extractSignatureContext(this)
+    if (!sigCtx) {
+      return '[SignatureDate helper error: could not determine context. Use inside party or signatories loop.]'
+    }
+
+    if (!sigCtx.signerId) {
+      // No signatory assigned - render placeholder
+      const ctx: SignaturePlaceholderContext = {
+        role: sigCtx.role,
+        partyId: sigCtx.partyId,
+        signerId: '',
+        locationId,
+        party: sigCtx.party,
+        signer: undefined,
+        capacity: undefined,
+      }
+      const placeholderValue = options.placeholder?.signatureDate
+      return resolveValue(placeholderValue, ctx, DEFAULT_PLACEHOLDER_DATE)
+    }
+
+    const rootContext = handlebarsOptions?.data?.root ?? this
+
+    // Find a signature capture at this location (date accompanies signature)
+    const capture = findCapture(
+      rootContext._captures as SignatureCapture[] | undefined,
+      sigCtx.role,
+      sigCtx.partyId,
+      sigCtx.signerId,
+      locationId,
+      'signature'
+    )
+
+    const signer = sigCtx.signer ?? getSigner(rootContext._signers as Record<string, Signer> | undefined, sigCtx.signerId)
+
+    const ctx: SignaturePlaceholderContext = {
+      role: sigCtx.role,
+      partyId: sigCtx.partyId,
+      signerId: sigCtx.signerId,
+      locationId,
+      party: sigCtx.party,
+      signer,
+      capacity: sigCtx.capacity,
+    }
+
+    if (capture) {
+      const capturedCtx: SignatureCapturedContext = {
+        ...ctx,
+        capture,
+      }
+
+      // Default: extract date portion from ISO timestamp
+      const defaultDate = capture.timestamp ? capture.timestamp.slice(0, 10) : '[DATE]'
+
+      const capturedValue = options.captured?.signatureDate
+      if (capturedValue !== undefined) {
+        return resolveValue(capturedValue, capturedCtx, defaultDate)
+      }
+
+      // Format based on output format
+      switch (options.format) {
+        case 'html':
+          return `<span class="signature-date" data-role="${ctx.role}" data-party-id="${ctx.partyId}" data-signer-id="${ctx.signerId}" data-location-id="${ctx.locationId}">${defaultDate}</span>`
+        case 'markdown':
+          return defaultDate
+        default:
+          return defaultDate
+      }
+    }
+
+    // No capture - render placeholder
+    const placeholderValue = options.placeholder?.signatureDate
+    switch (options.format) {
+      case 'html':
+        return `<span class="signature-date-placeholder" data-role="${ctx.role}" data-party-id="${ctx.partyId}" data-signer-id="${ctx.signerId}" data-location-id="${ctx.locationId}">${resolveValue(placeholderValue, ctx, DEFAULT_PLACEHOLDER_DATE)}</span>`
+      case 'markdown':
+        return resolveValue(placeholderValue, ctx, DEFAULT_PLACEHOLDER_DATE)
+      default:
+        return resolveValue(placeholderValue, ctx, DEFAULT_PLACEHOLDER_DATE)
+    }
+  }
+}
+
+/**
+ * Register signature, initials, and signatureDate helpers with a Handlebars instance
  */
 export function registerSignatureHelpers(
   handlebars: typeof Handlebars,
@@ -509,4 +621,5 @@ export function registerSignatureHelpers(
 ): void {
   handlebars.registerHelper('signature', createSignatureHelper(options))
   handlebars.registerHelper('initials', createInitialsHelper(options))
+  handlebars.registerHelper('signatureDate', createSignatureDateHelper(options))
 }

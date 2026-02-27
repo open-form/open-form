@@ -4,15 +4,15 @@
   "type": "object",
   "properties": {
     "amount": {
-      "description": "Monetary amount in the smallest currency unit (e.g., cents for USD) or as a decimal (e.g., 99.99 for USD). Negative values allowed for debts/credits",
-      "type": "number"
+      "type": "number",
+      "description": "Monetary amount in the smallest currency unit (e.g., cents for USD) or as a decimal (e.g., 99.99 for USD). Negative values allowed for debts/credits"
     },
     "currency": {
-      "description": "ISO 4217 alpha-3 currency code (e.g., USD, EUR, GBP)",
       "type": "string",
       "minLength": 3,
       "maxLength": 3,
-      "pattern": "^[A-Z]{3}$"
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 alpha-3 currency code (e.g., USD, EUR, GBP)"
     }
   },
   "required": [

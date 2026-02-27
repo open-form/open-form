@@ -241,6 +241,108 @@ describe('Form', () => {
           expect(result.metadata?.author).toBe('John Doe')
         })
 
+        test('creates form with inline instructions', () => {
+          const input: Form = {
+            kind: 'form',
+            version: '1.0.0',
+            name: 'form-inline-instructions',
+            title: 'Form with Inline Instructions',
+            instructions: {
+              kind: 'inline',
+              text: 'Complete all fields before submitting. Refer to IRS Publication 15 for guidance.',
+            },
+          }
+          const result = form(input)
+          expect(result.instructions?.kind).toBe('inline')
+          if (result.instructions?.kind === 'inline') {
+            expect(result.instructions.text).toContain('IRS Publication 15')
+          }
+        })
+
+        test('creates form with file instructions', () => {
+          const input: Form = {
+            kind: 'form',
+            version: '1.0.0',
+            name: 'form-file-instructions',
+            title: 'Form with File Instructions',
+            instructions: {
+              kind: 'file',
+              path: './instructions/w9-instructions.pdf',
+              mimeType: 'application/pdf',
+              title: 'W-9 Instructions',
+              description: 'Official IRS instructions for Form W-9',
+              checksum: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            },
+          }
+          const result = form(input)
+          expect(result.instructions?.kind).toBe('file')
+          if (result.instructions?.kind === 'file') {
+            expect(result.instructions.path).toBe('./instructions/w9-instructions.pdf')
+            expect(result.instructions.mimeType).toBe('application/pdf')
+            expect(result.instructions.title).toBe('W-9 Instructions')
+            expect(result.instructions.checksum).toMatch(/^sha256:[a-f0-9]{64}$/)
+          }
+        })
+
+        test('creates form with inline agentInstructions', () => {
+          const input: Form = {
+            kind: 'form',
+            version: '1.0.0',
+            name: 'form-inline-agent',
+            title: 'Form with Agent Instructions',
+            agentInstructions: {
+              kind: 'inline',
+              text: 'Ask for SSN first, then name. Group address fields together. Use formal tone.',
+            },
+          }
+          const result = form(input)
+          expect(result.agentInstructions?.kind).toBe('inline')
+          if (result.agentInstructions?.kind === 'inline') {
+            expect(result.agentInstructions.text).toContain('formal tone')
+          }
+        })
+
+        test('creates form with file agentInstructions', () => {
+          const input: Form = {
+            kind: 'form',
+            version: '1.0.0',
+            name: 'form-file-agent',
+            title: 'Form with File Agent Instructions',
+            agentInstructions: {
+              kind: 'file',
+              path: './prompts/agent-guide.md',
+              mimeType: 'text/markdown',
+            },
+          }
+          const result = form(input)
+          expect(result.agentInstructions?.kind).toBe('file')
+          if (result.agentInstructions?.kind === 'file') {
+            expect(result.agentInstructions.path).toBe('./prompts/agent-guide.md')
+            expect(result.agentInstructions.mimeType).toBe('text/markdown')
+          }
+        })
+
+        test('creates form with both instructions and agentInstructions', () => {
+          const input: Form = {
+            kind: 'form',
+            version: '1.0.0',
+            name: 'form-both-instructions',
+            title: 'Form with Both Instruction Types',
+            instructions: {
+              kind: 'file',
+              path: './instructions/regulatory-guide.pdf',
+              mimeType: 'application/pdf',
+            },
+            agentInstructions: {
+              kind: 'inline',
+              text: 'Present fields in order: identification, contact, financial.',
+            },
+          }
+          const result = form(input)
+          expect(result.instructions?.kind).toBe('file')
+          expect(result.agentInstructions?.kind).toBe('inline')
+        })
+
         test('creates form with all properties (except releaseDate)', () => {
           const input: Form = {
             kind: 'form',
@@ -854,6 +956,98 @@ describe('Form', () => {
             .build()
           expect(result.metadata?.version).toBe('1.0')
           expect(result.metadata?.author).toBe('John Doe')
+        })
+
+        test('builds form with inline instructions', () => {
+          const result = form()
+            .name('form-inline-instructions')
+            .version('1.0.0')
+            .title('Form with Inline Instructions')
+            .instructions({
+              kind: 'inline',
+              text: 'Complete all fields before submitting. Refer to IRS Publication 15 for guidance.',
+            })
+            .build()
+          expect(result.instructions?.kind).toBe('inline')
+          if (result.instructions?.kind === 'inline') {
+            expect(result.instructions.text).toContain('IRS Publication 15')
+          }
+        })
+
+        test('builds form with file instructions', () => {
+          const result = form()
+            .name('form-file-instructions')
+            .version('1.0.0')
+            .title('Form with File Instructions')
+            .instructions({
+              kind: 'file',
+              path: './instructions/w9-instructions.pdf',
+              mimeType: 'application/pdf',
+              title: 'W-9 Instructions',
+              description: 'Official IRS instructions for Form W-9',
+              checksum: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            })
+            .build()
+          expect(result.instructions?.kind).toBe('file')
+          if (result.instructions?.kind === 'file') {
+            expect(result.instructions.path).toBe('./instructions/w9-instructions.pdf')
+            expect(result.instructions.mimeType).toBe('application/pdf')
+            expect(result.instructions.title).toBe('W-9 Instructions')
+            expect(result.instructions.checksum).toMatch(/^sha256:[a-f0-9]{64}$/)
+          }
+        })
+
+        test('builds form with inline agentInstructions', () => {
+          const result = form()
+            .name('form-inline-agent')
+            .version('1.0.0')
+            .title('Form with Agent Instructions')
+            .agentInstructions({
+              kind: 'inline',
+              text: 'Ask for SSN first, then name. Group address fields together. Use formal tone.',
+            })
+            .build()
+          expect(result.agentInstructions?.kind).toBe('inline')
+          if (result.agentInstructions?.kind === 'inline') {
+            expect(result.agentInstructions.text).toContain('formal tone')
+          }
+        })
+
+        test('builds form with file agentInstructions', () => {
+          const result = form()
+            .name('form-file-agent')
+            .version('1.0.0')
+            .title('Form with File Agent Instructions')
+            .agentInstructions({
+              kind: 'file',
+              path: './prompts/agent-guide.md',
+              mimeType: 'text/markdown',
+            })
+            .build()
+          expect(result.agentInstructions?.kind).toBe('file')
+          if (result.agentInstructions?.kind === 'file') {
+            expect(result.agentInstructions.path).toBe('./prompts/agent-guide.md')
+            expect(result.agentInstructions.mimeType).toBe('text/markdown')
+          }
+        })
+
+        test('builds form with both instructions and agentInstructions', () => {
+          const result = form()
+            .name('form-both-instructions')
+            .version('1.0.0')
+            .title('Form with Both Instruction Types')
+            .instructions({
+              kind: 'file',
+              path: './instructions/regulatory-guide.pdf',
+              mimeType: 'application/pdf',
+            })
+            .agentInstructions({
+              kind: 'inline',
+              text: 'Present fields in order: identification, contact, financial.',
+            })
+            .build()
+          expect(result.instructions?.kind).toBe('file')
+          expect(result.agentInstructions?.kind).toBe('inline')
         })
 
         test('builds form with all properties (except releaseDate)', () => {

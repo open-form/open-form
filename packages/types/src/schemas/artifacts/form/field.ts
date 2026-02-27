@@ -25,9 +25,9 @@ import type {
 export interface BaseField {
   /** Human-readable label for the field. */
   label?: string;
-  /** Whether this field is required. Can be a boolean or logic expression. */
+  /** Whether this field is required. Can be a boolean or expression. */
   required?: boolean | string;
-  /** Whether this field is visible. Can be a boolean or logic expression. Defaults to true. */
+  /** Whether this field is visible. Can be a boolean or expression. Defaults to true. */
   visible?: boolean | string;
   /** Long-form description or helper text displayed in the UI. */
   description?: string;
@@ -237,7 +237,7 @@ export interface EnumField extends BaseField {
   /** Discriminator for enum field type. */
   type: "enum";
   /** Available options for selection. */
-  enum: (string | number)[];
+  enum: readonly (string | number)[];
   /** Default value for the field. */
   default?: string | number;
 }
@@ -311,7 +311,7 @@ export interface IdentificationField extends BaseField {
   /** Discriminator for identification field type. */
   type: "identification";
   /** Allowed identification document types. */
-  allowedTypes?: string[];
+  allowedTypes?: readonly string[];
   /** Default value for the field. */
   default?: Identification;
 }
@@ -323,13 +323,13 @@ export interface MultiselectField extends BaseField {
   /** Discriminator for multiselect field type. */
   type: "multiselect";
   /** Available options for selection. */
-  enum: (string | number)[];
+  enum: readonly (string | number)[];
   /** Minimum number of selections required. */
   min?: number;
   /** Maximum number of selections allowed. */
   max?: number;
   /** Default value for the field. */
-  default?: (string | number)[];
+  default?: readonly (string | number)[];
 }
 
 /**

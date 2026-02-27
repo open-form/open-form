@@ -23,7 +23,7 @@ describe("renderText", () => {
       currency: "USD",
     },
     ownerName: {
-      fullName: "Jane Smith",
+      name: "Jane Smith",
       title: "Dr.",
       firstName: "Jane",
       lastName: "Smith",

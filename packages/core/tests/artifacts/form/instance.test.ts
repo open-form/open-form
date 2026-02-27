@@ -121,6 +121,80 @@ describe('FormInstance', () => {
       expect(instance.metadata).toEqual({})
     })
 
+    test('returns inline instructions when set', () => {
+      const instance = form()
+        .name('with-instructions')
+        .version('1.0.0')
+        .title('With Instructions')
+        .instructions({ kind: 'inline', text: 'Follow these steps carefully.' })
+        .build()
+      expect(instance.instructions).toBeDefined()
+      expect(instance.instructions?.kind).toBe('inline')
+      if (instance.instructions?.kind === 'inline') {
+        expect(instance.instructions.text).toBe('Follow these steps carefully.')
+      }
+    })
+
+    test('returns file instructions when set', () => {
+      const instance = form()
+        .name('with-file-instructions')
+        .version('1.0.0')
+        .title('With File Instructions')
+        .instructions({
+          kind: 'file',
+          path: './instructions/guide.pdf',
+          mimeType: 'application/pdf',
+        })
+        .build()
+      expect(instance.instructions?.kind).toBe('file')
+      if (instance.instructions?.kind === 'file') {
+        expect(instance.instructions.path).toBe('./instructions/guide.pdf')
+      }
+    })
+
+    test('returns undefined instructions when not set', () => {
+      const instance = createMinimalForm()
+      expect(instance.instructions).toBeUndefined()
+    })
+
+    test('returns inline agentInstructions when set', () => {
+      const instance = form()
+        .name('with-agent-instructions')
+        .version('1.0.0')
+        .title('With Agent Instructions')
+        .agentInstructions({ kind: 'inline', text: 'Use formal tone. Group fields logically.' })
+        .build()
+      expect(instance.agentInstructions).toBeDefined()
+      expect(instance.agentInstructions?.kind).toBe('inline')
+      if (instance.agentInstructions?.kind === 'inline') {
+        expect(instance.agentInstructions.text).toBe('Use formal tone. Group fields logically.')
+      }
+    })
+
+    test('returns file agentInstructions when set', () => {
+      const instance = form()
+        .name('with-file-agent')
+        .version('1.0.0')
+        .title('With File Agent')
+        .agentInstructions({
+          kind: 'file',
+          path: './prompts/agent.md',
+          mimeType: 'text/markdown',
+          title: 'Agent Prompt',
+        })
+        .build()
+      expect(instance.agentInstructions?.kind).toBe('file')
+      if (instance.agentInstructions?.kind === 'file') {
+        expect(instance.agentInstructions.path).toBe('./prompts/agent.md')
+        expect(instance.agentInstructions.title).toBe('Agent Prompt')
+      }
+    })
+
+    test('returns undefined agentInstructions when not set', () => {
+      const instance = createMinimalForm()
+      expect(instance.agentInstructions).toBeUndefined()
+    })
+
     test('returns fields when set', () => {
       const instance = createFormWithFields()
       expect(instance.fields).toBeDefined()

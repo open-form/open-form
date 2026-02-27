@@ -80,7 +80,7 @@ export interface SerializerRegistry {
     | Person
     | Partial<Person>
     | {
-        fullName?: string;
+        name?: string;
         title?: string;
         firstName?: string;
         middleName?: string;

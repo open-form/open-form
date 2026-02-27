@@ -17,10 +17,10 @@ describe('expression-evaluator', () => {
 
   const createSimpleContext = (): EvaluationContext => ({
     fields: {
-      age: { value: 25 },
-      name: { value: 'John' },
-      agreed: { value: true },
-      score: { value: 85 },
+      age: 25,
+      name: 'John',
+      agreed: true,
+      score: 85,
     },
     isAdult: true,
     hasLicense: false,
@@ -29,12 +29,12 @@ describe('expression-evaluator', () => {
   const createNestedContext = (): EvaluationContext => ({
     fields: {
       person: {
-        name: { value: 'Jane' },
-        age: { value: 30 },
+        name: 'Jane',
+        age: 30,
       },
       address: {
-        street: { value: '123 Main St' },
-        city: { value: 'NYC' },
+        street: '123 Main St',
+        city: 'NYC',
       },
     },
   })
@@ -47,28 +47,28 @@ describe('expression-evaluator', () => {
     describe('arithmetic operations', () => {
       test('evaluates addition', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<number>('fields.age.value + 10', context)
+        const result = evaluateExpression<number>('fields.age + 10', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(35)
       })
 
       test('evaluates subtraction', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<number>('fields.score.value - 10', context)
+        const result = evaluateExpression<number>('fields.score - 10', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(75)
       })
 
       test('evaluates multiplication', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<number>('fields.age.value * 2', context)
+        const result = evaluateExpression<number>('fields.age * 2', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(50)
       })
 
       test('evaluates division', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<number>('fields.score.value / 5', context)
+        const result = evaluateExpression<number>('fields.score / 5', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(17)
       })
@@ -77,35 +77,35 @@ describe('expression-evaluator', () => {
     describe('comparison operations', () => {
       test('evaluates greater than', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('fields.age.value > 18', context)
+        const result = evaluateExpression<boolean>('fields.age > 18', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
 
       test('evaluates greater than or equal', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('fields.age.value >= 25', context)
+        const result = evaluateExpression<boolean>('fields.age >= 25', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
 
       test('evaluates less than', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('fields.age.value < 30', context)
+        const result = evaluateExpression<boolean>('fields.age < 30', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
 
       test('evaluates equality', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('fields.age.value == 25', context)
+        const result = evaluateExpression<boolean>('fields.age == 25', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
 
       test('evaluates inequality', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('fields.age.value != 30', context)
+        const result = evaluateExpression<boolean>('fields.age != 30', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
@@ -114,7 +114,7 @@ describe('expression-evaluator', () => {
     describe('logical operations', () => {
       test('evaluates and', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression<boolean>('isAdult and fields.agreed.value', context)
+        const result = evaluateExpression<boolean>('isAdult and fields.agreed', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(true)
       })
@@ -136,7 +136,7 @@ describe('expression-evaluator', () => {
       test('evaluates complex logical expression', () => {
         const context = createSimpleContext()
         const result = evaluateExpression<boolean>(
-          '(isAdult and fields.agreed.value) or hasLicense',
+          '(isAdult and fields.agreed) or hasLicense',
           context
         )
         expect(result.success).toBe(true)
@@ -147,14 +147,14 @@ describe('expression-evaluator', () => {
     describe('member access', () => {
       test('accesses nested field values', () => {
         const context = createNestedContext()
-        const result = evaluateExpression<string>('fields.address.street.value', context)
+        const result = evaluateExpression<string>('fields.address.street', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe('123 Main St')
       })
 
       test('accesses deeply nested values', () => {
         const context = createNestedContext()
-        const result = evaluateExpression<number>('fields.person.age.value', context)
+        const result = evaluateExpression<number>('fields.person.age', context)
         expect(result.success).toBe(true)
         expect(result.value).toBe(30)
       })
@@ -179,15 +179,23 @@ describe('expression-evaluator', () => {
     describe('error handling', () => {
       test('returns error for syntax error', () => {
         const context = createSimpleContext()
-        const result = evaluateExpression('fields.age.value >=', context)
+        const result = evaluateExpression('fields.age >=', context)
         expect(result.success).toBe(false)
         expect(result.error).toBeDefined()
       })
 
-      test('returns error for missing variable access', () => {
+      test('returns undefined for missing field access', () => {
         const context = createSimpleContext()
-        // Accessing .value on undefined throws at runtime
-        const result = evaluateExpression('fields.missing.value', context)
+        // Accessing a missing field returns undefined (not an error)
+        const result = evaluateExpression('fields.missing', context)
+        expect(result.success).toBe(true)
+        expect(result.value).toBe(undefined)
+      })
+
+      test('returns error for deep missing property access', () => {
+        const context = createSimpleContext()
+        // Accessing a nested property on undefined throws
+        const result = evaluateExpression('fields.missing.nested', context)
         expect(result.success).toBe(false)
         expect(result.error).toBeDefined()
       })
@@ -237,7 +245,7 @@ describe('expression-evaluator', () => {
     describe('string expression evaluation', () => {
       test('evaluates simple expression', () => {
         const context = createSimpleContext()
-        const result = evaluateBooleanExpression('fields.age.value >= 18', context, false)
+        const result = evaluateBooleanExpression('fields.age >= 18', context, false)
         expect(result).toBe(true)
       })
 
@@ -250,7 +258,7 @@ describe('expression-evaluator', () => {
       test('evaluates complex expression', () => {
         const context = createSimpleContext()
         const result = evaluateBooleanExpression(
-          'isAdult and fields.agreed.value',
+          'isAdult and fields.agreed',
           context,
           false
         )
@@ -261,21 +269,21 @@ describe('expression-evaluator', () => {
     describe('truthy coercion', () => {
       test('coerces truthy string to true', () => {
         const context = createSimpleContext()
-        const result = evaluateBooleanExpression('fields.name.value', context, false)
+        const result = evaluateBooleanExpression('fields.name', context, false)
         expect(result).toBe(true) // "John" is truthy
       })
 
       test('coerces truthy number to true', () => {
         const context = createSimpleContext()
-        const result = evaluateBooleanExpression('fields.age.value', context, false)
+        const result = evaluateBooleanExpression('fields.age', context, false)
         expect(result).toBe(true) // 25 is truthy
       })
 
       test('coerces zero to false', () => {
         const context: EvaluationContext = {
-          fields: { count: { value: 0 } },
+          fields: { count: 0 },
         }
-        const result = evaluateBooleanExpression('fields.count.value', context, true)
+        const result = evaluateBooleanExpression('fields.count', context, true)
         expect(result).toBe(false) // 0 is falsy
       })
     })
@@ -302,7 +310,7 @@ describe('expression-evaluator', () => {
   describe('evaluateExpressionOrDefault', () => {
     test('returns evaluated value on success', () => {
       const context = createSimpleContext()
-      const result = evaluateExpressionOrDefault('fields.age.value + 5', context, 0)
+      const result = evaluateExpressionOrDefault('fields.age + 5', context, 0)
       expect(result).toBe(30)
     })
 
@@ -314,8 +322,8 @@ describe('expression-evaluator', () => {
 
     test('returns default when expression fails', () => {
       const context = createSimpleContext()
-      // Accessing .value on undefined fails, so default is returned
-      const result = evaluateExpressionOrDefault('fields.missing.value', context, 'default')
+      // Accessing a nested property on undefined fails, so default is returned
+      const result = evaluateExpressionOrDefault('fields.missing.nested', context, 'default')
       expect(result).toBe('default')
     })
   })
@@ -329,9 +337,9 @@ describe('expression-evaluator', () => {
       const context = createSimpleContext()
       const { results, errors } = evaluateMultipleExpressions(
         {
-          isOldEnough: 'fields.age.value >= 18',
-          hasAgreed: 'fields.agreed.value',
-          combinedScore: 'fields.score.value + 15',
+          isOldEnough: 'fields.age >= 18',
+          hasAgreed: 'fields.agreed',
+          combinedScore: 'fields.score + 15',
         },
         context
       )
@@ -346,7 +354,7 @@ describe('expression-evaluator', () => {
       const context = createSimpleContext()
       const { results, errors } = evaluateMultipleExpressions(
         {
-          valid: 'fields.age.value >= 18',
+          valid: 'fields.age >= 18',
           invalid: 'syntax error ((',
         },
         context
@@ -369,7 +377,7 @@ describe('expression-evaluator', () => {
     })
 
     test('returns true for string', () => {
-      expect(isCondExpr('fields.age.value >= 18')).toBe(true)
+      expect(isCondExpr('fields.age >= 18')).toBe(true)
       expect(isCondExpr('')).toBe(true)
     })
 

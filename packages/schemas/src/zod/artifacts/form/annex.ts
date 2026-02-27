@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CondExprSchema } from '../logic/cond-expr';
+import { CondExprSchema } from '../expressions/cond-expr';
 
 export const FormAnnexSchema = z.object({
 	title: z.string()

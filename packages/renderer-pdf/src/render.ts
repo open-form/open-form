@@ -2,7 +2,7 @@
  * Pure function to render PDF templates using pdf-lib
  */
 
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, PDFCheckBox, PDFRadioGroup, PDFTextField } from 'pdf-lib'
 import type { Form, FormField, BinaryContent, SerializerRegistry } from '@open-form/types'
 import { usaSerializers, preprocessFieldData } from '@open-form/serialization'
 import { createSerializedFieldWrapper } from './utils/field-serializer'
@@ -145,19 +145,18 @@ export async function renderPdf({
 
           if (value == null) continue
 
-          // Get the root field name for field definition lookup
-          const rootFieldName = fieldName.split('.')[0] ?? fieldName
-          const fieldDef = rootFieldName ? form.fields?.[rootFieldName] : undefined
+          // Determine how to write based on the actual PDF field type,
+          // not the schema field type. This handles cases like an enum
+          // field bound to a text input (e.g., LLC classification on W-9).
+          const pdfField = acroForm.getField(pdfFieldName)
 
-          // Boolean values: always use checkbox
-          if (typeof value === 'boolean' || fieldDef?.type === 'boolean') {
-            const checkbox = acroForm.getCheckBox(pdfFieldName)
-            if (value) checkbox.check()
-            else checkbox.uncheck()
-          } else {
-            // Text field: includes both simple values and wrapped complex types (via toString())
-            const textField = acroForm.getTextField(pdfFieldName)
-            textField.setText(String(value))
+          if (pdfField instanceof PDFCheckBox) {
+            if (value) pdfField.check()
+            else pdfField.uncheck()
+          } else if (pdfField instanceof PDFRadioGroup) {
+            pdfField.select(String(value))
+          } else if (pdfField instanceof PDFTextField) {
+            pdfField.setText(String(value))
           }
         }
       } catch {
@@ -174,13 +173,15 @@ export async function renderPdf({
         if (fieldDef.type === 'fieldset') continue
 
         try {
-          if (fieldDef.type === 'boolean') {
-            const checkbox = acroForm.getCheckBox(fieldName)
-            if (value) checkbox.check()
-            else checkbox.uncheck()
-          } else {
-            const textField = acroForm.getTextField(fieldName)
-            textField.setText(String(value))
+          const pdfField = acroForm.getField(fieldName)
+
+          if (pdfField instanceof PDFCheckBox) {
+            if (value) pdfField.check()
+            else pdfField.uncheck()
+          } else if (pdfField instanceof PDFRadioGroup) {
+            pdfField.select(String(value))
+          } else if (pdfField instanceof PDFTextField) {
+            pdfField.setText(String(value))
           }
         } catch {
           // Skip if field not found

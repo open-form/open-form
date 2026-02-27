@@ -40,7 +40,7 @@ export { inferExpressionType } from './type-inferrer'
 // Environment building
 export type { TopologicalSortResult } from './build-type-environment'
 export {
-  topologicalSortLogicKeys,
+  topologicalSortDefsKeys,
   buildFormTypeEnvironment,
   buildBundleTypeEnvironment,
 } from './build-type-environment'

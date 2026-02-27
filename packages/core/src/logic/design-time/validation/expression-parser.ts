@@ -6,7 +6,7 @@ import { Parser } from 'expr-eval-fork'
 export interface ParseResult {
   /** Whether the expression parsed successfully */
   success: boolean
-  /** Variables referenced in the expression (e.g., ['fields.age.value', 'isAdult']) */
+  /** Variables referenced in the expression (e.g., ['fields.age', 'isAdult']) */
   variables: string[]
   /** Error message if parsing failed */
   error?: string
@@ -25,10 +25,10 @@ const parser = new Parser({
  *
  * @example
  * ```typescript
- * parseExpression('fields.age.value >= 18')
- * // { success: true, variables: ['fields.age.value'] }
+ * parseExpression('fields.age >= 18')
+ * // { success: true, variables: ['fields.age'] }
  *
- * parseExpression('fields.age.value >=')
+ * parseExpression('fields.age >=')
  * // { success: false, variables: [], error: 'Unexpected end of expression' }
  * ```
  */

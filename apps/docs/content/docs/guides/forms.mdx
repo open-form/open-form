@@ -142,8 +142,8 @@ const lease = open.form({
 **Monthly Rent:** {{monthlyRent}}
 **Term:** {{startDate}} to {{endDate}}
 
-**Landlord:** {{parties.landlord.fullName}}
-**Tenant:** {{parties.tenant.fullName}}
+**Landlord:** {{parties.landlord.name}}
+**Tenant:** {{parties.tenant.name}}
       `,
     },
   },
@@ -164,8 +164,8 @@ const lease = open
 **Monthly Rent:** {{monthlyRent}}
 **Term:** {{startDate}} to {{endDate}}
 
-**Landlord:** {{parties.landlord.fullName}}
-**Tenant:** {{parties.tenant.fullName}}
+**Landlord:** {{parties.landlord.name}}
+**Tenant:** {{parties.tenant.name}}
     `),
   })
   .build()
@@ -180,8 +180,8 @@ Use `.fill()` to create a runtime instance with data:
 ```ts
 const filled = lease.fill({
   parties: {
-    landlord: { id: 'landlord-1', fullName: 'Jane Smith' },
-    tenant: { id: 'tenant-1', fullName: 'John Doe' },
+    landlord: { id: 'landlord-1', name: 'Jane Smith' },
+    tenant: { id: 'tenant-1', name: 'John Doe' },
   },
   fields: {
     address: {

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const PersonSchema = z.object({
-	fullName: z.string()
+	name: z.string()
 		.min(1)
 		.max(200)
 		.describe("Person's full name (complete name as a single string)"),
@@ -32,5 +32,5 @@ export const PersonSchema = z.object({
 		.optional(),
 }).meta({
 	title: 'Person',
-	description: 'Person with full name (required) and optional name components (title, first name, middle name, last name, suffix)',
+	description: 'Person with name (required) and optional name components (title, first name, middle name, last name, suffix)',
 });

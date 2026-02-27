@@ -21,13 +21,16 @@ import type {
 	Attestation,
 	AdoptedSignature,
 	SigningField,
+	SigningFieldType,
 	DraftFormJSON,
 	SignableFormJSON,
 	ExecutedFormJSON,
 	Sealer,
 	SealingRequest,
-	LogicSection,
-	LogicExpression,
+	DefsSection,
+	Expression,
+	Attachment,
+	ContentRef,
 } from '@open-form/types'
 import {
 	parseForm,
@@ -36,14 +39,14 @@ import {
 	parseFormParty,
 	parseLayer,
 } from '@/validation/artifact-parsers'
-import { validateFormData, type ValidationResult, type ValidationError } from '@/validation'
+import { validateFormData, validatePartiesForRole, type ValidationResult, type ValidationError } from '@/validation'
 import { toYAML } from '@/serialization/serialization'
 import { withArtifactMethods, type ArtifactMethods } from '../shared/artifact-methods'
 import { layer as layerBuilder, type FileLayerBuilderType, type InlineLayerBuilderType } from '@/artifacts/builders/layer'
 import { type Buildable, resolveBuildable } from '@/artifacts/shared/buildable'
 import type { FieldsToDataType } from '@/inference'
-import type { FormRuntimeState, FieldRuntimeState, AnnexRuntimeState } from '@/logic'
-import { evaluateFormLogic } from '@/logic'
+import type { FormRuntimeState, FieldRuntimeState, AnnexRuntimeState, FormRulesValidationResult } from '@/logic'
+import { evaluateFormDefs, evaluateFormRules } from '@/logic'
 import type { RuntimeFormRenderOptions, RenderOptions, RendererLayer } from '@/types'
 
 // ============================================================================
@@ -79,6 +82,24 @@ export type PartyRoleKeys<F> = ExtractFormSchema<F> extends { parties: infer P }
 		? keyof P & string
 		: string
 	: string
+
+/**
+ * Extracts parties record type with actual keys from a form type.
+ */
+type ExtractParties<F> = ExtractFormSchema<F> extends { parties: infer P }
+	? P extends Record<string, FormParty>
+		? { [K in keyof P]: RuntimeParty | RuntimeParty[] }
+		: Record<string, RuntimeParty | RuntimeParty[]>
+	: Record<string, RuntimeParty | RuntimeParty[]>
+
+/**
+ * Extracts annexes record type with actual keys from a form type.
+ */
+type ExtractAnnexes<F> = ExtractFormSchema<F> extends { annexes: infer A }
+	? A extends Record<string, unknown>
+		? { [K in keyof A]: Partial<Attachment> }
+		: Record<string, Partial<Attachment>>
+	: Record<string, Partial<Attachment>>
 
 /**
  * Helper to check if a form has fields defined.
@@ -124,15 +145,15 @@ type FieldsPayload<F> = HasDefinedFields<F> extends true
  * Conditionally add parties property based on form definition.
  */
 type PartiesPayload<F> = HasDefinedParties<F> extends true
-	? { parties: Record<string, RuntimeParty | RuntimeParty[]> }
-	: { parties?: Record<string, RuntimeParty | RuntimeParty[]> }
+	? { parties: ExtractParties<F> }
+	: { parties?: ExtractParties<F> }
 
 /**
  * Conditionally add annexes property based on form definition.
  */
 type AnnexesPayload<F> = HasDefinedAnnexes<F> extends true
-	? { annexes: Record<string, unknown> }
-	: { annexes?: Record<string, unknown> }
+	? { annexes: ExtractAnnexes<F> }
+	: { annexes?: ExtractAnnexes<F> }
 
 /**
  * Infers the full payload type for filling a form.
@@ -183,11 +204,49 @@ export class FormValidationError extends Error {
 }
 
 /**
+ * Custom error class for rule validation failures
+ */
+export class FormRuleViolationError extends Error {
+	readonly ruleResult: FormRulesValidationResult
+
+	constructor(result: FormRulesValidationResult) {
+		super(`Form rules validation failed: ${result.errors.map((e) => e.message || e.ruleId).join(', ')}`)
+		this.name = 'FormRuleViolationError'
+		this.ruleResult = result
+	}
+}
+
+/**
+ * Options for fill() and safeFill().
+ */
+export interface FillValidationOptions {
+	/** Whether to validate rules after filling. Defaults to true. */
+	rules?: boolean
+}
+
+/**
+ * Comprehensive validation result returned by DraftForm.validate().
+ */
+export interface FormValidationResult {
+	/** True if all error-severity rules passed (warnings don't block). Always true if no rules defined. */
+	valid: boolean
+	/** Full rule evaluation results */
+	rules: FormRulesValidationResult
+}
+
+/**
+ * Result of safeFill() — success means data valid AND rules pass.
+ */
+export type SafeFillResult<F extends Form> =
+	| { success: true; data: DraftForm<F>; rules: FormRulesValidationResult }
+	| { success: false; error: Error; data?: DraftForm<F>; rules?: FormRulesValidationResult }
+
+/**
  * FormInstance - design-time wrapper for Form artifacts
  */
 export interface FormInstance<F extends Form> extends ArtifactMethods<F> {
-	/** Form logic section */
-	readonly logic: F extends { logic: infer L } ? L : LogicSection | undefined
+	/** Form defs section */
+	readonly defs: F extends { defs: infer L } ? L : DefsSection | undefined
 
 	/** Form fields */
 	readonly fields: F extends { fields: infer Flds } ? Flds : Record<string, FormField> | undefined
@@ -221,14 +280,19 @@ export interface FormInstance<F extends Form> extends ArtifactMethods<F> {
 
 	/**
 	 * Create a RuntimeForm in draft phase with data.
+	 * By default validates both data and rules.
 	 * @throws FormValidationError if data validation fails
+	 * @throws FormRuleViolationError if rules validation fails (when rules option is true)
 	 */
-	fill(data: InferFormPayload<F>): DraftForm<F>
+	fill(data: InferFormPayload<F>, options?: FillValidationOptions): DraftForm<F>
 
 	/**
 	 * Safely create a RuntimeForm, returning a result object instead of throwing.
+	 * By default validates both data and rules.
+	 * success is true only when data is valid AND all error-severity rules pass.
+	 * When data is valid but rules fail, the result includes `data` (the DraftForm) for inspection.
 	 */
-	safeFill(data: InferFormPayload<F>): { success: true; data: DraftForm<F> } | { success: false; error: Error }
+	safeFill(data: InferFormPayload<F>, options?: FillValidationOptions): SafeFillResult<F>
 
 	/**
 	 * Render form content directly.
@@ -322,8 +386,14 @@ interface RuntimeFormBase<F extends Form> {
 	isAnnexRequired(annexId: string): boolean
 	getLogicValue(key: string): unknown
 
+	// Rules Validation
+	validateRules(): FormRulesValidationResult
+
 	// Validation
-	isValid(): true
+	/** Returns true if all error-severity rules pass. Always true if no rules defined. */
+	isValid(): boolean
+	/** Returns comprehensive validation result including rule details. */
+	validate(): FormValidationResult
 
 	// Serialization
 	render<Output>(options: RuntimeFormRenderOptions<Output>): Promise<Output>
@@ -605,14 +675,14 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 
 	const getRuntimeState = (): FormRuntimeState => {
 		if (!_runtimeState) {
-			const result = evaluateFormLogic(formDef, { fields: fieldValues })
+			const result = evaluateFormDefs(formDef, { fields: fieldValues })
 			if ('value' in result) {
 				_runtimeState = result.value
 			} else {
 				_runtimeState = {
 					fields: new Map(),
 					annexes: new Map(),
-					logicValues: new Map(),
+					defsValues: new Map(),
 				}
 			}
 		}
@@ -1133,7 +1203,22 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 		},
 
 		getLogicValue(key: string): unknown {
-			return getRuntimeState().logicValues.get(key)
+			return getRuntimeState().defsValues.get(key)
+		},
+
+		validateRules(): FormRulesValidationResult {
+			const state = getRuntimeState()
+			// Build a simple context for rule evaluation
+			// The buildFormContext creates nested fields.fieldId structure
+			// We need to also pass the flat field values and defs values
+			const context: import('@/logic').EvaluationContext = {
+				fields: {},
+			}
+			// Build fields context for the evaluator
+			for (const [fieldId, value] of Object.entries(fieldValues)) {
+				context.fields[fieldId] = value
+			}
+			return evaluateFormRules(formDef, fieldValues, state.defsValues, context)
 		},
 
 		getVisibleFields(): FieldRuntimeState[] {
@@ -1174,9 +1259,13 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 		// Validation
 		// ============================================================================
 
-		isValid(): true {
-			// Data is validated at construction, so this always returns true
-			return true
+		isValid(): boolean {
+			return runtime.validate().valid
+		},
+
+		validate(): FormValidationResult {
+			const rules = runtime.validateRules()
+			return { valid: rules.valid, rules }
 		},
 
 		// ============================================================================
@@ -1213,10 +1302,115 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 		async seal(adapter: Sealer): Promise<RuntimeForm<F>> {
 			ensureDraft('seal')
 
+			// Check if layer has pre-defined signatureBlocks
+			const layerSpec = formDef.layers?.[targetLayer]
+			const hasDefinedBlocks = layerSpec?.signatureBlocks &&
+				Object.keys(layerSpec.signatureBlocks).length > 0
+
+			if (hasDefinedBlocks) {
+				// Definition mode: Build signatureMap from pre-defined blocks
+				const signatureBlocks = layerSpec!.signatureBlocks!
+				const signatureMap: SigningField[] = []
+				let signerIndex = 0
+
+				// Build a map of signerIds for each role/partyIndex combination
+				const signerMap = new Map<string, string>() // key: "role:index" -> signerId
+
+				for (const [roleId, roleSignatories] of Object.entries(signatoryValues)) {
+					const parties = partyValues[roleId]
+					const partyArray = Array.isArray(parties) ? parties : parties ? [parties] : []
+
+					for (let i = 0; i < partyArray.length; i++) {
+						const party = partyArray[i] as { id?: string }
+						const partyId = party.id ?? `${roleId}-${i}`
+						const partySignatories = roleSignatories[partyId] ?? []
+						if (partySignatories.length > 0) {
+							// Use the first signatory's signerId for this party
+							signerMap.set(`${roleId}:${i}`, partySignatories[0]!.signerId)
+						}
+					}
+				}
+
+				// Convert each signature block to a SigningField
+				for (const [locationId, block] of Object.entries(signatureBlocks)) {
+					const partyRole = block.partyRole
+					const partyIndex = block.partyIndex ?? 0
+
+					// Skip blocks without a party role binding
+					if (!partyRole) continue
+
+					// Check if the party exists at this index
+					const parties = partyValues[partyRole]
+					const partyArray = Array.isArray(parties) ? parties : parties ? [parties] : []
+					if (partyIndex >= partyArray.length) {
+						// Party at this index doesn't exist, skip this block
+						continue
+					}
+
+					// Get the signer for this party
+					const signerId = signerMap.get(`${partyRole}:${partyIndex}`)
+					if (!signerId) {
+						// No signatory assigned to this party, skip
+						continue
+					}
+
+					// Map SignatureBlockType to SigningFieldType
+					const fieldType: SigningFieldType = block.type === 'date' ? 'date_signed' : block.type
+
+					const signingField: SigningField = {
+						id: locationId,
+						signerIndex: signerIndex++,
+						signerId,
+						type: fieldType,
+						page: block.page,
+						x: block.x,
+						y: block.y,
+						width: block.width,
+						height: block.height,
+						...(block.required !== undefined && { required: block.required }),
+						...(block.label && { label: block.label }),
+					}
+
+					signatureMap.push(signingField)
+				}
+
+				if (signatureMap.length === 0) {
+					throw new Error(
+						'Cannot seal: no signature blocks could be mapped to signatories. ' +
+						'Ensure parties have signatories assigned.',
+					)
+				}
+
+				// Call adapter to compute canonical PDF hash
+				const request: SealingRequest<F> = {
+					form: formDef,
+					fields: fieldValues,
+					parties: partyValues,
+					signers: signerValues,
+					signatories: signatoryValues,
+					targetLayer,
+				}
+
+				const result = await adapter.seal(request)
+
+				return createRuntimeForm({
+					...config,
+					phase: 'signable',
+					captures: [],
+					witnesses: [],
+					attestations: [],
+					signatureMap,
+					canonicalPdfHash: result.canonicalPdfHash,
+					executedAt: undefined,
+				})
+			}
+
+			// Extraction mode: Use adapter to extract from placeholders
 			// Validation 1: Check layer is PDF-convertible
 			if (!PDF_CONVERTIBLE_LAYERS.includes(targetLayer as (typeof PDF_CONVERTIBLE_LAYERS)[number])) {
 				throw new Error(
-					`Cannot seal: layer "${targetLayer}" is not PDF-convertible. Supported layers: ${PDF_CONVERTIBLE_LAYERS.join(', ')}`,
+					`Cannot seal: layer "${targetLayer}" has no signatureBlocks and is not PDF-convertible. ` +
+					`Either add signatureBlocks to the layer or use a supported layer: ${PDF_CONVERTIBLE_LAYERS.join(', ')}`,
 				)
 			}
 
@@ -1296,7 +1490,7 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 		// ============================================================================
 
 		async render<Output>(options: RuntimeFormRenderOptions<Output>): Promise<Output> {
-			const { renderer, resolver, layer: layerKey } = options
+			const { renderer, resolver, layer: layerKey, bindings: optionsBindings } = options
 
 			if (!formDef.layers) {
 				throw new Error('Form has no layers defined')
@@ -1335,12 +1529,26 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 				throw new Error('Unknown layer spec kind')
 			}
 
+			// Resolve bindingsFrom reference if no direct bindings
+			if (!bindings && layerSpec.bindingsFrom) {
+				const refLayer = formDef.layers[layerSpec.bindingsFrom]
+				if (!refLayer) {
+					throw new Error(`bindingsFrom "${layerSpec.bindingsFrom}" references unknown layer. Available: ${Object.keys(formDef.layers).join(', ')}`)
+				}
+				bindings = refLayer.bindings
+			}
+
+			// Merge caller-provided bindings (override layer-spec bindings)
+			if (optionsBindings) {
+				bindings = { ...bindings, ...optionsBindings }
+			}
+
 			const augmentedParties = augmentPartiesForRender()
 
-			// Build logic values object
-			const logicValuesObj: Record<string, unknown> = {}
-			for (const [k, v] of getRuntimeState().logicValues) {
-				logicValuesObj[k] = v
+			// Build defs values object
+			const defsValuesObj: Record<string, unknown> = {}
+			for (const [k, v] of getRuntimeState().defsValues) {
+				defsValuesObj[k] = v
 			}
 
 			const fullData = {
@@ -1358,7 +1566,7 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 				...(Object.keys(annexValues).length > 0 && { annexes: annexValues }),
 				...(Object.keys(signerValues).length > 0 && { _signers: signerValues }),
 				...(captures.length > 0 && { _captures: captures }),
-				...(Object.keys(logicValuesObj).length > 0 && { logic: logicValuesObj }),
+				...(Object.keys(defsValuesObj).length > 0 && { defs: defsValuesObj }),
 				...(executedAt && { _executedAt: executedAt }),
 			}
 
@@ -1479,7 +1687,7 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 		...artifactMethods,
 
 		// Form-specific properties (type assertions needed for conditional types)
-		logic: formDef.logic as FormInstance<F>['logic'],
+		defs: formDef.defs as FormInstance<F>['defs'],
 		fields: formDef.fields as FormInstance<F>['fields'],
 		layers: formDef.layers as FormInstance<F>['layers'],
 		defaultLayer: formDef.defaultLayer as FormInstance<F>['defaultLayer'],
@@ -1499,7 +1707,9 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 			return validateFormData(formDef, data) as ValidationResult<InferFormPayload<F>>
 		},
 
-		fill(data: InferFormPayload<F>): DraftForm<F> {
+		fill(data: InferFormPayload<F>, options?: FillValidationOptions): DraftForm<F> {
+			const checkRules = options?.rules !== false
+
 			// Normalize data
 			const fields = data.fields ?? {}
 			const parties = data.parties ?? {}
@@ -1514,9 +1724,21 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 				throw new FormValidationError(result.errors)
 			}
 
+			// Validate party data format (object vs array based on max)
+			const formParties = formDef.parties ?? {}
+			for (const [roleId, formParty] of Object.entries(formParties)) {
+				const partyData = parties[roleId as keyof typeof parties]
+				const partyResult = validatePartiesForRole(partyData, formParty, roleId)
+				if (!partyResult.success) {
+					throw new FormValidationError(
+						partyResult.errors.map((msg) => ({ field: `parties.${roleId}`, message: msg }))
+					)
+				}
+			}
+
 			const targetLayer = formDef.defaultLayer || (formDef.layers ? Object.keys(formDef.layers)[0] : '') || ''
 
-			return createRuntimeForm({
+			const draft = createRuntimeForm({
 				form: formDef,
 				fields: (result.data as { fields: Record<string, unknown> }).fields,
 				parties,
@@ -1526,18 +1748,45 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 				targetLayer,
 				phase: 'draft',
 			})
+
+			if (checkRules) {
+				const ruleResult = draft.validateRules()
+				if (!ruleResult.valid) {
+					throw new FormRuleViolationError(ruleResult)
+				}
+			}
+
+			return draft
 		},
 
-		safeFill(data: InferFormPayload<F>): { success: true; data: DraftForm<F> } | { success: false; error: Error } {
+		safeFill(data: InferFormPayload<F>, options?: FillValidationOptions): SafeFillResult<F> {
+			const checkRules = options?.rules !== false
+
+			// Try to create the draft
+			let draft: DraftForm<F>
 			try {
-				return { success: true, data: instance.fill(data) }
+				draft = instance.fill(data, { rules: false })
 			} catch (err) {
 				return { success: false, error: err as Error }
 			}
+
+			// If rules checking is disabled, return success
+			if (!checkRules) {
+				const rules = { valid: true, rules: [], errors: [], warnings: [] } as FormRulesValidationResult
+				return { success: true, data: draft, rules }
+			}
+
+			// Validate rules
+			const ruleResult = draft.validateRules()
+			if (!ruleResult.valid) {
+				return { success: false, error: new FormRuleViolationError(ruleResult), data: draft, rules: ruleResult }
+			}
+
+			return { success: true, data: draft, rules: ruleResult }
 		},
 
 		async render<Output>(options: RenderOptions<Output>): Promise<Output> {
-			const { renderer, resolver, data = {}, layer: layerKey } = options
+			const { renderer, resolver, data = {}, layer: layerKey, bindings: optionsBindings } = options
 
 			if (!formDef.layers) {
 				throw new Error('Form has no layers defined')
@@ -1573,6 +1822,20 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 				bindings = layerSpec.bindings
 			} else {
 				throw new Error('Unknown layer spec kind')
+			}
+
+			// Resolve bindingsFrom reference if no direct bindings
+			if (!bindings && layerSpec.bindingsFrom) {
+				const refLayer = formDef.layers[layerSpec.bindingsFrom]
+				if (!refLayer) {
+					throw new Error(`bindingsFrom "${layerSpec.bindingsFrom}" references unknown layer. Available: ${Object.keys(formDef.layers).join(', ')}`)
+				}
+				bindings = refLayer.bindings
+			}
+
+			// Merge caller-provided bindings (override layer-spec bindings)
+			if (optionsBindings) {
+				bindings = { ...bindings, ...optionsBindings }
 			}
 
 			const template: RendererLayer = {
@@ -1623,8 +1886,10 @@ export interface FormBuilderInterface<
 	code(value: string): FormBuilderInterface<TFields, TParties, TAnnexes>
 	releaseDate(value: string): FormBuilderInterface<TFields, TParties, TAnnexes>
 	metadata(value: Metadata): FormBuilderInterface<TFields, TParties, TAnnexes>
-	logic(logicDef: LogicSection): FormBuilderInterface<TFields, TParties, TAnnexes>
-	expr(name: string, expression: string | LogicExpression): FormBuilderInterface<TFields, TParties, TAnnexes>
+	instructions(value: ContentRef): FormBuilderInterface<TFields, TParties, TAnnexes>
+	agentInstructions(value: ContentRef): FormBuilderInterface<TFields, TParties, TAnnexes>
+	defs(defsDef: DefsSection): FormBuilderInterface<TFields, TParties, TAnnexes>
+	def(name: string, expression: string | Expression): FormBuilderInterface<TFields, TParties, TAnnexes>
 	field(id: string, fieldDef: Buildable<FormField>): FormBuilderInterface<TFields, TParties, TAnnexes>
 	fields<const F extends Record<string, Buildable<FormField>>>(
 		fieldsObj: F,
@@ -1644,7 +1909,6 @@ export interface FormBuilderInterface<
 			text: string
 			title?: string
 			description?: string
-			checksum?: string
 			bindings?: Record<string, string>
 		},
 	): FormBuilderInterface<TFields, TParties, TAnnexes>
@@ -1707,7 +1971,9 @@ function createFormBuilder<
 		code: undefined,
 		releaseDate: undefined,
 		metadata: {},
-		logic: undefined,
+		instructions: undefined,
+		agentInstructions: undefined,
+		defs: undefined,
 		fields: undefined,
 		layers: undefined,
 		defaultLayer: undefined,
@@ -1727,7 +1993,9 @@ function createFormBuilder<
 			_def.code = parsed.code
 			_def.releaseDate = parsed.releaseDate
 			_def.metadata = parsed.metadata ? { ...parsed.metadata } : {}
-			_def.logic = parsed.logic ? { ...parsed.logic } : undefined
+			_def.instructions = parsed.instructions
+			_def.agentInstructions = parsed.agentInstructions
+			_def.defs = parsed.defs ? { ...parsed.defs } : undefined
 			_def.fields = parsed.fields
 				? Object.fromEntries(Object.entries(parsed.fields).map(([id, field]) => [id, parseFormField(field)]))
 				: undefined
@@ -1780,19 +2048,29 @@ function createFormBuilder<
 			return builder
 		},
 
-		logic(logicDef: LogicSection) {
-			_def.logic = logicDef
+		instructions(value: ContentRef) {
+			_def.instructions = value
 			return builder
 		},
 
-		expr(name: string, expression: string | LogicExpression) {
-			const logic = (_def.logic as LogicSection) || {}
+		agentInstructions(value: ContentRef) {
+			_def.agentInstructions = value
+			return builder
+		},
+
+		defs(defsDef: DefsSection) {
+			_def.defs = defsDef
+			return builder
+		},
+
+		def(name: string, expression: string | Expression) {
+			const defs = (_def.defs as DefsSection) || {}
 			if (typeof expression === 'string') {
-				logic[name] = { type: 'boolean', value: expression }
+				defs[name] = { type: 'boolean', value: expression }
 			} else {
-				logic[name] = expression
+				defs[name] = expression
 			}
-			_def.logic = logic
+			_def.defs = defs
 			return builder
 		},
 
@@ -1843,7 +2121,6 @@ function createFormBuilder<
 				text: string
 				title?: string
 				description?: string
-				checksum?: string
 				bindings?: Record<string, string>
 			},
 		) {

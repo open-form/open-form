@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { ArtifactSchema } from '../shared/base';
 import { LayerSchema } from '../shared/layer';
-import { LogicSectionSchema } from '../logic/logic-section';
+import { DefsSectionSchema } from '../expressions/defs-section';
+import { RulesSectionSchema } from '../rules/rules-section';
 import { FormFieldSchema } from './field';
 import { FormAnnexSchema } from './annex';
 import { FormPartySchema } from './party';
@@ -14,12 +15,16 @@ export { FormPartySchema } from './party';
 
 export const FormSchema = ArtifactSchema.extend({
 	kind: z.literal('form'),
-	logic: LogicSectionSchema.optional(),
+	defs: DefsSectionSchema.optional(),
+	rules: RulesSectionSchema
+		.describe('Form-level validation rules for cross-field constraints. Rules use expr-eval-fork expressions with direct access to field values and defs section values.')
+		.optional(),
 	fields: z.record(
 		z.string()
 			.min(1)
 			.max(100)
-			.describe('Field identifier'),
+			.regex(/^[a-z][a-zA-Z0-9_]*$/)
+			.describe('Field identifier (camelCase, starts with lowercase letter)'),
 		FormFieldSchema,
 	).describe('Form field definitions keyed by field identifier. Fields define the input structure and validation rules for the form')
 		.optional(),
@@ -27,7 +32,8 @@ export const FormSchema = ArtifactSchema.extend({
 		z.string()
 			.min(1)
 			.max(100)
-			.describe('Layer identifier (user-defined key)'),
+			.regex(/^[a-z][a-zA-Z0-9_]*$/)
+			.describe('Layer identifier (camelCase, starts with lowercase letter)'),
 		LayerSchema,
 	).describe('Named layers for rendering this form into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)')
 		.optional(),
@@ -44,8 +50,8 @@ export const FormSchema = ArtifactSchema.extend({
 		z.string()
 			.min(1)
 			.max(100)
-			.regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/)
-			.describe('Annex identifier (e.g., exhibit-a, schedule-1)'),
+			.regex(/^[a-z][a-zA-Z0-9_]*$/)
+			.describe('Annex identifier (camelCase, starts with lowercase letter)'),
 		FormAnnexSchema,
 	).describe('Predefined annex slots keyed by identifier. Each slot can be marked as required (must be filled at runtime) or optional')
 		.optional(),
@@ -53,8 +59,8 @@ export const FormSchema = ArtifactSchema.extend({
 		z.string()
 			.min(1)
 			.max(50)
-			.regex(/^[a-z][a-z0-9_-]*$/)
-			.describe('Party role identifier (e.g., buyer, seller, landlord)'),
+			.regex(/^[a-z][a-zA-Z0-9_]*$/)
+			.describe('Party role identifier (e.g., buyer, seller, landlord, buyerRepresentative)'),
 		FormPartySchema,
 	).describe('Party role definitions keyed by role identifier. Each role specifies constraints on who can fill it (person/organization) and signature requirements.')
 		.optional(),

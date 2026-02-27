@@ -19,13 +19,13 @@
  * ```
  * LANDLORD:
  * {{FOR sig IN parties.landlord.signatories}}
- * {{$sig.signer.person.fullName}}, {{$sig.capacity}}
+ * {{$sig.signer.person.name}}, {{$sig.capacity}}
  * Signature: {{signature($sig, "final-sig")}}
  * {{END-FOR sig}}
  *
  * TENANT(S):
  * {{FOR tenant IN parties.tenant}}
- * Name: {{$tenant.fullName}}
+ * Name: {{$tenant.name}}
  * {{FOR sig IN $tenant.signatories}}
  * Signature: {{signature($sig, "final-sig")}}
  * {{END-FOR sig}}
@@ -54,6 +54,8 @@ export interface DocxSignatureOptions {
     signature?: SignaturePlaceholderValue
     /** Placeholder for initials. String or function. */
     initials?: SignaturePlaceholderValue
+    /** Placeholder for signature date. String or function. */
+    signatureDate?: SignaturePlaceholderValue
   }
 
   /** Captured options (after capture) */
@@ -62,11 +64,14 @@ export interface DocxSignatureOptions {
     signature?: SignatureCapturedValue
     /** Text/rendering for captured initials. String or function. */
     initials?: SignatureCapturedValue
+    /** Text/rendering for captured signature date. String or function. */
+    signatureDate?: SignatureCapturedValue
   }
 }
 
 const DEFAULT_PLACEHOLDER_SIGNATURE = '_____________________________'
 const DEFAULT_PLACEHOLDER_INITIALS = '______'
+const DEFAULT_PLACEHOLDER_DATE = '__________'
 const DEFAULT_CAPTURED_SIGNATURE = '[Signed]'
 const DEFAULT_CAPTURED_INITIALS = '[Initialed]'
 
@@ -165,13 +170,13 @@ interface RootData {
  * ```
  * LANDLORD:
  * {{FOR sig IN parties.landlord.signatories}}
- * {{$sig.signer.person.fullName}}, {{$sig.capacity}}
+ * {{$sig.signer.person.name}}, {{$sig.capacity}}
  * Signature: {{signature($sig, "final-sig")}}
  * {{END-FOR sig}}
  *
  * TENANT(S):
  * {{FOR tenant IN parties.tenant}}
- * Name: {{$tenant.fullName}}
+ * Name: {{$tenant.name}}
  * {{FOR sig IN $tenant.signatories}}
  * Signature: {{signature($sig, "final-sig")}}
  * {{END-FOR sig}}
@@ -184,6 +189,7 @@ export function createDocxSignatureHelpers(
 ): {
   signature: (partyOrSignatory: PartyOrSignatory, locationId: string) => string
   initials: (partyOrSignatory: PartyOrSignatory, locationId: string) => string
+  signatureDate: (partyOrSignatory: PartyOrSignatory, locationId: string) => string
 } {
   // Capture data via closure
   const signers = rootData._signers
@@ -363,6 +369,92 @@ export function createDocxSignatureHelpers(
 
       // No initials - render placeholder
       return resolveValue(options.placeholder?.initials, ctx, DEFAULT_PLACEHOLDER_INITIALS)
+    },
+
+    /**
+     * Signature date helper - renders the date a signature was captured, or a placeholder
+     *
+     * Looks for a capture of type 'signature' at the locationId (date accompanies signature).
+     * Use the same locationId as the corresponding `signature` helper.
+     *
+     * @param partyOrSignatory - The party or signatory object from template loop
+     * @param locationId - The location ID (same as the corresponding signature helper)
+     */
+    signatureDate(partyOrSignatory: PartyOrSignatory, locationId: string): string {
+      if (!partyOrSignatory || typeof partyOrSignatory !== 'object') {
+        return '[Invalid signatureDate: expected (party/signatory, locationId)]'
+      }
+      if (typeof locationId !== 'string') {
+        return '[Invalid signatureDate: expected (party/signatory, locationId)]'
+      }
+
+      // Extract context based on whether this is a party or signatory
+      let role: string
+      let partyId: string
+      let signerId: string | undefined
+      let party: RuntimeParty | undefined
+      let signer: Signer | undefined
+      let capacity: string | undefined
+
+      if (isSignatory(partyOrSignatory)) {
+        role = partyOrSignatory._role
+        partyId = partyOrSignatory._partyId
+        signerId = partyOrSignatory.signerId
+        signer = partyOrSignatory.signer
+        capacity = partyOrSignatory.capacity
+        party = undefined
+      } else {
+        const augmentedParty = partyOrSignatory as AugmentedParty
+        role = augmentedParty._role
+        partyId = augmentedParty.id
+        party = augmentedParty
+
+        const firstSignatory = augmentedParty.signatories?.[0]
+        if (firstSignatory) {
+          signerId = firstSignatory.signerId
+          signer = firstSignatory.signer
+          capacity = firstSignatory.capacity
+        }
+      }
+
+      if (!role || !partyId) {
+        return '[SignatureDate error: invalid party/signatory context]'
+      }
+
+      const ctx: SignaturePlaceholderContext = {
+        role,
+        partyId,
+        signerId: signerId ?? '',
+        locationId,
+        party,
+        signer,
+        capacity,
+      }
+
+      if (!signerId) {
+        return resolveValue(options.placeholder?.signatureDate, ctx, DEFAULT_PLACEHOLDER_DATE)
+      }
+
+      // Find a signature capture at this location (date accompanies signature)
+      const capture = findCapture(captures, role, partyId, signerId, locationId, 'signature')
+
+      if (!signer) {
+        signer = getSigner(signers, signerId)
+        ctx.signer = signer
+      }
+
+      if (capture) {
+        const capturedCtx: SignatureCapturedContext = {
+          ...ctx,
+          capture,
+        }
+        // Default: extract date portion from ISO timestamp
+        const defaultDate = capture.timestamp ? capture.timestamp.slice(0, 10) : DEFAULT_PLACEHOLDER_DATE
+        return resolveValue(options.captured?.signatureDate, capturedCtx, defaultDate)
+      }
+
+      // No capture - render placeholder
+      return resolveValue(options.placeholder?.signatureDate, ctx, DEFAULT_PLACEHOLDER_DATE)
     },
   }
 }

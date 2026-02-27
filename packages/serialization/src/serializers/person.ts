@@ -13,9 +13,9 @@ export function assertPerson(value: unknown): void {
 		throw new TypeError('Invalid person: must be a Person object')
 	}
 	const person = value as Record<string, unknown>
-	const hasName = !!(person.fullName || person.firstName || person.lastName)
+	const hasName = !!(person.name || person.firstName || person.lastName)
 	if (!hasName) {
-		throw new Error('Invalid person: must have at least one name field (fullName, firstName, or lastName)')
+		throw new Error('Invalid person: must have at least one name field (name, firstName, or lastName)')
 	}
 }
 
@@ -31,7 +31,7 @@ export const personStringifier = {
 
 		assertPerson(value)
 
-		if (value.fullName) return value.fullName
+		if (value.name) return value.name
 
 		const nameParts: string[] = []
 		if (value.title) nameParts.push(value.title)

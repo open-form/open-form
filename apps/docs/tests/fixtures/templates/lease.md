@@ -2,11 +2,11 @@
 
 This Lease Agreement is entered into on **{{startDate}}** between:
 
-**LANDLORD:** {{parties.landlord.fullName}}
+**LANDLORD:** {{parties.landlord.name}}
 
 **TENANT(S):**
 {{#each parties.tenant}}
-- {{fullName}}
+- {{name}}
 {{/each}}
 
 ---
@@ -54,7 +54,7 @@ Smoking is **not permitted** on the premises.
 
 **LANDLORD:**
 
-Name: {{parties.landlord.fullName}}
+Name: {{parties.landlord.name}}
 
 Signature: ___________________________  Date: ____________
 
@@ -62,7 +62,7 @@ Signature: ___________________________  Date: ____________
 **TENANT(S):**
 
 {{#each parties.tenant}}
-Name: {{fullName}}
+Name: {{name}}
 
 Signature: ___________________________  Date: ____________
 

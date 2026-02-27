@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { buildFormContext } from '@/logic/runtime/evaluation/context-builder'
 import type { Form } from '@open-form/types'
-import { getLogicValues, getFieldValueFromContext } from '../helpers/evaluation-helpers'
+import { getDefsValues, getFieldValueFromContext } from '../helpers/evaluation-helpers'
 
 /**
  * Tests for context-builder.ts
@@ -23,7 +23,7 @@ describe('context-builder', () => {
     },
   })
 
-  const createFormWithLogic = (): Form => ({
+  const createFormWithDefs = (): Form => ({
     kind: 'form',
     name: 'form-with-logic',
     version: '1.0.0',
@@ -32,9 +32,9 @@ describe('context-builder', () => {
       age: { type: 'number' },
       hasLicense: { type: 'boolean' },
     },
-    logic: {
-      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
-      canDrive: { type: 'boolean', value: 'isAdult and fields.hasLicense.value' },
+    defs: {
+      isAdult: { type: 'boolean', value: 'fields.age >= 18' },
+      canDrive: { type: 'boolean', value: 'isAdult and fields.hasLicense' },
     },
   })
 
@@ -74,9 +74,9 @@ describe('context-builder', () => {
         const context = buildFormContext(form, data)
 
         expect(context.fields).toBeDefined()
-        expect((context.fields.age as { value: unknown }).value).toBe(25)
-        expect((context.fields.name as { value: unknown }).value).toBe('John')
-        expect((context.fields.agreed as { value: unknown }).value).toBe(true)
+        expect(context.fields.age).toBe(25)
+        expect(context.fields.name).toBe('John')
+        expect(context.fields.agreed).toBe(true)
       })
 
       test('handles missing field values', () => {
@@ -85,9 +85,9 @@ describe('context-builder', () => {
 
         const context = buildFormContext(form, data)
 
-        expect((context.fields.age as { value: unknown }).value).toBe(25)
-        expect((context.fields.name as { value: unknown }).value).toBe(undefined)
-        expect((context.fields.agreed as { value: unknown }).value).toBe(undefined)
+        expect(context.fields.age).toBe(25)
+        expect(context.fields.name).toBe(undefined)
+        expect(context.fields.agreed).toBe(undefined)
       })
 
       test('handles empty data', () => {
@@ -113,13 +113,13 @@ describe('context-builder', () => {
         const context = buildFormContext(form, data)
 
         expect(context.fields.person).toBeDefined()
-        const person = context.fields.person as Record<string, { value: unknown }>
-        expect(person['name']?.value).toBe('Jane')
-        expect(person['age']?.value).toBe(30)
+        const person = context.fields.person as Record<string, unknown>
+        expect(person['name']).toBe('Jane')
+        expect(person['age']).toBe(30)
 
-        const address = context.fields.address as Record<string, { value: unknown }>
-        expect(address['street']?.value).toBe('123 Main St')
-        expect(address['city']?.value).toBe('NYC')
+        const address = context.fields.address as Record<string, unknown>
+        expect(address['street']).toBe('123 Main St')
+        expect(address['city']).toBe('NYC')
       })
 
       test('handles partial nested data', () => {
@@ -132,15 +132,15 @@ describe('context-builder', () => {
 
         const context = buildFormContext(form, data)
 
-        const person = context.fields.person as Record<string, { value: unknown }>
-        expect(person['name']?.value).toBe('Jane')
-        expect(person['age']?.value).toBe(undefined)
+        const person = context.fields.person as Record<string, unknown>
+        expect(person['name']).toBe('Jane')
+        expect(person['age']).toBe(undefined)
       })
     })
 
-    describe('logic key evaluation', () => {
-      test('evaluates simple logic key', () => {
-        const form = createFormWithLogic()
+    describe('defs key evaluation', () => {
+      test('evaluates simple defs key', () => {
+        const form = createFormWithDefs()
         const data = { fields: { age: 25, hasLicense: true } }
 
         const context = buildFormContext(form, data)
@@ -148,8 +148,8 @@ describe('context-builder', () => {
         expect((context as Record<string, unknown>).isAdult).toBe(true)
       })
 
-      test('evaluates dependent logic keys in order', () => {
-        const form = createFormWithLogic()
+      test('evaluates dependent defs keys in order', () => {
+        const form = createFormWithDefs()
         const data = { fields: { age: 25, hasLicense: true } }
 
         const context = buildFormContext(form, data)
@@ -159,8 +159,8 @@ describe('context-builder', () => {
         expect((context as Record<string, unknown>).canDrive).toBe(true)
       })
 
-      test('evaluates logic key to false', () => {
-        const form = createFormWithLogic()
+      test('evaluates defs key to false', () => {
+        const form = createFormWithDefs()
         const data = { fields: { age: 16, hasLicense: false } }
 
         const context = buildFormContext(form, data)
@@ -169,8 +169,8 @@ describe('context-builder', () => {
         expect((context as Record<string, unknown>).canDrive).toBe(false)
       })
 
-      test('handles missing data in logic evaluation', () => {
-        const form = createFormWithLogic()
+      test('handles missing data in defs evaluation', () => {
+        const form = createFormWithDefs()
         const data = { fields: {} } // All values missing
 
         const context = buildFormContext(form, data)
@@ -195,7 +195,7 @@ describe('context-builder', () => {
         expect(context.fields).toBeDefined()
       })
 
-      test('handles form with no logic', () => {
+      test('handles form with no defs', () => {
         const form = createSimpleForm()
         const data = { fields: { age: 25 } }
 
@@ -204,7 +204,7 @@ describe('context-builder', () => {
         expect(context.fields).toBeDefined()
         expect(context.parties).toBeDefined()
         expect(context.witnesses).toBeDefined()
-        // No logic keys should be present (only fields, parties, witnesses are base context)
+        // No defs keys should be present (only fields, parties, witnesses are base context)
         const baseKeys = ['fields', 'parties', 'witnesses']
         expect(Object.keys(context).filter((k) => !baseKeys.includes(k))).toHaveLength(0)
       })
@@ -212,37 +212,37 @@ describe('context-builder', () => {
   })
 
   // ============================================================================
-  // getLogicValues Tests
+  // getDefsValues Tests
   // ============================================================================
 
-  describe('getLogicValues', () => {
-    test('returns map of evaluated logic values', () => {
-      const form = createFormWithLogic()
+  describe('getDefsValues', () => {
+    test('returns map of evaluated defs values', () => {
+      const form = createFormWithDefs()
       const data = { fields: { age: 25, hasLicense: true } }
 
-      const logicValues = getLogicValues(form, data)
+      const defsValues = getDefsValues(form, data)
 
-      expect(logicValues.get('isAdult')).toBe(true)
-      expect(logicValues.get('canDrive')).toBe(true)
+      expect(defsValues.get('isAdult')).toBe(true)
+      expect(defsValues.get('canDrive')).toBe(true)
     })
 
-    test('returns empty map for form without logic', () => {
+    test('returns empty map for form without defs', () => {
       const form = createSimpleForm()
       const data = { fields: { age: 25 } }
 
-      const logicValues = getLogicValues(form, data)
+      const defsValues = getDefsValues(form, data)
 
-      expect(logicValues.size).toBe(0)
+      expect(defsValues.size).toBe(0)
     })
 
     test('handles undefined values', () => {
-      const form = createFormWithLogic()
+      const form = createFormWithDefs()
       const data = { fields: {} }
 
-      const logicValues = getLogicValues(form, data)
+      const defsValues = getDefsValues(form, data)
 
-      expect(logicValues.get('isAdult')).toBe(false)
-      expect(logicValues.get('canDrive')).toBe(false)
+      expect(defsValues.get('isAdult')).toBe(false)
+      expect(defsValues.get('canDrive')).toBe(false)
     })
   })
 
@@ -253,8 +253,8 @@ describe('context-builder', () => {
   describe('getFieldValueFromContext', () => {
     test('gets simple field value', () => {
       const fields = {
-        age: { value: 25 },
-        name: { value: 'John' },
+        age: 25,
+        name: 'John',
       }
 
       expect(getFieldValueFromContext(fields, 'age')).toBe(25)
@@ -264,8 +264,8 @@ describe('context-builder', () => {
     test('gets nested field value', () => {
       const fields = {
         address: {
-          street: { value: '123 Main St' },
-          city: { value: 'NYC' },
+          street: '123 Main St',
+          city: 'NYC',
         },
       }
 
@@ -275,7 +275,7 @@ describe('context-builder', () => {
 
     test('returns undefined for missing path', () => {
       const fields = {
-        age: { value: 25 },
+        age: 25,
       }
 
       expect(getFieldValueFromContext(fields, 'missing')).toBe(undefined)
@@ -284,10 +284,10 @@ describe('context-builder', () => {
 
     test('returns undefined for null in path', () => {
       const fields = {
-        data: null as unknown as { value: unknown },
+        data: null as unknown,
       }
 
-      expect(getFieldValueFromContext(fields, 'data.value')).toBe(undefined)
+      expect(getFieldValueFromContext(fields, 'data.nested')).toBe(undefined)
     })
   })
 })

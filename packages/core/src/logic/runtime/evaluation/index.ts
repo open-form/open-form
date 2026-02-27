@@ -2,14 +2,14 @@
  * Runtime expression evaluation module (Internal).
  *
  * Most exports here are internal implementation details.
- * Public API exports only evaluateFormLogic() and runtime state types.
+ * Public API exports only evaluateFormDefs() and runtime state types.
  *
  * @example
  * ```typescript
- * import { evaluateFormLogic } from '@open-form/core'
+ * import { evaluateFormDefs } from '@open-form/core'
  *
  * // Evaluate all form expressions at once (Public API)
- * const result = evaluateFormLogic(form, { fields: { age: 25 } })
+ * const result = evaluateFormDefs(form, { fields: { age: 25 } })
  * if ('value' in result) {
  *   const state = result.value
  *   console.log(state.fields.get('drivingLicense')?.visible) // true
@@ -50,6 +50,16 @@ export {
 
 // Form evaluation
 export {
-  evaluateFormLogic,
+  evaluateFormDefs,
   type FormEvaluationOptions,
 } from './form-evaluator'
+
+// Rule evaluation
+export {
+  evaluateRule,
+  evaluateRules,
+  evaluateFormRules,
+  buildRuleContext,
+  type RuleValidationResult,
+  type FormRulesValidationResult,
+} from './rule-evaluator'

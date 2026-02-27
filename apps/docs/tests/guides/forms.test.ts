@@ -97,8 +97,8 @@ describe('Forms Guide', () => {
 **Monthly Rent:** {{monthlyRent}}
 **Term:** {{startDate}} to {{endDate}}
 
-**Landlord:** {{parties.landlord.fullName}}
-**Tenant:** {{parties.tenant.fullName}}
+**Landlord:** {{parties.landlord.name}}
+**Tenant:** {{parties.tenant.name}}
           `,
         },
       },

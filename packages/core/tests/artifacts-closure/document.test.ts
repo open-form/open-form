@@ -347,23 +347,7 @@ describe('closure-based Document', () => {
 				expect(final.phase).toBe('final') // Just verify we have a final document
 			})
 
-			// NOTE: With discriminated union types, this method doesn't exist on FinalRuntimeDocument
-			// The type system prevents calling setTargetLayer() on finalized documents at compile time
-			test.skip('throws when finalized (now enforced by type system)', () => {
-				const instance = document({
-					name: 'test-document',
-					version: '1.0.0',
-					title: 'Test Document',
-					layers: {
-						default: { kind: 'inline', mimeType: 'text/plain', text: 'Hello' },
-						html: { kind: 'inline', mimeType: 'text/html', text: '<p>Hello</p>' },
-					},
-					defaultLayer: 'default',
-				})
-				const final = instance.prepare().finalize()
-				expect(() => (final as any).setTargetLayer('html')).toThrow('Cannot modify finalized document')
 			})
-		})
 
 		describe('finalize()', () => {
 			test('transitions to final phase', () => {
@@ -376,13 +360,6 @@ describe('closure-based Document', () => {
 				expect(typeof final.finalizedAt).toBe('string')
 			})
 
-			// NOTE: With discriminated union types, finalize() method doesn't exist on FinalRuntimeDocument
-			// The type system prevents calling finalize() on already finalized documents at compile time
-			test.skip('throws when already finalized (now enforced by type system)', () => {
-				const instance = createDocumentWithLayers()
-				const final = instance.prepare().finalize()
-				expect(() => (final as any).finalize()).toThrow('Document is already finalized')
-			})
 		})
 
 		describe('render()', () => {

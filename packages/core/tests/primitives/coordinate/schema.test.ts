@@ -546,11 +546,7 @@ describe('Coordinate', () => {
 					expect(result.lon).toBe(-122.419418);
 				});
 
-				test.skip('handles negative zero', () => {
-					const result = coordinate().lat(-0).lon(-0).build();
-					expect(result).toEqual({ lat: 0, lon: 0 });
 				});
-			});
 
 			describe('common usage patterns', () => {
 				test('creates San Francisco coordinates', () => {

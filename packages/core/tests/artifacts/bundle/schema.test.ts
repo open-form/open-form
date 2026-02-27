@@ -94,7 +94,7 @@ describe('Bundle', () => {
             version: '1.0.0',
             name: 'conditional-bundle',
             title: 'Conditional Bundle',
-            logic: {
+            defs: {
               hasPets: { type: 'boolean', value: 'true' },
             },
             contents: [
@@ -117,15 +117,15 @@ describe('Bundle', () => {
             version: '1.0.0',
             name: 'logic-bundle',
             title: 'Logic Bundle',
-            logic: {
+            defs: {
               isActive: { type: 'boolean', value: 'true' },
               showExtra: { type: 'boolean', value: 'isActive == true' },
             },
             contents: [],
           }
           const result = bundle(input)
-          expect(result.logic?.isActive).toEqual({ type: 'boolean', value: 'true' })
-          expect(result.logic?.showExtra).toEqual({ type: 'boolean', value: 'isActive == true' })
+          expect(result.defs?.isActive).toEqual({ type: 'boolean', value: 'true' })
+          expect(result.defs?.showExtra).toEqual({ type: 'boolean', value: 'isActive == true' })
         })
 
         test('creates bundle with nested bundle', () => {
@@ -369,7 +369,7 @@ describe('Bundle', () => {
             .name('conditional-bundle')
             .version('1.0.0')
             .title('Conditional Bundle')
-            .expr('hasPets', 'true')
+            .def('hasPets', 'true')
             .registry('pet-addendum', '@company/pet-addendum', 'hasPets')
             .build()
           const item = result.contents[0] as any
@@ -405,13 +405,13 @@ describe('Bundle', () => {
             .name('logic-bundle')
             .version('1.0.0')
             .title('Logic Bundle')
-            .logic({
+            .defs({
               isActive: { type: 'boolean', value: 'true' },
               showExtra: { type: 'boolean', value: 'isActive == true' },
             })
             .build()
-          expect(result.logic?.isActive).toEqual({ type: 'boolean', value: 'true' })
-          expect(result.logic?.showExtra).toEqual({ type: 'boolean', value: 'isActive == true' })
+          expect(result.defs?.isActive).toEqual({ type: 'boolean', value: 'true' })
+          expect(result.defs?.showExtra).toEqual({ type: 'boolean', value: 'isActive == true' })
         })
 
         test('builds bundle with expr() for individual expressions', () => {
@@ -419,11 +419,11 @@ describe('Bundle', () => {
             .name('expr-bundle')
             .version('1.0.0')
             .title('Expr Bundle')
-            .expr('isActive', 'true')
-            .expr('showForm', 'isActive')
+            .def('isActive', 'true')
+            .def('showForm', 'isActive')
             .build()
-          expect(result.logic?.isActive).toEqual({ type: 'boolean', value: 'true' })
-          expect(result.logic?.showForm).toEqual({ type: 'boolean', value: 'isActive' })
+          expect(result.defs?.isActive).toEqual({ type: 'boolean', value: 'true' })
+          expect(result.defs?.showForm).toEqual({ type: 'boolean', value: 'isActive' })
         })
 
         test('builds bundle with nested bundle', () => {
@@ -498,7 +498,7 @@ describe('Bundle', () => {
             .description('A fully configured bundle')
             .code('BUN-001')
             .metadata({ author: 'Test' })
-            .logic({ isActive: { type: 'boolean', value: 'true' } })
+            .defs({ isActive: { type: 'boolean', value: 'true' } })
             .inline(
               'doc',
               document().name('doc').version('1.0.0').title('Doc').build()
@@ -507,7 +507,7 @@ describe('Bundle', () => {
           expect(result.name).toBe('complete-bundle')
           expect(result.description).toBe('A fully configured bundle')
           expect(result.code).toBe('BUN-001')
-          expect(result.logic?.isActive).toEqual({ type: 'boolean', value: 'true' })
+          expect(result.defs?.isActive).toEqual({ type: 'boolean', value: 'true' })
           expect(result.contents).toHaveLength(1)
         })
 
@@ -565,8 +565,8 @@ describe('Bundle', () => {
           expect(typeof builder.inline).toBe('function')
           expect(typeof builder.registry).toBe('function')
           expect(typeof builder.path).toBe('function')
-          expect(typeof builder.logic).toBe('function')
-          expect(typeof builder.expr).toBe('function')
+          expect(typeof builder.defs).toBe('function')
+          expect(typeof builder.def).toBe('function')
           expect(typeof builder.build).toBe('function')
         })
 
@@ -593,8 +593,8 @@ describe('Bundle', () => {
             .version('1.0.0')
             .title('Rental Package')
             .description('Complete rental application package')
-            .expr('hasPets', 'true')
-            .expr('hasVehicle', 'false')
+            .def('hasPets', 'true')
+            .def('hasVehicle', 'false')
             .inline(
               'disclosure',
               document()
@@ -610,7 +610,7 @@ describe('Bundle', () => {
             .build()
 
           expect(result.name).toBe('rental-package')
-          expect(result.logic?.hasPets).toEqual({ type: 'boolean', value: 'true' })
+          expect(result.defs?.hasPets).toEqual({ type: 'boolean', value: 'true' })
           expect(result.contents).toHaveLength(4)
         })
 

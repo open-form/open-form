@@ -10,10 +10,10 @@ export { BundleSchema, BundleContentItemSchema } from './bundle';
 // Checklist
 export { ChecklistSchema, ChecklistItemSchema } from './checklist';
 
-// Logic
-export { CondExprSchema, LogicExpressionSchema, LogicSectionSchema } from './logic';
-export { SCALAR_LOGIC_TYPES, OBJECT_LOGIC_TYPES, ALL_LOGIC_TYPES } from './logic';
-export type { ScalarLogicType, ObjectLogicType, LogicExpressionType } from './logic';
+// Expressions
+export { CondExprSchema, ExpressionSchema, DefsSectionSchema } from './expressions';
+export { SCALAR_EXPRESSION_TYPES, OBJECT_EXPRESSION_TYPES, ALL_EXPRESSION_TYPES } from './expressions';
+export type { ScalarExpressionType, ObjectExpressionType, ExpressionType } from './expressions';
 
 // Shared
-export { ArtifactSchema, LayerSchema } from './shared';
+export { ArtifactSchema, ContentRefSchema, LayerSchema } from './shared';

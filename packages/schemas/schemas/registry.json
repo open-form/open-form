@@ -4,39 +4,49 @@
   "type": "object",
   "properties": {
     "$schema": {
-      "description": "JSON Schema URI for validation",
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "JSON Schema URI for validation"
     },
     "name": {
-      "description": "Registry name/identifier",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "description": "Registry name/identifier (lowercase slug, used for data attributes and metadata)"
     },
     "homepage": {
-      "description": "Homepage URL for the registry",
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "Homepage URL for the registry"
     },
     "description": {
-      "description": "Description of the registry",
       "type": "string",
-      "maxLength": 2000
+      "maxLength": 2000,
+      "description": "Description of the registry"
     },
     "artifactsPath": {
-      "description": "Path prefix for artifact files (e.g., \"/r\" or \"/artifacts\"). Defaults to \"/r\" if not specified.",
-      "default": "/r",
       "type": "string",
       "maxLength": 100,
-      "pattern": "^\\/[a-zA-Z0-9/_-]*$"
+      "pattern": "^\\/[a-zA-Z0-9/_-]*$",
+      "description": "Path prefix for artifact files (e.g., \"/r\" or \"/artifacts\"). When omitted, artifacts are served from the base URL root."
+    },
+    "enableTelemetry": {
+      "default": true,
+      "description": "Enable anonymous usage telemetry for artifact installs. Defaults to true.",
+      "type": "boolean"
+    },
+    "enableDirectory": {
+      "default": true,
+      "description": "Allow this registry to appear in the OpenForm Hub directory. Defaults to true.",
+      "type": "boolean"
     },
     "items": {
-      "description": "List of all artifacts in the registry",
       "type": "array",
       "items": {
         "$ref": "#/$defs/RegistryItemSummary"
-      }
+      },
+      "description": "List of all artifacts in the registry"
     }
   },
   "required": [
@@ -46,19 +56,16 @@
   "additionalProperties": false,
   "$defs": {
     "RegistryItemSummary": {
-      "title": "RegistryItemSummary",
-      "description": "Summary information about an artifact in the registry",
       "type": "object",
       "properties": {
         "name": {
-          "description": "Artifact name (unique within registry)",
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$",
+          "description": "Artifact name (unique within registry)"
         },
         "kind": {
-          "description": "Artifact kind",
           "anyOf": [
             {
               "type": "string",
@@ -76,41 +83,48 @@
               "type": "string",
               "const": "bundle"
             }
-          ]
+          ],
+          "description": "Artifact kind"
         },
         "version": {
-          "description": "Semantic version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+",
+          "description": "Semantic version"
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]*\\.(json|yaml|yml)$",
+          "description": "Relative path to the artifact file. When omitted, defaults to \"{name}.json\"."
         },
         "title": {
-          "description": "Human-readable title",
           "type": "string",
           "minLength": 1,
-          "maxLength": 200
+          "maxLength": 200,
+          "description": "Human-readable title"
         },
         "description": {
-          "description": "Brief description of the artifact",
           "type": "string",
-          "maxLength": 2000
+          "maxLength": 2000,
+          "description": "Brief description of the artifact"
         },
         "layers": {
-          "description": "Available layer keys",
           "type": "array",
           "items": {
-            "description": "Layer key",
-            "type": "string"
-          }
+            "type": "string",
+            "description": "Layer key"
+          },
+          "description": "Available layer keys"
         },
         "tags": {
-          "description": "Tags for search and filtering",
           "type": "array",
           "items": {
-            "description": "Tag for categorization",
             "type": "string",
             "minLength": 1,
-            "maxLength": 50
-          }
+            "maxLength": 50,
+            "description": "Tag for categorization"
+          },
+          "description": "Tags for search and filtering"
         }
       },
       "required": [
@@ -118,7 +132,9 @@
         "kind",
         "version"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "RegistryItemSummary",
+      "description": "Summary information about an artifact in the registry"
     }
   }
 }

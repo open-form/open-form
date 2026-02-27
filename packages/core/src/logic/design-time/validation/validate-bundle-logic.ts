@@ -3,18 +3,18 @@ import type {
   Bundle,
   BundleContentItem,
   CondExpr,
-  LogicExpression,
-  LogicSection,
-  ScalarLogicType,
+  Expression,
+  DefsSection,
+  ScalarExpressionType,
 } from '@open-form/types'
 import { parseExpression } from './expression-parser'
 import { collectFieldPaths } from './field-paths'
-import { validateFormLogic, type LogicValidationOptions, type LogicValidationIssue } from './validate-form-logic'
-import { buildBundleTypeEnvironment, validateBooleanType, topologicalSortLogicKeys } from '../type-checking'
+import { validateFormDefs, type LogicValidationOptions, type LogicValidationIssue } from './validate-form-logic'
+import { buildBundleTypeEnvironment, validateBooleanType, topologicalSortDefsKeys } from '../type-checking'
 import { validateExpression, isInlineBundleArtifact, isFormArtifact, isBundleArtifact } from './shared'
 
-/** Scalar logic expression types (value is a string expression) */
-const SCALAR_LOGIC_TYPES: Set<string> = new Set([
+/** Scalar expression types (value is a string expression) */
+const SCALAR_EXPRESSION_TYPES: Set<string> = new Set([
   'boolean',
   'string',
   'number',
@@ -28,30 +28,30 @@ const SCALAR_LOGIC_TYPES: Set<string> = new Set([
 ])
 
 /**
- * Check if a logic expression type is a scalar type.
+ * Check if an expression type is a scalar type.
  */
-function isScalarLogicType(type: string): type is ScalarLogicType {
-  return SCALAR_LOGIC_TYPES.has(type)
+function isScalarExpressionType(type: string): type is ScalarExpressionType {
+  return SCALAR_EXPRESSION_TYPES.has(type)
 }
 
 /**
- * Validates a single LogicExpression (scalar or object type).
+ * Validates a single Expression (scalar or object type).
  *
  * For scalar types, validates the value expression string.
  * For object types, validates each property expression string.
  */
-function validateLogicExpression(
-  expr: LogicExpression,
+function validateDefsExpression(
+  expr: Expression,
   key: string,
   validVariables: Set<string>,
   issues: LogicValidationIssue[],
   collectAllErrors: boolean
 ): boolean {
-  if (isScalarLogicType(expr.type)) {
+  if (isScalarExpressionType(expr.type)) {
     // Scalar type: value is a single expression string
     return validateExpression(
       expr.value as string,
-      ['logic', key, 'value'],
+      ['defs', key, 'value'],
       validVariables,
       issues,
       collectAllErrors
@@ -66,7 +66,7 @@ function validateLogicExpression(
       if (
         !validateExpression(
           propExpr,
-          ['logic', key, 'value', propKey],
+          ['defs', key, 'value', propKey],
           validVariables,
           issues,
           collectAllErrors
@@ -81,13 +81,13 @@ function validateLogicExpression(
 }
 
 /**
- * Extracts expression strings from a LogicSection for dependency sorting.
+ * Extracts expression strings from a DefsSection for dependency sorting.
  */
-function extractExpressionsForSorting(logic: LogicSection): Record<string, string> {
+function extractExpressionsForSorting(logic: DefsSection): Record<string, string> {
   const result: Record<string, string> = {}
 
   for (const [key, expr] of Object.entries(logic)) {
-    if (isScalarLogicType(expr.type)) {
+    if (isScalarExpressionType(expr.type)) {
       result[key] = expr.value as string
     } else {
       const valueObj = expr.value as unknown as Record<string, string | undefined>
@@ -100,10 +100,10 @@ function extractExpressionsForSorting(logic: LogicSection): Record<string, strin
 }
 
 /**
- * Gets the expression string for a logic key (for error reporting).
+ * Gets the expression string for a defs key (for error reporting).
  */
-function getExpressionForKey(expr: LogicExpression): string {
-  if (isScalarLogicType(expr.type)) {
+function getExpressionForKey(expr: Expression): string {
+  if (isScalarExpressionType(expr.type)) {
     return expr.value as string
   }
   const valueObj = expr.value as unknown as Record<string, string | undefined>
@@ -128,9 +128,9 @@ function collectBundleFieldPaths(
         const formPaths = collectFieldPaths(form.fields, `${formPrefix}.fields`)
         formPaths.forEach((p) => validVariables.add(p))
 
-        // Also add the form's logic keys
-        if (form.logic) {
-          Object.keys(form.logic).forEach((logicKey) => {
+        // Also add the form's defs keys
+        if (form.defs) {
+          Object.keys(form.defs).forEach((logicKey) => {
             validVariables.add(`${formPrefix}.${logicKey}`)
           })
         }
@@ -139,9 +139,9 @@ function collectBundleFieldPaths(
         const bundlePrefix = prefix ? `${prefix}.bundles.${item.key}` : `bundles.${item.key}`
         collectBundleFieldPaths(item.artifact, validVariables, bundlePrefix)
 
-        // Add nested bundle's logic keys
-        if (item.artifact.logic) {
-          Object.keys(item.artifact.logic).forEach((logicKey) => {
+        // Add nested bundle's defs keys
+        if (item.artifact.defs) {
+          Object.keys(item.artifact.defs).forEach((logicKey) => {
             validVariables.add(`${bundlePrefix}.${logicKey}`)
           })
         }
@@ -151,7 +151,7 @@ function collectBundleFieldPaths(
 }
 
 /**
- * Validates all logic expressions in a Bundle artifact.
+ * Validates all defs expressions in a Bundle artifact.
  *
  * Checks:
  * 1. Expression syntax using expr-eval-fork parser
@@ -172,10 +172,10 @@ function collectBundleFieldPaths(
  *   name: 'test',
  *   version: '1.0',
  *   title: 'Test',
- *   logic: {
+ *   defs: {
  *     needsForm: {
  *       type: 'boolean',
- *       value: 'forms.main.fields.required.value == true'
+ *       value: 'forms.main.fields.required == true'
  *     }
  *   },
  *   contents: [
@@ -184,10 +184,10 @@ function collectBundleFieldPaths(
  *   ]
  * }
  *
- * validateBundleLogic(bundle)
+ * validateBundleDefs(bundle)
  * ```
  */
-export function validateBundleLogic(
+export function validateBundleDefs(
   bundle: Bundle,
   options: LogicValidationOptions = {}
 ): StandardSchemaV1.Result<Bundle> {
@@ -197,18 +197,18 @@ export function validateBundleLogic(
   // Build valid variable set
   const validVariables = new Set<string>()
 
-  // Add logic keys as valid variables
-  if (bundle.logic) {
-    Object.keys(bundle.logic).forEach((key) => validVariables.add(key))
+  // Add defs keys as valid variables
+  if (bundle.defs) {
+    Object.keys(bundle.defs).forEach((key) => validVariables.add(key))
   }
 
   // Collect field paths from inline Form artifacts
   collectBundleFieldPaths(bundle, validVariables)
 
-  // Validate logic section expressions
-  if (bundle.logic) {
-    for (const [key, expr] of Object.entries(bundle.logic)) {
-      if (!validateLogicExpression(expr, key, validVariables, issues, collectAllErrors)) {
+  // Validate defs section expressions
+  if (bundle.defs) {
+    for (const [key, expr] of Object.entries(bundle.defs)) {
+      if (!validateDefsExpression(expr, key, validVariables, issues, collectAllErrors)) {
         if (!collectAllErrors) {
           return { issues }
         }
@@ -216,15 +216,15 @@ export function validateBundleLogic(
     }
 
     // Extract expressions for dependency sorting
-    const expressionsForSorting = extractExpressionsForSorting(bundle.logic)
+    const expressionsForSorting = extractExpressionsForSorting(bundle.defs)
 
-    // Check for circular dependencies in logic keys
-    const { cyclicKeys } = topologicalSortLogicKeys(expressionsForSorting)
+    // Check for circular dependencies in defs keys
+    const { cyclicKeys } = topologicalSortDefsKeys(expressionsForSorting)
     for (const key of cyclicKeys) {
-      const logicExpr = bundle.logic[key]
+      const logicExpr = bundle.defs[key]
       issues.push({
-        message: `Circular dependency detected: logic key "${key}" is involved in a dependency cycle`,
-        path: ['logic', key],
+        message: `Circular dependency detected: defs key "${key}" is involved in a dependency cycle`,
+        path: ['defs', key],
         expression: logicExpr ? getExpressionForKey(logicExpr) : key,
         severity: 'warning',
       })
@@ -280,7 +280,7 @@ export function validateBundleLogic(
     // Recursively validate inline Form artifacts
     if (isInlineBundleArtifact(item)) {
       if (isFormArtifact(item.artifact)) {
-        const formResult = validateFormLogic(item.artifact, options)
+        const formResult = validateFormDefs(item.artifact, options)
         if (formResult.issues) {
           // Prefix the path with contents[i].artifact
           for (const issue of formResult.issues) {
@@ -296,7 +296,7 @@ export function validateBundleLogic(
         }
       } else if (isBundleArtifact(item.artifact)) {
         // Recursively validate nested bundles
-        const bundleResult = validateBundleLogic(item.artifact, options)
+        const bundleResult = validateBundleDefs(item.artifact, options)
         if (bundleResult.issues) {
           for (const issue of bundleResult.issues) {
             const logicIssue = issue as LogicValidationIssue

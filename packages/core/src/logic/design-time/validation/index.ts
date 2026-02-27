@@ -9,14 +9,14 @@
 
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { Form, Bundle } from '@open-form/types'
-import { validateFormLogic } from './validate-form-logic'
-import { validateBundleLogic } from './validate-bundle-logic'
+import { validateFormDefs } from './validate-form-logic'
+import { validateBundleDefs } from './validate-bundle-logic'
 
 // Re-export types and utilities (internal use only)
 export { parseExpression, validateExpressionSyntax, type ParseResult } from './expression-parser'
 export { collectFieldPaths, collectFieldIds } from './field-paths'
-export { validateFormLogic, type LogicValidationOptions, type LogicValidationIssue } from './validate-form-logic'
-export { validateBundleLogic } from './validate-bundle-logic'
+export { validateFormDefs, type LogicValidationOptions, type LogicValidationIssue } from './validate-form-logic'
+export { validateBundleDefs } from './validate-bundle-logic'
 export { isInlineBundleArtifact, isFormArtifact, isBundleArtifact } from './shared'
 
 /** Artifacts that support logic validation */
@@ -55,7 +55,7 @@ export interface ValidateLogicOptions {
  *   version: '1.0',
  *   title: 'Test',
  *   logic: {
- *     isAdult: 'fields.age.value >= 18'
+ *     isAdult: 'fields.age >= 18'
  *   },
  *   fields: {
  *     age: { type: 'number' },
@@ -77,9 +77,9 @@ export function validateLogic<T extends LogicValidatableArtifact>(
 ): StandardSchemaV1.Result<T> {
   switch (artifact.kind) {
     case 'form':
-      return validateFormLogic(artifact as Form, options) as StandardSchemaV1.Result<T>
+      return validateFormDefs(artifact as Form, options) as StandardSchemaV1.Result<T>
     case 'bundle':
-      return validateBundleLogic(artifact as Bundle, options) as StandardSchemaV1.Result<T>
+      return validateBundleDefs(artifact as Bundle, options) as StandardSchemaV1.Result<T>
     default:
       // This should never happen if TypeScript types are correct
       return {

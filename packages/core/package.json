@@ -75,6 +75,7 @@
 		"@open-form/types": "workspace:^",
 		"@standard-schema/spec": "^1.0.0",
 		"expr-eval-fork": "^3.0.1",
+		"safe-regex": "^2.1.1",
 		"yaml": "catalog:",
 		"zod": "catalog:"
 	},
@@ -82,6 +83,7 @@
 		"@open-form/eslint-config": "workspace:*",
 		"@open-form/typescript-config": "workspace:*",
 		"@types/node": "catalog:",
+		"@types/safe-regex": "^1.1.6",
 		"@vitest/coverage-v8": "catalog:",
 		"eslint": "catalog:",
 		"tsup": "catalog:",

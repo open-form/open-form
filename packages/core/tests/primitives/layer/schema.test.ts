@@ -115,7 +115,6 @@ describe('Layer', () => {
 					.mimeType('text/plain')
 					.title('Greeting')
 					.description('A greeting template')
-					.checksum('xyz789')
 					.bindings({ name: 'user_name' })
 					.build();
 
@@ -125,7 +124,6 @@ describe('Layer', () => {
 					mimeType: 'text/plain',
 					title: 'Greeting',
 					description: 'A greeting template',
-					checksum: 'xyz789',
 					bindings: { name: 'user_name' },
 				});
 			});

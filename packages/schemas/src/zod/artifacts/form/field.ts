@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CondExprSchema } from '../logic/cond-expr';
+import { CondExprSchema } from '../expressions/cond-expr';
 import { CoordinateSchema } from '../../primitives/coordinate';
 import { BboxSchema } from '../../primitives/bbox';
 import { MoneySchema } from '../../primitives/money';
@@ -239,7 +239,7 @@ export interface FieldsetField {
 export const FieldsetFieldSchema: z.ZodType<FieldsetField> = BaseFieldSchema.extend({
 	type: z.literal('fieldset'),
 	fields: z.lazy(() => z.record(
-		z.string().min(1).max(100).describe('Nested field identifier'),
+		z.string().min(1).max(100).regex(/^[a-z][a-zA-Z0-9_]*$/).describe('Nested field identifier (camelCase, starts with lowercase letter)'),
 		z.union([BaseFieldSchemaTypes, FieldsetFieldSchema]),
 	)),
 }).meta({ id: 'FieldsetField' });

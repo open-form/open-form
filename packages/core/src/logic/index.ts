@@ -25,7 +25,7 @@ export {
   validateLogic,
   type LogicValidatableArtifact,
   type CondExpr,
-  type LogicSection,
+  type DefsSection,
 } from './design-time'
 
 // ============================================================================
@@ -33,8 +33,13 @@ export {
 // ============================================================================
 
 export {
-  evaluateFormLogic,
+  evaluateFormDefs,
+  evaluateRules,
+  evaluateFormRules,
   type FormRuntimeState,
   type FieldRuntimeState,
   type AnnexRuntimeState,
+  type RuleValidationResult,
+  type FormRulesValidationResult,
+  type EvaluationContext,
 } from './runtime'

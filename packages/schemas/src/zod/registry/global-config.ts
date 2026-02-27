@@ -8,6 +8,38 @@
 import { z } from 'zod';
 
 /**
+ * Per-registry cache configuration
+ */
+export const RegistryCacheConfigSchema = z.object({
+	ttl: z.number()
+		.int()
+		.min(0)
+		.describe('Cache TTL in seconds. 0 disables caching for this registry.')
+		.optional(),
+}).meta({
+	title: 'RegistryCacheConfig',
+	description: 'Per-registry cache configuration',
+});
+
+/**
+ * Global cache configuration
+ */
+export const CacheConfigSchema = z.object({
+	ttl: z.number()
+		.int()
+		.min(0)
+		.default(3600)
+		.describe('Default cache TTL in seconds. 0 disables caching. Default: 3600 (1 hour)')
+		.optional(),
+	directory: z.string()
+		.describe('Custom cache directory path. Default: ~/.open-form/cache')
+		.optional(),
+}).meta({
+	title: 'CacheConfig',
+	description: 'Cache configuration for registry data',
+});
+
+/**
  * Registry entry with authentication
  */
 export const RegistryEntryObjectSchema = z.object({
@@ -17,6 +49,9 @@ export const RegistryEntryObjectSchema = z.object({
 		.optional(),
 	params: z.record(z.string(), z.string())
 		.describe('Query parameters to include in requests')
+		.optional(),
+	cache: RegistryCacheConfigSchema
+		.describe('Per-registry cache settings')
 		.optional(),
 }).meta({
 	title: 'RegistryEntryObject',
@@ -35,16 +70,37 @@ export const RegistryEntrySchema = z.union([
 });
 
 /**
+ * Output format for installed artifacts
+ * - 'json': Raw JSON file only
+ * - 'yaml': Raw YAML file only
+ * - 'typed': JSON file with TypeScript declaration file (.d.ts) for type safety
+ * - 'ts': TypeScript module with ready-to-use typed export
+ */
+export const GlobalArtifactOutputFormatSchema = z.union([
+	z.literal('json'),
+	z.literal('yaml'),
+	z.literal('typed'),
+	z.literal('ts'),
+]).meta({
+	title: 'GlobalArtifactOutputFormat',
+	description: 'Output format for installed artifacts',
+});
+
+/**
  * Default settings for artifact operations
  */
 export const GlobalDefaultsSchema = z.object({
-	format: z.union([z.literal('json'), z.literal('yaml')])
-		.default('yaml')
-		.describe('Default output format for artifacts')
+	output: GlobalArtifactOutputFormatSchema
+		.default('json')
+		.describe('Default output format for artifacts: json, yaml, typed (json + .d.ts), or ts (TypeScript module)')
 		.optional(),
 	artifactsDir: z.string()
 		.default('artifacts')
 		.describe('Default directory for installed artifacts')
+		.optional(),
+	registry: z.string()
+		.regex(/^@[a-zA-Z0-9][a-zA-Z0-9-_]*$/)
+		.describe('Default registry namespace for artifact operations (must start with @)')
 		.optional(),
 }).meta({
 	title: 'GlobalDefaults',
@@ -64,6 +120,13 @@ export const GlobalConfigSchema = z.object({
 	).describe('Configured registries by namespace')
 		.optional(),
 	defaults: GlobalDefaultsSchema.optional(),
+	cache: CacheConfigSchema
+		.describe('Global cache configuration for registry data')
+		.optional(),
+	enableTelemetry: z.boolean()
+		.default(true)
+		.describe('Enable anonymous usage telemetry for artifact installs. Overrides registry settings when false. Defaults to true.')
+		.optional(),
 }).meta({
 	title: 'OpenForm Global Config',
 	description: 'Schema for ~/.open-form/config.json global configuration file',
@@ -72,7 +135,10 @@ export const GlobalConfigSchema = z.object({
 /**
  * TypeScript types
  */
+export type RegistryCacheConfig = z.infer<typeof RegistryCacheConfigSchema>;
+export type CacheConfig = z.infer<typeof CacheConfigSchema>;
 export type RegistryEntryObject = z.infer<typeof RegistryEntryObjectSchema>;
 export type RegistryEntry = z.infer<typeof RegistryEntrySchema>;
+export type GlobalArtifactOutputFormat = z.infer<typeof GlobalArtifactOutputFormatSchema>;
 export type GlobalDefaults = z.infer<typeof GlobalDefaultsSchema>;
 export type GlobalConfig = z.infer<typeof GlobalConfigSchema>;

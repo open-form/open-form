@@ -4,86 +4,122 @@
   "type": "object",
   "properties": {
     "$schema": {
-      "description": "JSON Schema URI for validation",
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "JSON Schema URI for validation"
     },
     "registries": {
-      "description": "Configured registries by namespace",
       "type": "object",
       "propertyNames": {
-        "description": "Registry namespace (must start with @)",
         "type": "string",
-        "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+        "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$",
+        "description": "Registry namespace (must start with @)"
       },
       "additionalProperties": {
         "$ref": "#/$defs/RegistryEntry"
-      }
+      },
+      "description": "Configured registries by namespace"
     },
     "defaults": {
       "$ref": "#/$defs/GlobalDefaults"
+    },
+    "cache": {
+      "type": "object",
+      "properties": {
+        "ttl": {
+          "default": 3600,
+          "description": "Default cache TTL in seconds. 0 disables caching. Default: 3600 (1 hour)",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "directory": {
+          "type": "string",
+          "description": "Custom cache directory path. Default: ~/.open-form/cache"
+        }
+      },
+      "additionalProperties": false,
+      "title": "CacheConfig",
+      "description": "Global cache configuration for registry data"
+    },
+    "enableTelemetry": {
+      "default": true,
+      "description": "Enable anonymous usage telemetry for artifact installs. Overrides registry settings when false. Defaults to true.",
+      "type": "boolean"
     }
   },
   "additionalProperties": false,
   "$defs": {
     "RegistryEntry": {
-      "title": "RegistryEntry",
-      "description": "Registry configuration - URL string or object with authentication",
       "anyOf": [
         {
-          "description": "Simple registry URL",
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Simple registry URL"
         },
         {
           "$ref": "#/$defs/RegistryEntryObject"
         }
-      ]
+      ],
+      "title": "RegistryEntry",
+      "description": "Registry configuration - URL string or object with authentication"
     },
     "RegistryEntryObject": {
-      "title": "RegistryEntryObject",
-      "description": "Registry configuration with authentication options",
       "type": "object",
       "properties": {
         "url": {
-          "description": "Registry base URL",
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Registry base URL"
         },
         "headers": {
-          "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)",
           "type": "object",
           "propertyNames": {
             "type": "string"
           },
           "additionalProperties": {
             "type": "string"
-          }
+          },
+          "description": "HTTP headers for authentication (supports ${ENV_VAR} expansion)"
         },
         "params": {
-          "description": "Query parameters to include in requests",
           "type": "object",
           "propertyNames": {
             "type": "string"
           },
           "additionalProperties": {
             "type": "string"
-          }
+          },
+          "description": "Query parameters to include in requests"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "ttl": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "description": "Cache TTL in seconds. 0 disables caching for this registry."
+            }
+          },
+          "additionalProperties": false,
+          "title": "RegistryCacheConfig",
+          "description": "Per-registry cache settings"
         }
       },
       "required": [
         "url"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "RegistryEntryObject",
+      "description": "Registry configuration with authentication options"
     },
     "GlobalDefaults": {
-      "title": "GlobalDefaults",
-      "description": "Default settings for CLI operations",
       "type": "object",
       "properties": {
-        "format": {
-          "description": "Default output format for artifacts",
-          "default": "yaml",
+        "output": {
+          "default": "json",
+          "description": "Default output format for artifacts: json, yaml, typed (json + .d.ts), or ts (TypeScript module)",
           "anyOf": [
             {
               "type": "string",
@@ -92,16 +128,32 @@
             {
               "type": "string",
               "const": "yaml"
+            },
+            {
+              "type": "string",
+              "const": "typed"
+            },
+            {
+              "type": "string",
+              "const": "ts"
             }
-          ]
+          ],
+          "title": "GlobalArtifactOutputFormat"
         },
         "artifactsDir": {
-          "description": "Default directory for installed artifacts",
           "default": "artifacts",
+          "description": "Default directory for installed artifacts",
           "type": "string"
+        },
+        "registry": {
+          "type": "string",
+          "pattern": "^@[a-zA-Z0-9][a-zA-Z0-9-_]*$",
+          "description": "Default registry namespace for artifact operations (must start with @)"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "GlobalDefaults",
+      "description": "Default settings for CLI operations"
     }
   }
 }

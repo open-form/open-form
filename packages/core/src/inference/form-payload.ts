@@ -74,7 +74,7 @@ export type FieldToDataType<F> = F extends { type: 'text' }
                                 ? string
                                 : F extends { type: 'person' }
                                   ? {
-                                      fullName: string
+                                      name: string
                                       title?: string
                                       firstName?: string
                                       middleName?: string
@@ -363,7 +363,7 @@ function compileFields(fields: Record<string, FormField>): JsonSchema {
   for (const [fieldId, fieldDef] of Object.entries(fields)) {
     properties[fieldId] = compileField(fieldDef)
 
-    if (fieldDef.required) {
+    if (fieldDef.required === true) {
       required.push(fieldId)
     }
   }
@@ -560,14 +560,14 @@ function compileField(field: FormField): JsonSchema {
       return {
         type: 'object',
         properties: {
-          fullName: { type: 'string' },
+          name: { type: 'string' },
           title: { type: 'string' },
           firstName: { type: 'string' },
           middleName: { type: 'string' },
           lastName: { type: 'string' },
           suffix: { type: 'string' },
         },
-        required: ['fullName'],
+        required: ['name'],
         additionalProperties: false,
         ...('default' in field && field.default !== undefined && { default: field.default }),
       }
@@ -716,14 +716,14 @@ const PERSON_SCHEMA: JsonSchema = {
   type: 'object',
   properties: {
     id: { type: 'string', minLength: 1 },
-    fullName: { type: 'string', minLength: 1, maxLength: 200 },
+    name: { type: 'string', minLength: 1, maxLength: 200 },
     title: { type: 'string', minLength: 1, maxLength: 50 },
     firstName: { type: 'string', minLength: 1, maxLength: 100 },
     middleName: { type: 'string', minLength: 1, maxLength: 100 },
     lastName: { type: 'string', minLength: 1, maxLength: 100 },
     suffix: { type: 'string', minLength: 1, maxLength: 50 },
   },
-  required: ['id', 'fullName'],
+  required: ['id', 'name'],
   additionalProperties: false,
 }
 

@@ -5,13 +5,47 @@
  */
 
 import type { OpenFormRenderer, RendererLayer, RenderRequest, SerializerRegistry } from '@open-form/types'
-import { usaSerializers } from '@open-form/serialization'
+import { usaSerializers, attachmentStringifier } from '@open-form/serialization'
 import { renderPdf } from './render'
 import type { PdfSignatureOptions } from './utils/signature-helpers'
 
 // Re-export signature helper types
 export type { PdfSignatureOptions } from './utils/signature-helpers'
 export { resolvePdfSignatureOptions } from './utils/signature-helpers'
+
+/**
+ * Wrapper class for annexes that serializes to string via toString()
+ */
+class AnnexValueWrapper {
+	constructor(private readonly rawValue: unknown) {
+		if (rawValue !== null && typeof rawValue === 'object') {
+			Object.assign(this, rawValue)
+		}
+	}
+
+	toString(): string {
+		try {
+			return attachmentStringifier.stringify(this.rawValue as Parameters<typeof attachmentStringifier.stringify>[0])
+		} catch {
+			return '[Attachment]'
+		}
+	}
+}
+
+/**
+ * Preprocess annexes by wrapping each value for automatic serialization
+ */
+function preprocessAnnexes(annexes: Record<string, unknown>): Record<string, unknown> {
+	const processed: Record<string, unknown> = {}
+	for (const [key, value] of Object.entries(annexes)) {
+		if (value !== null && value !== undefined) {
+			processed[key] = new AnnexValueWrapper(value)
+		} else {
+			processed[key] = value
+		}
+	}
+	return processed
+}
 
 type PdfTemplate = RendererLayer & {
   type: 'pdf'
@@ -71,13 +105,26 @@ export function pdfRenderer(
       // Note: RuntimeForm passes _adopted and _captures (with underscore prefix)
       const data = request.data as unknown as Record<string, unknown>
       const { fields, parties, _adopted, _captures, annexes } = data
+
+      // Handle nested structure: annexes/parties may be inside fields (from form.ts render)
+      const fieldsObj = fields as Record<string, unknown> | undefined
+      const actualAnnexes = annexes ?? (fieldsObj?.annexes as Record<string, unknown> | undefined)
+      const actualParties = parties ?? (fieldsObj?.parties as Record<string, unknown> | undefined)
+
+      // Remove nested annexes/parties from fields before spreading
+      const cleanFields = fieldsObj ? { ...fieldsObj } : undefined
+      if (cleanFields) {
+        delete cleanFields.annexes
+        delete cleanFields.parties
+      }
+
       // Combine field values with other data for template rendering
       const dataRecord: Record<string, unknown> = {
-        ...((fields as Record<string, unknown>) ?? {}),
-        ...(parties ? { parties } : {}),
+        ...(cleanFields ?? {}),
+        ...(actualParties ? { parties: actualParties } : {}),
         ...(_adopted ? { _adopted } : {}),
         ...(_captures ? { _captures } : {}),
-        ...(annexes ? { annexes } : {}),
+        ...(actualAnnexes ? { annexes: preprocessAnnexes(actualAnnexes as Record<string, unknown>) } : {}),
       }
 
       // Priority: context serializers > configured serializers > default

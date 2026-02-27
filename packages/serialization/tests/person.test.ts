@@ -25,9 +25,9 @@ describe("person Serializers", () => {
       expect(result).toContain("Jr.");
     });
 
-    it("person.stringify with fullName", () => {
+    it("person.stringify with name", () => {
       const result = usaSerializers.person.stringify({
-        fullName: "Jane Smith",
+        name: "Jane Smith",
       });
       expect(result).toBe("Jane Smith");
     });
@@ -58,7 +58,7 @@ describe("person Serializers", () => {
     it("person.stringify with all name fields as null throws", () => {
       expect(() => {
         usaSerializers.person.stringify({
-          fullName: null,
+          name: null,
           firstName: null,
           lastName: null,
           middleName: null,

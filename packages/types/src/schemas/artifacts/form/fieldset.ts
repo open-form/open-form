@@ -9,8 +9,6 @@ import type { FormField } from "./field";
  * A logical grouping of fields rendered together as a section.
  */
 export interface FormFieldset {
-  /** Fieldset identifier (slug). */
-  id: string;
   /** Optional title/heading for the fieldset. */
   title?: string;
   /** Optional description/help text for the fieldset. */

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/duration.json",
-  "id": "Duration",
   "type": "string",
   "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+(?:\\.\\d+)?S)?)?$",
+  "id": "Duration",
   "title": "Duration"
 }

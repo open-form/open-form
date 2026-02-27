@@ -25,7 +25,7 @@ describe('BundleInstance', () => {
       .description('A test bundle')
       .code('BUN-001')
       .metadata({ author: 'Test' })
-      .logic({ needsDoc: { type: 'boolean', value: 'true' }, isActive: { type: 'boolean', value: 'needsDoc == true' } })
+      .defs({ needsDoc: { type: 'boolean', value: 'true' }, isActive: { type: 'boolean', value: 'needsDoc == true' } })
       .inline(
         'main-doc',
         document()
@@ -81,9 +81,9 @@ describe('BundleInstance', () => {
 
     test('returns logic when set', () => {
       const instance = createBundleWithContents()
-      expect(instance.logic).toBeDefined()
-      expect(instance.logic?.needsDoc).toEqual({ type: 'boolean', value: 'true' })
-      expect(instance.logic?.isActive).toEqual({ type: 'boolean', value: 'needsDoc == true' })
+      expect(instance.defs).toBeDefined()
+      expect(instance.defs?.needsDoc).toEqual({ type: 'boolean', value: 'true' })
+      expect(instance.defs?.isActive).toEqual({ type: 'boolean', value: 'needsDoc == true' })
     })
 
     test('returns contents', () => {
@@ -274,7 +274,7 @@ describe('BundleInstance', () => {
         .name('test')
         .version('1.0.0')
         .title('Test')
-        .expr('showForm', 'true')
+        .def('showForm', 'true')
         .registry('ext', '@org/form', 'showForm')
         .build()
 
@@ -316,11 +316,11 @@ describe('BundleInstance', () => {
         .name('test')
         .version('1.0.0')
         .title('Test')
-        .logic({ a: { type: 'boolean', value: 'true' }, b: { type: 'boolean', value: 'a == true' } })
+        .defs({ a: { type: 'boolean', value: 'true' }, b: { type: 'boolean', value: 'a == true' } })
         .build()
 
-      expect(instance.logic?.a).toEqual({ type: 'boolean', value: 'true' })
-      expect(instance.logic?.b).toEqual({ type: 'boolean', value: 'a == true' })
+      expect(instance.defs?.a).toEqual({ type: 'boolean', value: 'true' })
+      expect(instance.defs?.b).toEqual({ type: 'boolean', value: 'a == true' })
     })
 
     test('expr() adds individual expression', () => {
@@ -328,12 +328,12 @@ describe('BundleInstance', () => {
         .name('test')
         .version('1.0.0')
         .title('Test')
-        .expr('isActive', 'true')
-        .expr('showForm', 'isActive')
+        .def('isActive', 'true')
+        .def('showForm', 'isActive')
         .build()
 
-      expect(instance.logic?.isActive).toEqual({ type: 'boolean', value: 'true' })
-      expect(instance.logic?.showForm).toEqual({ type: 'boolean', value: 'isActive' })
+      expect(instance.defs?.isActive).toEqual({ type: 'boolean', value: 'true' })
+      expect(instance.defs?.showForm).toEqual({ type: 'boolean', value: 'isActive' })
     })
   })
 

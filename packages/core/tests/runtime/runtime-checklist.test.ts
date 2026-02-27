@@ -272,49 +272,6 @@ describe('DraftChecklist', () => {
   // ============================================================================
 
   describe('render()', () => {
-    // TODO: Implement renderer-based interface for runtime checklist render()
-    test.skip('render() calls renderer with merged items', async () => {
-      let capturedData: any = undefined
-      const mockRenderer = {
-        id: 'mock-renderer',
-        render: async (request: any) => {
-          capturedData = request.data
-          return 'rendered'
-        },
-      }
-
-      const checklist = createMixedChecklist()
-      const filled = checklist.fill({ reviewed: true, approval: 'approved' })
-      const result = await filled.render({ renderer: mockRenderer } as any)
-
-      expect(result).toBe('rendered')
-      expect(capturedData.schema.name).toBe('mixed-checklist')
-      expect(capturedData.items).toHaveLength(2)
-      expect(capturedData.items[0].value).toBe(true)
-      expect(capturedData.items[1].value).toBe('approved')
-    })
-
-    // TODO: Implement renderer-based interface for runtime checklist render()
-    test.skip('render() includes schema namespace', async () => {
-      let capturedData: any = undefined
-      const mockRenderer = {
-        id: 'mock-renderer',
-        render: async (request: any) => {
-          capturedData = request.data
-          return 'rendered'
-        },
-      }
-
-      const checklist = createMixedChecklist()
-      const filled = checklist.fill({ reviewed: true, approval: 'approved' })
-      await filled.render({ renderer: mockRenderer } as any)
-
-      expect(capturedData.schema).toBeDefined()
-      expect(capturedData.schema.name).toBe('mixed-checklist')
-      expect(capturedData.schema.version).toBe('1.0.0')
-      expect(capturedData.schema.title).toBe('Mixed Checklist')
-    })
-
     test('render() throws error when no layers defined', async () => {
       const checklist = createBooleanChecklist() // No layers
       const filled = checklist.fill({ task1: true, task2: false, task3: true })

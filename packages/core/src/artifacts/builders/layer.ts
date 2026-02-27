@@ -35,6 +35,7 @@ export interface FileLayerBuilderType {
 	description(value: string): FileLayerBuilderType;
 	checksum(value: string): FileLayerBuilderType;
 	bindings(value: Record<string, string>): FileLayerBuilderType;
+	bindingsFrom(value: string): FileLayerBuilderType;
 	build(): FileLayer;
 }
 
@@ -44,8 +45,8 @@ export interface InlineLayerBuilderType {
 	mimeType(value: string): InlineLayerBuilderType;
 	title(value: string): InlineLayerBuilderType;
 	description(value: string): InlineLayerBuilderType;
-	checksum(value: string): InlineLayerBuilderType;
 	bindings(value: Record<string, string>): InlineLayerBuilderType;
+	bindingsFrom(value: string): InlineLayerBuilderType;
 	build(): InlineLayer;
 }
 
@@ -99,6 +100,10 @@ export function fileLayer(): FileLayerBuilderType {
 			_def.bindings = value;
 			return self;
 		},
+		bindingsFrom(value: string) {
+			_def.bindingsFrom = value;
+			return self;
+		},
 		build(): FileLayer {
 			if (!_def.path) {
 				throw new Error('FileLayer requires a path. Use .path() to set it.');
@@ -146,12 +151,12 @@ export function inlineLayer(): InlineLayerBuilderType {
 			_def.description = value;
 			return self;
 		},
-		checksum(value: string) {
-			_def.checksum = value;
-			return self;
-		},
 		bindings(value: Record<string, string>) {
 			_def.bindings = value;
+			return self;
+		},
+		bindingsFrom(value: string) {
+			_def.bindingsFrom = value;
 			return self;
 		},
 		build(): InlineLayer {

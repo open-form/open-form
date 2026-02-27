@@ -12,7 +12,7 @@ import type {
   FieldRuntimeState,
   AnnexRuntimeState,
 } from '@/logic/runtime/evaluation/types'
-import { evaluateExpression, evaluateFormLogic } from '@/logic/runtime/evaluation'
+import { evaluateExpression, evaluateFormDefs } from '@/logic/runtime/evaluation'
 import type { FormDataPayload } from '@/logic/runtime/evaluation/context-builder'
 
 // ============================================================================
@@ -64,25 +64,25 @@ export function evaluateMultipleExpressions(
 // ============================================================================
 
 /**
- * Gets the logic values map from a form and data.
+ * Gets the defs values map from a form and data.
  *
- * This is useful when you need access to the evaluated logic values
+ * This is useful when you need access to the evaluated defs values
  * as a Map for iteration or checking specific keys.
  *
  * @param form - The Form artifact
  * @param data - The data payload
- * @returns Map of logic key → evaluated value
+ * @returns Map of defs key → evaluated value
  */
-export function getLogicValues(form: Form, data: FormDataPayload): Map<string, unknown> {
-  const result = evaluateFormLogic(form, data)
+export function getDefsValues(form: Form, data: FormDataPayload): Map<string, unknown> {
+  const result = evaluateFormDefs(form, data)
   if ('value' in result) {
-    const logicValues = new Map<string, unknown>()
-    if (form.logic) {
-      for (const key of Object.keys(form.logic)) {
-        logicValues.set(key, result.value.logicValues.get(key))
+    const defsValues = new Map<string, unknown>()
+    if (form.defs) {
+      for (const key of Object.keys(form.defs)) {
+        defsValues.set(key, result.value.defsValues.get(key))
       }
     }
-    return logicValues
+    return defsValues
   }
   return new Map()
 }
@@ -108,11 +108,6 @@ export function getFieldValueFromContext(fields: NestedFieldValues, path: string
     current = (current as Record<string, unknown>)[part]
   }
 
-  // If we landed on a { value: ... } object, extract the value
-  if (current !== null && typeof current === 'object' && 'value' in (current as object)) {
-    return (current as { value: unknown }).value
-  }
-
   return current
 }
 
@@ -128,7 +123,7 @@ export function getFieldValueFromContext(fields: NestedFieldValues, path: string
  * @returns Map of fieldId → FieldRuntimeState, or empty map on error
  */
 export function evaluateFieldStates(form: Form, data: FormDataPayload): Map<string, FieldRuntimeState> {
-  const result = evaluateFormLogic(form, data)
+  const result = evaluateFormDefs(form, data)
   if ('value' in result) {
     return result.value.fields
   }
@@ -143,7 +138,7 @@ export function evaluateFieldStates(form: Form, data: FormDataPayload): Map<stri
  * @returns Map of annexId → AnnexRuntimeState, or empty map on error
  */
 export function evaluateAnnexStates(form: Form, data: FormDataPayload): Map<string, AnnexRuntimeState> {
-  const result = evaluateFormLogic(form, data)
+  const result = evaluateFormDefs(form, data)
   if ('value' in result) {
     return result.value.annexes
   }
@@ -163,7 +158,7 @@ export function getFieldRuntimeState(
   data: FormDataPayload,
   fieldId: string
 ): FieldRuntimeState | undefined {
-  const result = evaluateFormLogic(form, data)
+  const result = evaluateFormDefs(form, data)
   if ('value' in result) {
     return result.value.fields.get(fieldId)
   }
@@ -183,7 +178,7 @@ export function getAnnexRuntimeState(
   data: FormDataPayload,
   annexId: string
 ): AnnexRuntimeState | undefined {
-  const result = evaluateFormLogic(form, data)
+  const result = evaluateFormDefs(form, data)
   if ('value' in result) {
     return result.value.annexes.get(annexId)
   }

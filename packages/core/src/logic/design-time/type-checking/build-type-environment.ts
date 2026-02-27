@@ -3,9 +3,9 @@
  *
  * Type environments are built in two passes:
  * 1. Register field types from field definitions
- * 2. Infer logic key types in topological order (dependencies first)
+ * 2. Infer defs key types in topological order (dependencies first)
  *
- * This ensures that when a logic key references another logic key,
+ * This ensures that when a defs key references another defs key,
  * the referenced key's type is already known.
  */
 
@@ -14,9 +14,9 @@ import type {
   Bundle,
   FormField,
   FieldsetField,
-  LogicExpression,
-  LogicSection,
-  ScalarLogicType,
+  Expression,
+  DefsSection,
+  ScalarExpressionType,
 } from '@open-form/types'
 import type { TypeEnvironment } from './type-environment'
 import { createTypeEnvironment } from './type-environment'
@@ -25,8 +25,8 @@ import { inferExpressionType } from './type-inferrer'
 import { parseExpression } from '../validation/expression-parser'
 import { isInlineBundleArtifact, isFormArtifact, isBundleArtifact } from '../validation/shared'
 
-/** Scalar logic expression types (value is a string expression) */
-const SCALAR_LOGIC_TYPES: Set<string> = new Set([
+/** Scalar expression types (value is a string expression) */
+const SCALAR_EXPRESSION_TYPES: Set<string> = new Set([
   'boolean',
   'string',
   'number',
@@ -40,23 +40,23 @@ const SCALAR_LOGIC_TYPES: Set<string> = new Set([
 ])
 
 /**
- * Check if a logic expression type is a scalar type.
+ * Check if an expression type is a scalar type.
  */
-function isScalarLogicType(type: string): type is ScalarLogicType {
-  return SCALAR_LOGIC_TYPES.has(type)
+function isScalarExpressionType(type: string): type is ScalarExpressionType {
+  return SCALAR_EXPRESSION_TYPES.has(type)
 }
 
 /**
- * Extracts a concatenated expression string from a LogicExpression for parsing.
+ * Extracts a concatenated expression string from an Expression for parsing.
  *
  * For scalar types, returns the value directly.
  * For object types, concatenates all property expressions.
  *
- * @param expr - The LogicExpression
+ * @param expr - The Expression
  * @returns Combined expression string
  */
-function getExpressionString(expr: LogicExpression): string {
-  if (isScalarLogicType(expr.type)) {
+function getExpressionString(expr: Expression): string {
+  if (isScalarExpressionType(expr.type)) {
     return expr.value as string
   }
   // Object type: concatenate all property expressions
@@ -66,12 +66,12 @@ function getExpressionString(expr: LogicExpression): string {
 }
 
 /**
- * Extracts expression strings from a LogicSection for dependency sorting.
+ * Extracts expression strings from a DefsSection for dependency sorting.
  *
- * @param logic - The logic section
+ * @param logic - The defs section
  * @returns Record of key → expression string(s) for sorting
  */
-function extractExpressionsForSorting(logic: LogicSection): Record<string, string> {
+function extractExpressionsForSorting(logic: DefsSection): Record<string, string> {
   const result: Record<string, string> = {}
   for (const [key, expr] of Object.entries(logic)) {
     result[key] = getExpressionString(expr)
@@ -80,7 +80,7 @@ function extractExpressionsForSorting(logic: LogicSection): Record<string, strin
 }
 
 /**
- * Result of topological sorting logic keys.
+ * Result of topological sorting defs keys.
  */
 export interface TopologicalSortResult {
   /** Keys in dependency order */
@@ -90,15 +90,15 @@ export interface TopologicalSortResult {
 }
 
 /**
- * Topologically sorts logic keys based on their dependencies.
+ * Topologically sorts defs keys based on their dependencies.
  *
  * Ensures that if key A references key B, B comes before A in the result.
  * Detects and reports circular dependencies.
  *
- * @param logic - The logic section with key-to-expression mappings
+ * @param logic - The defs section with key-to-expression mappings
  * @returns Object containing sorted keys and any cyclic keys
  */
-export function topologicalSortLogicKeys(logic: Record<string, string>): TopologicalSortResult {
+export function topologicalSortDefsKeys(logic: Record<string, string>): TopologicalSortResult {
   const keys = Object.keys(logic)
   const keySet = new Set(keys)
   const visited = new Set<string>()
@@ -112,7 +112,7 @@ export function topologicalSortLogicKeys(logic: Record<string, string>): Topolog
     if (expr) {
       const parseResult = parseExpression(expr)
       if (parseResult.success) {
-        // Find which logic keys this expression references
+        // Find which defs keys this expression references
         const deps = parseResult.variables.filter((v) => keySet.has(v))
         dependencies.set(key, deps)
       } else {
@@ -133,7 +133,7 @@ export function topologicalSortLogicKeys(logic: Record<string, string>): Topolog
     }
   }
 
-  // Start with keys that have no dependencies on other logic keys
+  // Start with keys that have no dependencies on other defs keys
   const queue: string[] = []
   for (const key of keys) {
     if ((dependencies.get(key)?.length ?? 0) === 0) {
@@ -184,11 +184,10 @@ function registerFieldTypes(
   if (!fields) return
 
   for (const [fieldId, field] of Object.entries(fields)) {
-    const basePath = `${prefix}.${fieldId}`
-    const valuePath = `${basePath}.value`
+    const fieldPath = `${prefix}.${fieldId}`
 
     // Register the field's value type
-    env.variables.set(valuePath, {
+    env.variables.set(fieldPath, {
       type: getFieldValueType(field.type),
       confidence: 'certain',
     })
@@ -197,7 +196,7 @@ function registerFieldTypes(
     if (field.type === 'fieldset') {
       const fieldset = field as FieldsetField
       if (fieldset.fields) {
-        registerFieldTypes(fieldset.fields, basePath, env)
+        registerFieldTypes(fieldset.fields, fieldPath, env)
       }
     }
   }
@@ -207,7 +206,7 @@ function registerFieldTypes(
  * Builds a type environment from a Form artifact.
  *
  * @param form - The Form artifact
- * @returns TypeEnvironment with field and logic key types
+ * @returns TypeEnvironment with field and defs key types
  *
  * @example
  * ```typescript
@@ -216,14 +215,14 @@ function registerFieldTypes(
  *   name: 'test',
  *   version: '1.0',
  *   title: 'Test',
- *   logic: {
+ *   defs: {
  *     isAdult: {
  *       type: 'boolean',
- *       value: 'fields.age.value >= 18'
+ *       value: 'fields.age >= 18'
  *     },
  *     ageCalc: {
  *       type: 'number',
- *       value: 'fields.age.value + 10'
+ *       value: 'fields.age + 10'
  *     }
  *   },
  *   fields: {
@@ -232,7 +231,7 @@ function registerFieldTypes(
  * }
  *
  * const env = buildFormTypeEnvironment(form)
- * // env.variables.get('fields.age.value') -> { type: 'number', confidence: 'certain' }
+ * // env.variables.get('fields.age') -> { type: 'number', confidence: 'certain' }
  * // env.variables.get('isAdult') -> { type: 'boolean', confidence: 'certain' }
  * // env.variables.get('ageCalc') -> { type: 'number', confidence: 'certain' }
  * ```
@@ -246,13 +245,13 @@ export function buildFormTypeEnvironment(form: Form): TypeEnvironment {
   }
 
   // Pass 2: Infer logic expression types in dependency order
-  if (form.logic) {
+  if (form.defs) {
     // Extract expression strings for dependency sorting
-    const expressionsForSorting = extractExpressionsForSorting(form.logic)
-    const { sorted: sortedKeys } = topologicalSortLogicKeys(expressionsForSorting)
+    const expressionsForSorting = extractExpressionsForSorting(form.defs)
+    const { sorted: sortedKeys } = topologicalSortDefsKeys(expressionsForSorting)
 
     for (const key of sortedKeys) {
-      const logicExpr = form.logic[key]
+      const logicExpr = form.defs[key]
       if (logicExpr) {
         // Get the expression string for type inference
         const exprString = getExpressionString(logicExpr)
@@ -289,11 +288,11 @@ function registerBundleContentTypes(
           registerFieldTypes(form.fields, `${formPrefix}.fields`, env)
         }
 
-        // Register form's logic keys with forms.<key>. prefix
-        if (form.logic) {
+        // Register form's defs keys with forms.<key>. prefix
+        if (form.defs) {
           const formEnv = buildFormTypeEnvironment(form)
           for (const [logicKey, logicType] of formEnv.variables) {
-            // Only add logic keys (not field paths)
+            // Only add defs keys (not field paths)
             if (!logicKey.startsWith('fields.')) {
               env.variables.set(`${formPrefix}.${logicKey}`, logicType)
             }
@@ -307,12 +306,12 @@ function registerBundleContentTypes(
         // Recursively register nested bundle content types
         registerBundleContentTypes(nestedBundle, env, bundlePrefix)
 
-        // Register nested bundle's logic keys
-        if (nestedBundle.logic) {
-          const expressionsForSorting = extractExpressionsForSorting(nestedBundle.logic)
-          const { sorted: sortedKeys } = topologicalSortLogicKeys(expressionsForSorting)
+        // Register nested bundle's defs keys
+        if (nestedBundle.defs) {
+          const expressionsForSorting = extractExpressionsForSorting(nestedBundle.defs)
+          const { sorted: sortedKeys } = topologicalSortDefsKeys(expressionsForSorting)
           for (const key of sortedKeys) {
-            const logicExpr = nestedBundle.logic[key]
+            const logicExpr = nestedBundle.defs[key]
             if (logicExpr) {
               const exprString = getExpressionString(logicExpr)
               const inferredType = inferExpressionType(exprString, env)
@@ -329,13 +328,13 @@ function registerBundleContentTypes(
  * Builds a type environment from a Bundle artifact.
  *
  * For inline forms, their fields are registered with the path:
- * `forms.<key>.fields.<fieldId>.value`
+ * `forms.<key>.fields.<fieldId>`
  *
  * For nested bundles, paths are prefixed with:
- * `bundles.<key>.forms.<formKey>.fields.<fieldId>.value`
+ * `bundles.<key>.forms.<formKey>.fields.<fieldId>`
  *
  * @param bundle - The Bundle artifact
- * @returns TypeEnvironment with form field and logic key types
+ * @returns TypeEnvironment with form field and defs key types
  */
 export function buildBundleTypeEnvironment(bundle: Bundle): TypeEnvironment {
   const env = createTypeEnvironment()
@@ -344,12 +343,12 @@ export function buildBundleTypeEnvironment(bundle: Bundle): TypeEnvironment {
   registerBundleContentTypes(bundle, env)
 
   // Infer bundle-level logic types
-  if (bundle.logic) {
-    const expressionsForSorting = extractExpressionsForSorting(bundle.logic)
-    const { sorted: sortedKeys } = topologicalSortLogicKeys(expressionsForSorting)
+  if (bundle.defs) {
+    const expressionsForSorting = extractExpressionsForSorting(bundle.defs)
+    const { sorted: sortedKeys } = topologicalSortDefsKeys(expressionsForSorting)
 
     for (const key of sortedKeys) {
-      const logicExpr = bundle.logic[key]
+      const logicExpr = bundle.defs[key]
       if (logicExpr) {
         const exprString = getExpressionString(logicExpr)
         const inferredType = inferExpressionType(exprString, env)

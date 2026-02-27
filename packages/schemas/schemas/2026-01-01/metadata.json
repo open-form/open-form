@@ -1,35 +1,35 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/metadata.json",
-  "id": "Metadata",
   "type": "object",
   "propertyNames": {
-    "description": "Metadata key identifier. Must start with alphanumeric character and can contain alphanumeric characters and hyphens",
     "type": "string",
     "minLength": 1,
     "maxLength": 100,
-    "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$"
+    "pattern": "^[A-Za-z0-9]([A-Za-z0-9]|-[A-Za-z0-9])*$",
+    "description": "Metadata key identifier. Must start with alphanumeric character and can contain alphanumeric characters and hyphens"
   },
   "additionalProperties": {
     "anyOf": [
       {
-        "description": "Metadata value as a string (max 500 characters)",
         "type": "string",
-        "maxLength": 500
+        "maxLength": 500,
+        "description": "Metadata value as a string (max 500 characters)"
       },
       {
-        "description": "Metadata value as a number",
-        "type": "number"
+        "type": "number",
+        "description": "Metadata value as a number"
       },
       {
-        "description": "Metadata value as a boolean",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Metadata value as a boolean"
       },
       {
-        "description": "Metadata value as null",
-        "type": "null"
+        "type": "null",
+        "description": "Metadata value as null"
       }
     ]
   },
+  "id": "Metadata",
   "title": "Metadata"
 }

@@ -25,6 +25,11 @@ export const RegistryItemSummarySchema = z.object({
 	version: z.string()
 		.regex(/^[0-9]+\.[0-9]+\.[0-9]+/)
 		.describe('Semantic version'),
+	path: z.string()
+		.max(500)
+		.regex(/^[a-zA-Z0-9][a-zA-Z0-9._/-]*\.(json|yaml|yml)$/)
+		.describe('Relative path to the artifact file. When omitted, defaults to "{name}.json".')
+		.optional(),
 	title: z.string()
 		.min(1)
 		.max(200)
@@ -56,7 +61,8 @@ export const RegistryIndexSchema = z.object({
 	name: z.string()
 		.min(1)
 		.max(100)
-		.describe('Registry name/identifier'),
+		.regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/)
+		.describe('Registry name/identifier (lowercase slug, used for data attributes and metadata)'),
 	homepage: z.url()
 		.describe('Homepage URL for the registry')
 		.optional(),
@@ -67,8 +73,15 @@ export const RegistryIndexSchema = z.object({
 	artifactsPath: z.string()
 		.regex(/^\/[a-zA-Z0-9/_-]*$/)
 		.max(100)
-		.default('/r')
-		.describe('Path prefix for artifact files (e.g., "/r" or "/artifacts"). Defaults to "/r" if not specified.')
+		.describe('Path prefix for artifact files (e.g., "/r" or "/artifacts"). When omitted, artifacts are served from the base URL root.')
+		.optional(),
+	enableTelemetry: z.boolean()
+		.default(true)
+		.describe('Enable anonymous usage telemetry for artifact installs. Defaults to true.')
+		.optional(),
+	enableDirectory: z.boolean()
+		.default(true)
+		.describe('Allow this registry to appear in the OpenForm Hub directory. Defaults to true.')
 		.optional(),
 	items: z.array(RegistryItemSummarySchema)
 		.describe('List of all artifacts in the registry'),

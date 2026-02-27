@@ -4,21 +4,21 @@
   "type": "object",
   "properties": {
     "name": {
-      "description": "Original file name",
       "type": "string",
       "minLength": 1,
-      "maxLength": 255
+      "maxLength": 255,
+      "description": "Original file name"
     },
     "mimeType": {
-      "description": "MIME type of the attached file",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "MIME type of the attached file"
     },
     "checksum": {
-      "description": "SHA-256 checksum for integrity verification",
       "type": "string",
-      "pattern": "^sha256:[a-f0-9]{64}$"
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 checksum for integrity verification"
     }
   },
   "required": [

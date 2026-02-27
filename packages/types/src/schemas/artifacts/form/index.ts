@@ -2,7 +2,8 @@
  * Form artifact type definition and form-specific structures
  */
 
-import type { LogicSection } from "../shared/logic";
+import type { DefsSection } from "../shared/expressions";
+import type { RulesSection } from "../shared/rules";
 import type { ArtifactBase, Layer } from "../shared";
 import type { FormField } from "./field";
 import type { FormAnnex } from "./annex";
@@ -15,8 +16,10 @@ import type { FormParty } from "./party";
 export interface Form extends ArtifactBase {
   /** Literal `"form"` discriminator. */
   kind: "form";
-  /** Named logic expressions that can be referenced in field/annex conditions. */
-  logic?: LogicSection;
+  /** Named definitions that can be referenced in field/annex conditions. */
+  defs?: DefsSection;
+  /** Form-level validation rules for cross-field constraints. */
+  rules?: RulesSection;
   /** Field definitions keyed by identifier. */
   fields?: Record<string, FormField>;
   /** Named layers for rendering this form into different formats. */

@@ -5,17 +5,17 @@ import type {
   FieldsetField,
   FormAnnex,
   CondExpr,
-  LogicExpression,
-  LogicSection,
-  ScalarLogicType,
+  Expression,
+  DefsSection,
+  ScalarExpressionType,
 } from '@open-form/types'
 import type { TypeEnvironment, TypeValidationSeverity, InferredType } from '../type-checking'
 import { collectFieldPaths } from './field-paths'
-import { buildFormTypeEnvironment, validateBooleanType, topologicalSortLogicKeys } from '../type-checking'
+import { buildFormTypeEnvironment, validateBooleanType, topologicalSortDefsKeys } from '../type-checking'
 import { validateExpression } from './shared'
 
-/** Scalar logic expression types (value is a string expression) */
-const SCALAR_LOGIC_TYPES: Set<string> = new Set([
+/** Scalar expression types (value is a string expression) */
+const SCALAR_EXPRESSION_TYPES: Set<string> = new Set([
   'boolean',
   'string',
   'number',
@@ -29,10 +29,10 @@ const SCALAR_LOGIC_TYPES: Set<string> = new Set([
 ])
 
 /**
- * Check if a logic expression type is a scalar type.
+ * Check if an expression type is a scalar type.
  */
-function isScalarLogicType(type: string): type is ScalarLogicType {
-  return SCALAR_LOGIC_TYPES.has(type)
+function isScalarExpressionType(type: string): type is ScalarExpressionType {
+  return SCALAR_EXPRESSION_TYPES.has(type)
 }
 
 /**
@@ -326,30 +326,30 @@ function typeCheckAnnexExpressions(
 }
 
 /**
- * Validates a single LogicExpression (scalar or object type).
+ * Validates a single Expression (scalar or object type).
  *
  * For scalar types, validates the value expression string.
  * For object types, validates each property expression string.
  *
- * @param expr - The LogicExpression to validate
- * @param key - The logic key name
+ * @param expr - The Expression to validate
+ * @param key - The defs key name
  * @param validVariables - Set of valid variable names
  * @param issues - Array to accumulate issues
  * @param collectAllErrors - Whether to collect all errors
  * @returns true if should continue validation, false if should stop
  */
-function validateLogicExpression(
-  expr: LogicExpression,
+function validateDefsExpression(
+  expr: Expression,
   key: string,
   validVariables: Set<string>,
   issues: LogicValidationIssue[],
   collectAllErrors: boolean
 ): boolean {
-  if (isScalarLogicType(expr.type)) {
+  if (isScalarExpressionType(expr.type)) {
     // Scalar type: value is a single expression string
     return validateExpression(
       expr.value as string,
-      ['logic', key, 'value'],
+      ['defs', key, 'value'],
       validVariables,
       issues,
       collectAllErrors
@@ -364,7 +364,7 @@ function validateLogicExpression(
       if (
         !validateExpression(
           propExpr,
-          ['logic', key, 'value', propKey],
+          ['defs', key, 'value', propKey],
           validVariables,
           issues,
           collectAllErrors
@@ -379,19 +379,19 @@ function validateLogicExpression(
 }
 
 /**
- * Extracts expression strings from a LogicSection for dependency sorting.
+ * Extracts expression strings from a DefsSection for dependency sorting.
  *
  * For scalar types, returns the value directly.
  * For object types, concatenates all property expressions.
  *
- * @param logic - The logic section
+ * @param logic - The defs section
  * @returns Record of key → expression string(s) for sorting
  */
-function extractExpressionsForSorting(logic: LogicSection): Record<string, string> {
+function extractExpressionsForSorting(logic: DefsSection): Record<string, string> {
   const result: Record<string, string> = {}
 
   for (const [key, expr] of Object.entries(logic)) {
-    if (isScalarLogicType(expr.type)) {
+    if (isScalarExpressionType(expr.type)) {
       // Scalar: value is the expression string
       result[key] = expr.value as string
     } else {
@@ -407,10 +407,10 @@ function extractExpressionsForSorting(logic: LogicSection): Record<string, strin
 }
 
 /**
- * Gets the expression string for a logic key (for error reporting).
+ * Gets the expression string for a defs key (for error reporting).
  */
-function getExpressionForKey(expr: LogicExpression): string {
-  if (isScalarLogicType(expr.type)) {
+function getExpressionForKey(expr: Expression): string {
+  if (isScalarExpressionType(expr.type)) {
     return expr.value as string
   }
   // For object types, show the first property expression
@@ -420,11 +420,11 @@ function getExpressionForKey(expr: LogicExpression): string {
 }
 
 /**
- * Validates all logic expressions in a Form artifact.
+ * Validates all defs expressions in a Form artifact.
  *
  * Checks:
  * 1. Expression syntax using expr-eval-fork parser
- * 2. Variable references exist (field paths or logic keys)
+ * 2. Variable references exist (field paths or defs keys)
  * 3. Expressions in boolean contexts return boolean type
  *
  * @param form - The Form artifact to validate
@@ -438,10 +438,10 @@ function getExpressionForKey(expr: LogicExpression): string {
  *   name: 'test',
  *   version: '1.0',
  *   title: 'Test',
- *   logic: {
+ *   defs: {
  *     isAdult: {
  *       type: 'boolean',
- *       value: 'fields.age.value >= 18'
+ *       value: 'fields.age >= 18'
  *     }
  *   },
  *   fields: {
@@ -450,23 +450,23 @@ function getExpressionForKey(expr: LogicExpression): string {
  *   }
  * }
  *
- * const result = validateFormLogic(form)
+ * const result = validateFormDefs(form)
  * // { value: form } - valid
  *
  * const invalid: Form = {
  *   ...form,
- *   logic: {
+ *   defs: {
  *     broken: {
  *       type: 'boolean',
- *       value: 'fields.nonexistent.value'
+ *       value: 'fields.nonexistent'
  *     }
  *   }
  * }
- * const result2 = validateFormLogic(invalid)
- * // { issues: [{ message: 'Unknown variable: "fields.nonexistent.value"', ... }] }
+ * const result2 = validateFormDefs(invalid)
+ * // { issues: [{ message: 'Unknown variable: "fields.nonexistent"', ... }] }
  * ```
  */
-export function validateFormLogic(
+export function validateFormDefs(
   form: Form,
   options: LogicValidationOptions = {}
 ): StandardSchemaV1.Result<Form> {
@@ -476,32 +476,32 @@ export function validateFormLogic(
   // Build valid variable set
   const validVariables = new Set<string>()
 
-  // Add all field paths (e.g., 'fields.age.value', 'fields.address.street.value')
+  // Add all field paths (e.g., 'fields.age', 'fields.address.street')
   collectFieldPaths(form.fields).forEach((p) => validVariables.add(p))
 
-  // Add all logic keys as valid variables
-  if (form.logic) {
-    Object.keys(form.logic).forEach((key) => validVariables.add(key))
+  // Add all defs keys as valid variables
+  if (form.defs) {
+    Object.keys(form.defs).forEach((key) => validVariables.add(key))
   }
 
-  // Validate logic section expressions
-  if (form.logic) {
-    for (const [key, expr] of Object.entries(form.logic)) {
-      if (!validateLogicExpression(expr, key, validVariables, issues, collectAllErrors)) {
+  // Validate defs section expressions
+  if (form.defs) {
+    for (const [key, expr] of Object.entries(form.defs)) {
+      if (!validateDefsExpression(expr, key, validVariables, issues, collectAllErrors)) {
         break
       }
     }
 
     // Extract expressions for dependency sorting
-    const expressionsForSorting = extractExpressionsForSorting(form.logic)
+    const expressionsForSorting = extractExpressionsForSorting(form.defs)
 
-    // Check for circular dependencies in logic keys
-    const { cyclicKeys } = topologicalSortLogicKeys(expressionsForSorting)
+    // Check for circular dependencies in defs keys
+    const { cyclicKeys } = topologicalSortDefsKeys(expressionsForSorting)
     for (const key of cyclicKeys) {
-      const logicExpr = form.logic[key]
+      const logicExpr = form.defs[key]
       issues.push({
-        message: `Circular dependency detected: logic key "${key}" is involved in a dependency cycle`,
-        path: ['logic', key],
+        message: `Circular dependency detected: defs key "${key}" is involved in a dependency cycle`,
+        path: ['defs', key],
         expression: logicExpr ? getExpressionForKey(logicExpr) : key,
         severity: 'warning',
       })

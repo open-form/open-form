@@ -21,15 +21,15 @@ describe('expression-parser', () => {
       })
 
       test('parses member access', () => {
-        const result = parseExpression('fields.age.value')
+        const result = parseExpression('fields.age')
         expect(result.success).toBe(true)
-        expect(result.variables).toContain('fields.age.value')
+        expect(result.variables).toContain('fields.age')
       })
 
       test('parses comparison expression', () => {
-        const result = parseExpression('fields.age.value >= 18')
+        const result = parseExpression('fields.age >= 18')
         expect(result.success).toBe(true)
-        expect(result.variables).toContain('fields.age.value')
+        expect(result.variables).toContain('fields.age')
       })
 
       test('parses logical expression', () => {
@@ -40,9 +40,9 @@ describe('expression-parser', () => {
       })
 
       test('parses arithmetic expression', () => {
-        const result = parseExpression('fields.age.value + 10')
+        const result = parseExpression('fields.age + 10')
         expect(result.success).toBe(true)
-        expect(result.variables).toContain('fields.age.value')
+        expect(result.variables).toContain('fields.age')
       })
 
       test('parses parenthesized expression', () => {
@@ -74,14 +74,14 @@ describe('expression-parser', () => {
       })
 
       test('extracts member access variables with full path', () => {
-        const result = parseExpression('fields.person.name.value')
-        expect(result.variables).toContain('fields.person.name.value')
+        const result = parseExpression('fields.person.name')
+        expect(result.variables).toContain('fields.person.name')
       })
 
       test('extracts multiple nested paths', () => {
-        const result = parseExpression('fields.age.value > fields.minAge.value')
-        expect(result.variables).toContain('fields.age.value')
-        expect(result.variables).toContain('fields.minAge.value')
+        const result = parseExpression('fields.age > fields.minAge')
+        expect(result.variables).toContain('fields.age')
+        expect(result.variables).toContain('fields.minAge')
       })
 
       test('extracts logic key references', () => {
@@ -98,7 +98,7 @@ describe('expression-parser', () => {
 
     describe('syntax errors', () => {
       test('detects missing operand', () => {
-        const result = parseExpression('fields.age.value >=')
+        const result = parseExpression('fields.age >=')
         expect(result.success).toBe(false)
         expect(result.error).toBeDefined()
       })
@@ -168,19 +168,19 @@ describe('expression-parser', () => {
 
   describe('validateExpressionSyntax', () => {
     test('returns true for valid expression', () => {
-      const result = validateExpressionSyntax('fields.age.value >= 18')
+      const result = validateExpressionSyntax('fields.age >= 18')
       expect(result).toBe(true)
     })
 
     test('returns error message for invalid expression', () => {
-      const result = validateExpressionSyntax('fields.age.value >=')
+      const result = validateExpressionSyntax('fields.age >=')
       expect(result).not.toBe(true)
       expect(typeof result).toBe('string')
     })
 
     test('returns true for complex valid expression', () => {
       const result = validateExpressionSyntax(
-        '(isAdult and agreed) or (hasParentConsent and fields.age.value >= 16)'
+        '(isAdult and agreed) or (hasParentConsent and fields.age >= 16)'
       )
       expect(result).toBe(true)
     })

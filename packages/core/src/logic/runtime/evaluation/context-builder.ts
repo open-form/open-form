@@ -1,7 +1,7 @@
 /**
  * Builds evaluation context from form definitions and data.
  *
- * The evaluation context structures field values and logic keys
+ * The evaluation context structures field values and defs keys
  * in a format suitable for expression evaluation.
  */
 
@@ -11,17 +11,17 @@ import type {
   FieldsetField,
   Party,
   Signature,
-  LogicExpression,
-  LogicSection,
-  ScalarLogicType,
+  Expression,
+  DefsSection,
+  ScalarExpressionType,
 } from '@open-form/types'
 import { inferPartyType } from '@/primitives/party'
 import type { EvaluationContext, NestedFieldValues, PartyContextEntry } from './types'
-import { topologicalSortLogicKeys } from '../../design-time/type-checking/build-type-environment'
+import { topologicalSortDefsKeys } from '../../design-time/type-checking/build-type-environment'
 import { evaluateExpressionOrDefault } from './expression-evaluator'
 
-/** Scalar logic expression types (value is a string expression) */
-const SCALAR_LOGIC_TYPES: Set<string> = new Set([
+/** Scalar expression types (value is a string expression) */
+const SCALAR_EXPRESSION_TYPES: Set<string> = new Set([
   'boolean',
   'string',
   'number',
@@ -35,10 +35,10 @@ const SCALAR_LOGIC_TYPES: Set<string> = new Set([
 ])
 
 /**
- * Check if a logic expression type is a scalar type.
+ * Check if an expression type is a scalar type.
  */
-function isScalarLogicType(type: string): type is ScalarLogicType {
-  return SCALAR_LOGIC_TYPES.has(type)
+function isScalarExpressionType(type: string): type is ScalarExpressionType {
+  return SCALAR_EXPRESSION_TYPES.has(type)
 }
 
 /**
@@ -56,8 +56,9 @@ export interface FormDataPayload {
  * Recursively builds the fields context structure from flat field data.
  *
  * Handles nested fieldsets by creating nested objects:
- * - Simple field: { age: { value: 25 } }
- * - Fieldset: { address: { street: { value: '123 Main' }, city: { value: 'NYC' } } }
+ * - Simple field: { age: 25 }
+ * - Object field: { rent: { amount: 1000, currency: 'USD' } }
+ * - Fieldset: { address: { street: '123 Main', city: 'NYC' } }
  *
  * @param fields - Field definitions from the form
  * @param data - Flat field data (may have dot-notation keys or nested objects)
@@ -94,9 +95,8 @@ function buildFieldsContext(
         result[fieldId] = buildFieldsContext(fieldset.fields, flatNestedData)
       }
     } else {
-      // Simple field: wrap value
-      const value = data[fieldId]
-      result[fieldId] = { value }
+      // Simple field: store value directly (no wrapper)
+      result[fieldId] = data[fieldId]
     }
   }
 
@@ -185,20 +185,20 @@ function buildWitnessesContext(
 }
 
 /**
- * Evaluates a single logic expression.
+ * Evaluates a single defs expression.
  *
  * For scalar types, evaluates the single expression string.
  * For object types, evaluates each property expression and constructs the result object.
  *
- * @param expr - The logic expression to evaluate
+ * @param expr - The expression to evaluate
  * @param context - The evaluation context
  * @returns The evaluated value
  */
-function evaluateLogicExpression(
-  expr: LogicExpression,
+function evaluateDefsExpression(
+  expr: Expression,
   context: EvaluationContext
 ): unknown {
-  if (isScalarLogicType(expr.type)) {
+  if (isScalarExpressionType(expr.type)) {
     // Scalar type: value is a single expression string
     return evaluateExpressionOrDefault(expr.value as string, context, undefined)
   }
@@ -217,19 +217,19 @@ function evaluateLogicExpression(
 }
 
 /**
- * Extracts expression strings from a LogicSection for dependency sorting.
+ * Extracts expression strings from a DefsSection for dependency sorting.
  *
  * For scalar types, returns the value directly.
  * For object types, concatenates all property expressions.
  *
- * @param logic - The logic section
+ * @param defs - The defs section
  * @returns Record of key → expression string(s) for sorting
  */
-function extractExpressionsForSorting(logic: LogicSection): Record<string, string> {
+function extractExpressionsForSorting(defs: DefsSection): Record<string, string> {
   const result: Record<string, string> = {}
 
-  for (const [key, expr] of Object.entries(logic)) {
-    if (isScalarLogicType(expr.type)) {
+  for (const [key, expr] of Object.entries(defs)) {
+    if (isScalarExpressionType(expr.type)) {
       // Scalar: value is the expression string
       result[key] = expr.value as string
     } else {
@@ -245,46 +245,46 @@ function extractExpressionsForSorting(logic: LogicSection): Record<string, strin
 }
 
 /**
- * Evaluates logic keys in dependency order.
+ * Evaluates defs keys in dependency order.
  *
- * Logic keys are evaluated in topological order so that if key A
+ * Defs keys are evaluated in topological order so that if key A
  * depends on key B, B is evaluated first and available in the context.
  *
- * @param logic - Logic section from the form (key → LogicExpression)
- * @param baseContext - Context with field values (logic keys will be added)
- * @returns Map of logic key → evaluated value
+ * @param defs - Defs section from the form (key → Expression)
+ * @param baseContext - Context with field values (defs keys will be added)
+ * @returns Map of defs key → evaluated value
  */
-function evaluateLogicKeys(
-  logic: LogicSection | undefined,
+function evaluateDefsKeys(
+  defs: DefsSection | undefined,
   baseContext: EvaluationContext
 ): Map<string, unknown> {
-  const logicValues = new Map<string, unknown>()
+  const defsValues = new Map<string, unknown>()
 
-  if (!logic || Object.keys(logic).length === 0) {
-    return logicValues
+  if (!defs || Object.keys(defs).length === 0) {
+    return defsValues
   }
 
   // Extract expression strings for dependency sorting
-  const expressionsForSorting = extractExpressionsForSorting(logic)
+  const expressionsForSorting = extractExpressionsForSorting(defs)
 
-  // Sort logic keys in dependency order
-  const { sorted: sortedKeys } = topologicalSortLogicKeys(expressionsForSorting)
+  // Sort defs keys in dependency order
+  const { sorted: sortedKeys } = topologicalSortDefsKeys(expressionsForSorting)
 
   // Build up context incrementally as we evaluate
   const context: EvaluationContext = { ...baseContext }
 
   for (const key of sortedKeys) {
-    const expr = logic[key]
+    const expr = defs[key]
     if (expr) {
       // Evaluate the expression with current context (includes previously evaluated keys)
-      const value = evaluateLogicExpression(expr, context)
-      logicValues.set(key, value)
+      const value = evaluateDefsExpression(expr, context)
+      defsValues.set(key, value)
       // Add to context for subsequent evaluations
       ;(context as Record<string, unknown>)[key] = value
     }
   }
 
-  return logicValues
+  return defsValues
 }
 
 /**
@@ -294,11 +294,12 @@ function evaluateLogicKeys(
  * ```typescript
  * {
  *   fields: {
- *     age: { value: 25 },
- *     name: { value: 'John' },
- *     address: { // fieldset
- *       street: { value: '123 Main' },
- *       city: { value: 'NYC' }
+ *     age: 25,
+ *     name: 'John',
+ *     rent: { amount: 1000, currency: 'USD' },  // object field
+ *     address: {  // fieldset
+ *       street: '123 Main',
+ *       city: 'NYC'
  *     }
  *   },
  *   parties: {
@@ -306,8 +307,8 @@ function evaluateLogicKeys(
  *     seller: [{ type: 'organization', data: {...}, signed: true }],
  *   },
  *   witnesses: [{ type: 'person', data: {...}, signed: true }],
- *   isAdult: true,        // evaluated logic key
- *   hasLicense: false,    // evaluated logic key
+ *   isAdult: true,        // evaluated defs key
+ *   hasLicense: false,    // evaluated defs key
  * }
  * ```
  *
@@ -327,10 +328,10 @@ function evaluateLogicKeys(
  *     name: { type: 'text' }
  *   },
  *   parties: [{ id: 'buyer', label: 'Buyer' }],
- *   logic: {
+ *   defs: {
  *     isAdult: {
  *       type: 'boolean',
- *       value: 'fields.age.value >= 18'
+ *       value: 'fields.age >= 18'
  *     },
  *     hasBuyer: {
  *       type: 'boolean',
@@ -341,11 +342,11 @@ function evaluateLogicKeys(
  *
  * const data = {
  *   fields: { age: 25, name: 'John' },
- *   parties: { buyer: { type: 'person', fullName: 'John' } }
+ *   parties: { buyer: { type: 'person', name: 'John' } }
  * }
  * const context = buildFormContext(form, data)
  *
- * // context.fields.age.value === 25
+ * // context.fields.age === 25
  * // context.parties.buyer[0].type === 'person'
  * // context.isAdult === true
  * ```
@@ -361,12 +362,12 @@ export function buildFormContext(form: Form, data: FormDataPayload): EvaluationC
   // Create base context with fields, parties, and witnesses
   const baseContext: EvaluationContext = { fields, parties, witnesses }
 
-  // Evaluate logic keys and add to context
-  const logicValues = evaluateLogicKeys(form.logic, baseContext)
+  // Evaluate defs keys and add to context
+  const defsValues = evaluateDefsKeys(form.defs, baseContext)
 
-  // Merge logic keys into context
+  // Merge defs keys into context
   const context: EvaluationContext = { fields, parties, witnesses }
-  for (const [key, value] of logicValues) {
+  for (const [key, value] of defsValues) {
     ;(context as Record<string, unknown>)[key] = value
   }
 

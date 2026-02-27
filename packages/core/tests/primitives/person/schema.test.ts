@@ -10,15 +10,15 @@ describe('Person', () => {
 	describe('Object Pattern', () => {
 		describe('person() - direct validation', () => {
 			describe('success cases', () => {
-				test('creates valid person with fullName only', () => {
-					const input = { fullName: 'John Doe' };
+				test('creates valid person with name only', () => {
+					const input = { name: 'John Doe' };
 					const result = person(input as any);
-					expect(result).toEqual({ fullName: 'John Doe' });
+					expect(result).toEqual({ name: 'John Doe' });
 				});
 
 				test('creates valid person with all fields', () => {
 					const input = {
-						fullName: 'Dr. Jane Marie Smith Jr.',
+						name: 'Dr. Jane Marie Smith Jr.',
 						title: 'Dr.',
 						firstName: 'Jane',
 						middleName: 'Marie',
@@ -31,7 +31,7 @@ describe('Person', () => {
 
 				test('creates valid person with some optional fields', () => {
 					const input = {
-						fullName: 'Robert Johnson III',
+						name: 'Robert Johnson III',
 						firstName: 'Robert',
 						lastName: 'Johnson',
 						suffix: 'III',
@@ -40,47 +40,47 @@ describe('Person', () => {
 					expect(result).toEqual(input);
 				});
 
-				test('creates valid person with minimum length fullName', () => {
-					const input = { fullName: 'A' };
+				test('creates valid person with minimum length name', () => {
+					const input = { name: 'A' };
 					const result = person(input as any);
-					expect(result).toEqual({ fullName: 'A' });
+					expect(result).toEqual({ name: 'A' });
 				});
 
-				test('creates valid person with maximum length fullName', () => {
-					const input = { fullName: 'a'.repeat(200) };
+				test('creates valid person with maximum length name', () => {
+					const input = { name: 'a'.repeat(200) };
 					const result = person(input as any);
-					expect(result).toEqual({ fullName: 'a'.repeat(200) });
+					expect(result).toEqual({ name: 'a'.repeat(200) });
 				});
 			});
 
 			describe('validation failures', () => {
-				test('throws error when fullName is missing', () => {
+				test('throws error when name is missing', () => {
 					const input = { firstName: 'John' } as any;
 					expect(() => person(input)).toThrow();
 				});
 
-				test('throws error when fullName is empty string', () => {
-					const input = { fullName: '' } as any;
+				test('throws error when name is empty string', () => {
+					const input = { name: '' } as any;
 					expect(() => person(input)).toThrow();
 				});
 
-				test('throws error when fullName exceeds max length', () => {
-					const input = { fullName: 'a'.repeat(201) } as any;
+				test('throws error when name exceeds max length', () => {
+					const input = { name: 'a'.repeat(201) } as any;
 					expect(() => person(input)).toThrow();
 				});
 
-				test('throws error when fullName is null', () => {
-					const input = { fullName: null } as any;
+				test('throws error when name is null', () => {
+					const input = { name: null } as any;
 					expect(() => person(input)).toThrow();
 				});
 
 				test('strips additional properties', () => {
 					const input = {
-						fullName: 'John Doe',
+						name: 'John Doe',
 						extra: 'field',
 					} as any;
 					const result = person(input);
-					expect(result).toEqual({ fullName: 'John Doe' });
+					expect(result).toEqual({ name: 'John Doe' });
 					expect(result).not.toHaveProperty('extra');
 				});
 
@@ -91,42 +91,42 @@ describe('Person', () => {
 				test('returns builder when input is undefined', () => {
 					const result = person(undefined as any);
 					expect(result).toBeDefined();
-					expect(typeof result.fullName).toBe('function');
+					expect(typeof result.name).toBe('function');
 				});
 			});
 		});
 
 		describe('person.parse()', () => {
 			test('parses valid person object', () => {
-				const input = { fullName: 'John Doe' };
+				const input = { name: 'John Doe' };
 				const result = person.parse(input);
-				expect(result).toEqual({ fullName: 'John Doe' });
+				expect(result).toEqual({ name: 'John Doe' });
 			});
 
-			test('throws error when fullName is missing', () => {
+			test('throws error when name is missing', () => {
 				const input = { firstName: 'John' };
 				expect(() => person.parse(input)).toThrow();
 			});
 
 			test('strips additional properties', () => {
-				const input = { fullName: 'John Doe', extra: 'value' };
+				const input = { name: 'John Doe', extra: 'value' };
 				const result = person.parse(input);
-				expect(result).toEqual({ fullName: 'John Doe' });
+				expect(result).toEqual({ name: 'John Doe' });
 			});
 		});
 
 		describe('person.safeParse()', () => {
 			test('returns success for valid person', () => {
-				const input = { fullName: 'John Doe', firstName: 'John' };
+				const input = { name: 'John Doe', firstName: 'John' };
 				const result = person.safeParse(input);
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data).toEqual({ fullName: 'John Doe', firstName: 'John' });
+					expect(result.data).toEqual({ name: 'John Doe', firstName: 'John' });
 				}
 			});
 
-			test('returns error when fullName is missing', () => {
+			test('returns error when name is missing', () => {
 				const input = { firstName: 'John' };
 				const result = person.safeParse(input);
 
@@ -136,8 +136,8 @@ describe('Person', () => {
 				}
 			});
 
-			test('returns error when fullName is empty', () => {
-				const input = { fullName: '' };
+			test('returns error when name is empty', () => {
+				const input = { name: '' };
 				const result = person.safeParse(input);
 
 				expect(result.success).toBe(false);
@@ -152,14 +152,14 @@ describe('Person', () => {
 	describe('Builder Pattern', () => {
 		describe('fluent builder API', () => {
 			describe('success cases', () => {
-				test('builds valid person with fullName only', () => {
-					const result = person().fullName('John Doe').build();
-					expect(result).toEqual({ fullName: 'John Doe' });
+				test('builds valid person with name only', () => {
+					const result = person().name('John Doe').build();
+					expect(result).toEqual({ name: 'John Doe' });
 				});
 
 				test('builds valid person with all fields', () => {
 					const result = person()
-						.fullName('Dr. Jane Marie Smith Jr.')
+						.name('Dr. Jane Marie Smith Jr.')
 						.title('Dr.')
 						.firstName('Jane')
 						.middleName('Marie')
@@ -167,7 +167,7 @@ describe('Person', () => {
 						.suffix('Jr.')
 						.build();
 					expect(result).toEqual({
-						fullName: 'Dr. Jane Marie Smith Jr.',
+						name: 'Dr. Jane Marie Smith Jr.',
 						title: 'Dr.',
 						firstName: 'Jane',
 						middleName: 'Marie',
@@ -178,13 +178,13 @@ describe('Person', () => {
 
 				test('builds valid person with some optional fields', () => {
 					const result = person()
-						.fullName('Robert Johnson III')
+						.name('Robert Johnson III')
 						.firstName('Robert')
 						.lastName('Johnson')
 						.suffix('III')
 						.build();
 					expect(result).toEqual({
-						fullName: 'Robert Johnson III',
+						name: 'Robert Johnson III',
 						firstName: 'Robert',
 						lastName: 'Johnson',
 						suffix: 'III',
@@ -193,34 +193,34 @@ describe('Person', () => {
 
 				test('supports method chaining', () => {
 					const result = person()
-						.fullName('John Doe')
+						.name('John Doe')
 						.firstName('John')
 						.lastName('Doe')
 						.build();
 					expect(result).toEqual({
-						fullName: 'John Doe',
+						name: 'John Doe',
 						firstName: 'John',
 						lastName: 'Doe',
 					});
 				});
 
-				test('allows overwriting fullName', () => {
-					const result = person().fullName('Jane').fullName('John Doe').build();
-					expect(result).toEqual({ fullName: 'John Doe' });
+				test('allows overwriting name', () => {
+					const result = person().name('Jane').name('John Doe').build();
+					expect(result).toEqual({ name: 'John Doe' });
 				});
 			});
 
 			describe('validation failures on build()', () => {
-				test('throws error when fullName is not set', () => {
+				test('throws error when name is not set', () => {
 					expect(() => person().firstName('John').build()).toThrow();
 				});
 
-				test('throws error when fullName is empty string', () => {
-					expect(() => person().fullName('').build()).toThrow();
+				test('throws error when name is empty string', () => {
+					expect(() => person().name('').build()).toThrow();
 				});
 
-				test('throws error when fullName exceeds max length', () => {
-					expect(() => person().fullName('a'.repeat(201)).build()).toThrow();
+				test('throws error when name exceeds max length', () => {
+					expect(() => person().name('a'.repeat(201)).build()).toThrow();
 				});
 			});
 
@@ -228,7 +228,7 @@ describe('Person', () => {
 				test('returns PersonBuilder instance', () => {
 					const builder = person();
 					expect(builder).toBeDefined();
-					expect(typeof builder.fullName).toBe('function');
+					expect(typeof builder.name).toBe('function');
 					expect(typeof builder.title).toBe('function');
 					expect(typeof builder.firstName).toBe('function');
 					expect(typeof builder.middleName).toBe('function');
@@ -239,23 +239,23 @@ describe('Person', () => {
 
 				test('builder methods return this for chaining', () => {
 					const builder = person();
-					const afterFullName = builder.fullName('John Doe');
+					const afterFullName = builder.name('John Doe');
 					expect(afterFullName).toBe(builder);
 				});
 
 				test('multiple builders are independent', () => {
-					const builder1 = person().fullName('John Doe');
-					const builder2 = person().fullName('Jane Smith');
+					const builder1 = person().name('John Doe');
+					const builder2 = person().name('Jane Smith');
 
-					expect(builder1.build()).toEqual({ fullName: 'John Doe' });
-					expect(builder2.build()).toEqual({ fullName: 'Jane Smith' });
+					expect(builder1.build()).toEqual({ name: 'John Doe' });
+					expect(builder2.build()).toEqual({ name: 'Jane Smith' });
 				});
 			});
 
 			describe('builder pattern vs object pattern comparison', () => {
 				test('builder pattern produces same result as object pattern', () => {
-					const builderResult = person().fullName('John Doe').build();
-					const objectResult = person({ fullName: 'John Doe' } as any);
+					const builderResult = person().name('John Doe').build();
+					const objectResult = person({ name: 'John Doe' } as any);
 
 					expect(builderResult).toEqual(objectResult);
 				});

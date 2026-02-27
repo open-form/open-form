@@ -4,16 +4,16 @@
   "type": "object",
   "properties": {
     "lat": {
-      "description": "Latitude in decimal degrees (WGS84), range -90 (South Pole) to 90 (North Pole)",
       "type": "number",
       "minimum": -90,
-      "maximum": 90
+      "maximum": 90,
+      "description": "Latitude in decimal degrees (WGS84), range -90 (South Pole) to 90 (North Pole)"
     },
     "lon": {
-      "description": "Longitude in decimal degrees (WGS84), range -180 (west) to 180 (east)",
       "type": "number",
       "minimum": -180,
-      "maximum": 180
+      "maximum": 180,
+      "description": "Longitude in decimal degrees (WGS84), range -180 (west) to 180 (east)"
     }
   },
   "required": [

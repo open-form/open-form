@@ -5,7 +5,7 @@
  * with a single file using closures and composition.
  */
 
-import type { Document, Layer, Metadata } from '@open-form/types'
+import type { Document, Layer, Metadata, ContentRef } from '@open-form/types'
 import type { DraftDocumentJSON, FinalDocumentJSON } from '@open-form/types'
 import { parseDocument, parseLayer } from '@/validation/artifact-parsers'
 import { toYAML } from '@/serialization/serialization'
@@ -358,11 +358,13 @@ export interface DocumentBuilderInterface {
 	code(value: string): DocumentBuilderInterface
 	releaseDate(value: string): DocumentBuilderInterface
 	metadata(value: Metadata): DocumentBuilderInterface
+	instructions(value: ContentRef): DocumentBuilderInterface
+	agentInstructions(value: ContentRef): DocumentBuilderInterface
 	layers(value: Record<string, Layer | FileLayerBuilderType | InlineLayerBuilderType>): DocumentBuilderInterface
 	layer(key: string, layerDef: Layer | FileLayerBuilderType | InlineLayerBuilderType): DocumentBuilderInterface
 	inlineLayer(
 		key: string,
-		layer: { mimeType: string; text: string; title?: string; description?: string; checksum?: string },
+		layer: { mimeType: string; text: string; title?: string; description?: string },
 	): DocumentBuilderInterface
 	fileLayer(
 		key: string,
@@ -385,6 +387,8 @@ function createDocumentBuilder(): DocumentBuilderInterface {
 		code: undefined,
 		releaseDate: undefined,
 		metadata: {},
+		instructions: undefined,
+		agentInstructions: undefined,
 		layers: undefined,
 		defaultLayer: undefined,
 	}
@@ -399,6 +403,8 @@ function createDocumentBuilder(): DocumentBuilderInterface {
 			_def.code = doc.code
 			_def.releaseDate = doc.releaseDate
 			_def.metadata = doc.metadata ? { ...doc.metadata } : {}
+			_def.instructions = doc.instructions
+			_def.agentInstructions = doc.agentInstructions
 			_def.layers = doc.layers
 				? Object.fromEntries(Object.entries(doc.layers).map(([key, layer]) => [key, parseLayer(layer)]))
 				: undefined
@@ -441,6 +447,16 @@ function createDocumentBuilder(): DocumentBuilderInterface {
 			return builder
 		},
 
+		instructions(value: ContentRef) {
+			_def.instructions = value
+			return builder
+		},
+
+		agentInstructions(value: ContentRef) {
+			_def.agentInstructions = value
+			return builder
+		},
+
 		layers(value: Record<string, Layer | FileLayerBuilderType | InlineLayerBuilderType>) {
 			const parsed: Record<string, Layer> = {}
 			for (const [key, layerValue] of Object.entries(value)) {
@@ -461,7 +477,7 @@ function createDocumentBuilder(): DocumentBuilderInterface {
 
 		inlineLayer(
 			key: string,
-			layer: { mimeType: string; text: string; title?: string; description?: string; checksum?: string },
+			layer: { mimeType: string; text: string; title?: string; description?: string },
 		) {
 			return builder.layer(key, { kind: 'inline', ...layer })
 		},

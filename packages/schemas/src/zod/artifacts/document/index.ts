@@ -11,7 +11,8 @@ export const DocumentSchema = ArtifactSchema.extend({
 		z.string()
 			.min(1)
 			.max(100)
-			.describe('Layer identifier (user-defined key)'),
+			.regex(/^[a-z][a-zA-Z0-9_]*$/)
+			.describe('Layer identifier (camelCase, starts with lowercase letter)'),
 		LayerSchema,
 	).describe('Named layers for rendering this document into different formats. Keys are user-defined identifiers (e.g., markdown, pdf, html)')
 		.optional(),

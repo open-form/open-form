@@ -54,7 +54,7 @@ describe("@open-form/renderer-text - README Examples", () => {
           tenantName: {
             firstName: "Sarah",
             lastName: "Johnson",
-            fullName: "Sarah Johnson",
+            name: "Sarah Johnson",
           },
           tenantAge: "28",
           monthlyRent: {
@@ -77,7 +77,7 @@ describe("@open-form/renderer-text - README Examples", () => {
         tenantName: {
           firstName: "Sarah",
           lastName: "Johnson",
-          fullName: "Sarah Johnson",
+          name: "Sarah Johnson",
         },
         tenantAge: "28",
         monthlyRent: {
@@ -163,7 +163,7 @@ Generated for markdown rendering.`;
           clientName: {
             firstName: "John",
             lastName: "Doe",
-            fullName: "John Doe",
+            name: "John Doe",
           },
           amountDue: {
             amount: 2500,
@@ -205,7 +205,7 @@ Generated for markdown rendering.`;
           recipientName: {
             firstName: "Alice",
             lastName: "Smith",
-            fullName: "Alice Smith",
+            name: "Alice Smith",
           },
           quoteAmount: {
             amount: 5000,
@@ -244,7 +244,7 @@ Currency: {{monthlyRent.currency}}`;
           tenantName: {
             firstName: "Bob",
             lastName: "Wilson",
-            fullName: "Bob Wilson",
+            name: "Bob Wilson",
           },
           monthlyRent: {
             amount: 1200,

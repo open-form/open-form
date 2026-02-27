@@ -2,11 +2,6 @@ import { z } from 'zod';
 import { FormFieldSchema } from './field';
 
 export const FormFieldsetSchema = z.object({
-	id: z.string()
-		.min(1)
-		.max(100)
-		.regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/)
-		.describe('Unique identifier for the fieldset (e.g., address-section, personal-info)'),
 	title: z.string()
 		.min(1)
 		.max(200)
@@ -18,7 +13,7 @@ export const FormFieldsetSchema = z.object({
 		.describe('Description or summary of the fieldset')
 		.optional(),
 	fields: z.record(
-		z.string().min(1).max(100).describe('Field identifier'),
+		z.string().min(1).max(100).regex(/^[a-z][a-zA-Z0-9_]*$/).describe('Field identifier (camelCase, starts with lowercase letter)'),
 		FormFieldSchema,
 	),
 	required: z.boolean()

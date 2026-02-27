@@ -21,11 +21,11 @@ import { inferExpressionType } from './type-inferrer'
  * const env = buildFormTypeEnvironment(form)
  *
  * // Valid: comparison returns boolean
- * validateBooleanType('fields.age.value >= 18', env)
+ * validateBooleanType('fields.age >= 18', env)
  * // { valid: true, severity: 'warning' }
  *
  * // Invalid: arithmetic returns number
- * validateBooleanType('fields.age.value + 10', env)
+ * validateBooleanType('fields.age + 10', env)
  * // { valid: false, severity: 'error', message: '...', actualType: 'number' }
  *
  * // Unknown: cannot determine type

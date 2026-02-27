@@ -44,15 +44,17 @@ export interface FormRuntimeState {
   fields: Map<string, FieldRuntimeState>
   /** Map of annex ID to runtime state */
   annexes: Map<string, AnnexRuntimeState>
-  /** Evaluated logic key values */
-  logicValues: Map<string, unknown>
+  /** Evaluated defs key values */
+  defsValues: Map<string, unknown>
 }
 
 /**
- * Nested field value structure for fieldsets.
- * Can be either a simple { value: ... } or nested fields.
+ * A field value entry in the evaluation context.
+ * - Scalar fields: the primitive value directly (string, number, boolean, etc.)
+ * - Object fields: the structured value (e.g., { amount: 1000, currency: 'USD' })
+ * - Fieldsets: a NestedFieldValues record containing child entries
  */
-export type FieldValueEntry = { value: unknown } | NestedFieldValues
+export type FieldValueEntry = unknown
 
 /**
  * Record of field values, supporting nesting for fieldsets.
@@ -82,27 +84,28 @@ export interface PartyContextEntry {
  * ```typescript
  * const context: EvaluationContext = {
  *   fields: {
- *     age: { value: 25 },
- *     name: { value: 'John' },
+ *     age: 25,
+ *     name: 'John',
+ *     rent: { amount: 1000, currency: 'USD' },
  *   },
  *   parties: {
  *     buyer: [{ type: 'person', data: {...}, signed: false }],
  *     seller: [{ type: 'person', data: {...}, signed: true }],
  *   },
  *   witnesses: [{ type: 'person', data: {...}, signed: true }],
- *   isAdult: true, // logic key
+ *   isAdult: true, // defs key
  * }
  * ```
  */
 export interface EvaluationContext {
-  /** Field values structured as { fieldId: { value: ... } } */
+  /** Field values structured as { fieldId: value } */
   fields: NestedFieldValues
   /** Party data indexed by role ID, always as arrays for consistency */
   parties?: Record<string, PartyContextEntry[]>
   /** Witness data as an array */
   witnesses?: PartyContextEntry[]
-  /** Resolved logic key values (dynamic keys) */
-  [logicKey: string]: unknown
+  /** Resolved defs key values (dynamic keys) */
+  [defsKey: string]: unknown
 }
 
 /**

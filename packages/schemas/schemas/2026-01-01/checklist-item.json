@@ -4,30 +4,26 @@
   "type": "object",
   "properties": {
     "id": {
-      "description": "Unique identifier for the checklist item (e.g., \"task-1\", \"step-a\"). Used to link to runtime status.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 128
+      "maxLength": 128,
+      "description": "Unique identifier for the checklist item (e.g., \"task-1\", \"step-a\"). Used to link to runtime status."
     },
     "title": {
-      "description": "Title or label for the checklist item",
       "type": "string",
       "minLength": 1,
-      "maxLength": 500
+      "maxLength": 500,
+      "description": "Title or label for the checklist item"
     },
     "description": {
-      "description": "Detailed description or instructions for the item",
       "type": "string",
       "minLength": 1,
-      "maxLength": 2000
+      "maxLength": 2000,
+      "description": "Detailed description or instructions for the item"
     },
     "status": {
-      "title": "StatusSpec",
-      "description": "Specification for how checklist item status should be represented (boolean or enum).",
       "oneOf": [
         {
-          "title": "BooleanStatusSpec",
-          "description": "Boolean status (e.g., incomplete/complete) with an optional default value.",
           "type": "object",
           "properties": {
             "kind": {
@@ -35,18 +31,18 @@
               "const": "boolean"
             },
             "default": {
-              "description": "Default status value (true/false) for new instances",
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Default status value (true/false) for new instances"
             }
           },
           "required": [
             "kind"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "title": "BooleanStatusSpec",
+          "description": "Boolean status (e.g., incomplete/complete) with an optional default value."
         },
         {
-          "title": "EnumStatusSpec",
-          "description": "Enum-based status with a set of allowed options and an optional default.",
           "type": "object",
           "properties": {
             "kind": {
@@ -54,29 +50,28 @@
               "const": "enum"
             },
             "options": {
-              "description": "Allowed status options",
               "minItems": 1,
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
                   "value": {
-                    "description": "Internal status value (e.g., \"todo\", \"in-progress\", \"done\")",
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 64
+                    "maxLength": 64,
+                    "description": "Internal status value (e.g., \"todo\", \"in-progress\", \"done\")"
                   },
                   "label": {
-                    "description": "Human-readable label for the status option",
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 256
+                    "maxLength": 256,
+                    "description": "Human-readable label for the status option"
                   },
                   "description": {
-                    "description": "Optional description or help text for this status option",
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "Optional description or help text for this status option"
                   }
                 },
                 "required": [
@@ -84,22 +79,27 @@
                   "label"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "Allowed status options"
             },
             "default": {
-              "description": "Default status value for new instances (must match one of the option values)",
               "type": "string",
               "minLength": 1,
-              "maxLength": 64
+              "maxLength": 64,
+              "description": "Default status value for new instances (must match one of the option values)"
             }
           },
           "required": [
             "kind",
             "options"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "title": "EnumStatusSpec",
+          "description": "Enum-based status with a set of allowed options and an optional default."
         }
-      ]
+      ],
+      "title": "StatusSpec",
+      "description": "Specification for how checklist item status should be represented (boolean or enum)."
     }
   },
   "required": [

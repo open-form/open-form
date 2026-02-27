@@ -13,8 +13,8 @@ import type {
 	Checklist,
 	Layer,
 	Metadata,
-	LogicSection,
-	LogicExpression,
+	DefsSection,
+	Expression,
 	CondExpr,
 	BinaryContent,
 	Resolver,
@@ -22,6 +22,7 @@ import type {
 	SignableBundleJSON,
 	ExecutedBundleJSON,
 	RuntimeContentJSON,
+	ContentRef,
 } from '@open-form/types'
 import {
 	parseBundle as parseBundleSchema,
@@ -105,8 +106,8 @@ export interface RuntimeBundleRendered<B extends Bundle> {
  * BundleInstance - design-time wrapper for Bundle artifacts
  */
 export interface BundleInstance<B extends Bundle> extends ArtifactMethods<B> {
-	/** Bundle logic section */
-	readonly logic: B extends { logic: infer L } ? L : LogicSection | undefined
+	/** Bundle defs section */
+	readonly defs: B extends { defs: infer L } ? L : DefsSection | undefined
 
 	/** Bundle contents array */
 	readonly contents: B extends { contents: infer C } ? C : BundleContentItem[]
@@ -789,7 +790,7 @@ function createBundleInstance<B extends Bundle>(bundleDef: B): BundleInstance<B>
 		...artifactMethods,
 
 		// Bundle-specific properties (type assertions needed for conditional types)
-		logic: bundleDef.logic as BundleInstance<B>['logic'],
+		defs: bundleDef.defs as BundleInstance<B>['defs'],
 		contents: bundleDef.contents as BundleInstance<B>['contents'],
 
 		async assemble(options: BundleAssemblyOptions): Promise<AssembledBundle> {
@@ -836,8 +837,10 @@ export interface BundleBuilderInterface {
 	code(value: string): BundleBuilderInterface
 	releaseDate(value: string): BundleBuilderInterface
 	metadata(value: Metadata): BundleBuilderInterface
-	logic(logicDef: LogicSection): BundleBuilderInterface
-	expr(name: string, expression: string | LogicExpression): BundleBuilderInterface
+	instructions(value: ContentRef): BundleBuilderInterface
+	agentInstructions(value: ContentRef): BundleBuilderInterface
+	defs(defsDef: DefsSection): BundleBuilderInterface
+	def(name: string, expression: string | Expression): BundleBuilderInterface
 	registry(key: string, slug: string, include?: CondExpr): BundleBuilderInterface
 	path(key: string, pathValue: string, include?: CondExpr): BundleBuilderInterface
 	inline(key: string, artifact: Buildable<Document | Form | Checklist | Bundle>, include?: CondExpr): BundleBuilderInterface
@@ -860,7 +863,9 @@ function createBundleBuilder(): BundleBuilderInterface {
 		code: undefined,
 		releaseDate: undefined,
 		metadata: {},
-		logic: undefined,
+		instructions: undefined,
+		agentInstructions: undefined,
+		defs: undefined,
 		contents: [],
 	}
 
@@ -875,7 +880,9 @@ function createBundleBuilder(): BundleBuilderInterface {
 			_def.code = parsed.code
 			_def.releaseDate = parsed.releaseDate
 			_def.metadata = parsed.metadata ? { ...parsed.metadata } : {}
-			_def.logic = parsed.logic ? { ...parsed.logic } : undefined
+			_def.instructions = parsed.instructions
+			_def.agentInstructions = parsed.agentInstructions
+			_def.defs = parsed.defs ? { ...parsed.defs } : undefined
 			_def.contents = parsed.contents.map((content) => parseBundleContentItem(content))
 			return builder
 		},
@@ -915,19 +922,29 @@ function createBundleBuilder(): BundleBuilderInterface {
 			return builder
 		},
 
-		logic(logicDef: LogicSection) {
-			_def.logic = logicDef
+		instructions(value: ContentRef) {
+			_def.instructions = value
 			return builder
 		},
 
-		expr(name: string, expression: string | LogicExpression) {
-			const logic = (_def.logic as LogicSection) || {}
+		agentInstructions(value: ContentRef) {
+			_def.agentInstructions = value
+			return builder
+		},
+
+		defs(defsDef: DefsSection) {
+			_def.defs = defsDef
+			return builder
+		},
+
+		def(name: string, expression: string | Expression) {
+			const defs = (_def.defs as DefsSection) || {}
 			if (typeof expression === 'string') {
-				logic[name] = { type: 'boolean', value: expression }
+				defs[name] = { type: 'boolean', value: expression }
 			} else {
-				logic[name] = expression
+				defs[name] = expression
 			}
-			_def.logic = logic
+			_def.defs = defs
 			return builder
 		},
 

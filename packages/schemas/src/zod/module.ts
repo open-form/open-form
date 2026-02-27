@@ -13,6 +13,7 @@ import { FormPartySchema } from './artifacts/form/party';
 import { FormFieldsetSchema } from './artifacts/form/fieldset';
 
 // Shared
+import { ContentRefSchema } from './artifacts/shared/content-ref';
 import { LayerSchema } from './artifacts/shared/layer';
 
 // Primitives
@@ -29,9 +30,13 @@ import { PersonSchema } from './primitives/person';
 import { PhoneSchema } from './primitives/phone';
 import { SignatureSchema } from './primitives/signature';
 
-// Logic
-import { CondExprSchema } from './artifacts/logic/cond-expr';
-import { LogicSectionSchema } from './artifacts/logic/logic-section';
+// Expressions
+import { CondExprSchema } from './artifacts/expressions/cond-expr';
+import { DefsSectionSchema } from './artifacts/expressions/defs-section';
+
+// Rules
+import { ValidationRuleSchema, RuleSeveritySchema } from './artifacts/rules/validation-rule';
+import { RulesSectionSchema } from './artifacts/rules/rules-section';
 
 /**
  * OpenForm Schema Registry
@@ -55,6 +60,8 @@ OpenFormRegistry.add(FormAnnexSchema, { id: 'FormAnnex' });
 OpenFormRegistry.add(FormPartySchema, { id: 'FormParty' });
 OpenFormRegistry.add(FormFieldsetSchema, { id: 'FormFieldset' });
 
+// Note: ContentRefSchema is NOT registered separately because ArtifactSchema already
+// includes it as a field. Registering it separately causes Zod v4 $ref bugs.
 OpenFormRegistry.add(LayerSchema, { id: 'Layer' });
 
 OpenFormRegistry.add(AddressSchema, { id: 'Address' });
@@ -71,7 +78,11 @@ OpenFormRegistry.add(PhoneSchema, { id: 'Phone' });
 OpenFormRegistry.add(SignatureSchema, { id: 'Signature' });
 
 OpenFormRegistry.add(CondExprSchema, { id: 'CondExpr' });
-OpenFormRegistry.add(LogicSectionSchema, { id: 'LogicSection' });
+OpenFormRegistry.add(DefsSectionSchema, { id: 'DefsSection' });
+
+// Note: RulesSectionSchema is NOT registered separately because FormSchema already
+// includes it as a field. Registering it separately causes Zod v4 $ref bugs.
+// The rules section is inlined as part of FormSchema.
 
 /**
  * OpenForm root schema - union of all artifact types
@@ -106,6 +117,7 @@ export {
 	FormFieldsetSchema,
 
 	// Shared
+	ContentRefSchema,
 	LayerSchema,
 
 	// Primitives
@@ -122,7 +134,12 @@ export {
 	PhoneSchema,
 	SignatureSchema,
 
-	// Logic
+	// Expressions
 	CondExprSchema,
-	LogicSectionSchema,
+	DefsSectionSchema,
+
+	// Rules
+	ValidationRuleSchema,
+	RuleSeveritySchema,
+	RulesSectionSchema,
 };

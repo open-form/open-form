@@ -224,8 +224,8 @@ const filled = form.fill({
   fields: { /* ... */ },
   parties: {
     accountHolders: [
-      { id: 'accountHolders-0', fullName: 'Jane Smith' },
-      { id: 'accountHolders-1', fullName: 'John Smith' }
+      { id: 'accountHolders-0', name: 'Jane Smith' },
+      { id: 'accountHolders-1', name: 'John Smith' }
     ]
   }
 })
@@ -264,8 +264,8 @@ type Party = Person | Organization
 ```
 
 Party type is inferred from shape:
-- **Person**: Has `fullName` property
-- **Organization**: Has `name` property (without `fullName`)
+- **Person**: Has `name` property (a natural person)
+- **Organization**: Has `name` property plus `legalName`, `entityType`, etc.
 
 ## RuntimeParty
 
@@ -286,7 +286,7 @@ const filled = form.fill({
   parties: {
     buyer: {
       id: 'buyer-0',  // Required ID
-      fullName: 'John Smith',
+      name: 'John Smith',
       firstName: 'John',
       lastName: 'Smith'
     },
@@ -307,7 +307,7 @@ const filled = form.fill({
   parties: {
     buyer: {
       id: 'buyer-0',
-      ...open.person().fullName('John Smith').build()
+      ...open.person().name('John Smith').build()
     },
     seller: {
       id: 'seller-0',

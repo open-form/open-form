@@ -115,15 +115,15 @@ function createPartyFunctions(context: EvaluationContext): Record<string, (...ar
  * @example
  * ```typescript
  * const context = {
- *   fields: { age: { value: 25 } },
+ *   fields: { age: 25 },
  *   parties: { buyer: [{ type: 'person', data: {...}, signed: true }] },
  *   isAdult: true,
  * }
  *
- * evaluateExpression('fields.age.value >= 18', context)
+ * evaluateExpression('fields.age >= 18', context)
  * // { success: true, value: true }
  *
- * evaluateExpression('isAdult and fields.age.value > 21', context)
+ * evaluateExpression('isAdult and fields.age > 21', context)
  * // { success: true, value: true }
  *
  * evaluateExpression('partyCount("buyer") > 0', context)
@@ -187,7 +187,7 @@ export function evaluateExpression<T = unknown>(
  * evaluateBooleanExpression(undefined, context, true)
  * // true (default)
  *
- * evaluateBooleanExpression('fields.age.value >= 18', context, false)
+ * evaluateBooleanExpression('fields.age >= 18', context, false)
  * // true (evaluated expression)
  *
  * evaluateBooleanExpression('isAdult', context, false)

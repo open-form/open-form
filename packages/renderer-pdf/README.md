@@ -55,7 +55,7 @@ const output = await renderPdf(
     petName: {
       firstName: "Fluffy",
       lastName: "Whiskers",
-      fullName: "Fluffy Whiskers",
+      name: "Fluffy Whiskers",
     },
     monthlyFee: {
       amount: 100,
@@ -97,7 +97,7 @@ const output = await petAddendumForm
       petName: {
         firstName: "Fluffy",
         lastName: "Whiskers",
-        fullName: "Fluffy Whiskers",
+        name: "Fluffy Whiskers",
       },
       monthlyFee: {
         amount: 100,

@@ -24,6 +24,7 @@ export const LockedLayerSchema = z.object({
  * Locked artifact information
  */
 export const LockedArtifactSchema = z.object({
+	kind: z.enum(['form', 'document', 'checklist', 'bundle']).describe('Artifact kind'),
 	version: z.string().describe('Installed artifact version'),
 	resolved: z.url().describe('Full URL used to fetch the artifact'),
 	integrity: z.string()

@@ -12,7 +12,8 @@
 // Public API - Functions
 // ============================================================================
 
-export { evaluateFormLogic } from './evaluation'
+export { evaluateFormDefs } from './evaluation'
+export { evaluateRules, evaluateFormRules } from './evaluation'
 
 // ============================================================================
 // Public API - Types
@@ -22,4 +23,7 @@ export type {
   FormRuntimeState,
   FieldRuntimeState,
   AnnexRuntimeState,
+  RuleValidationResult,
+  FormRulesValidationResult,
+  EvaluationContext,
 } from './evaluation'

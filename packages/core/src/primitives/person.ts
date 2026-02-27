@@ -3,7 +3,7 @@ import type { Person } from '@open-form/types';
 
 interface PersonBuilder {
 	from(value: Person): PersonBuilder;
-	fullName(value: string): PersonBuilder;
+	name(value: string): PersonBuilder;
 	title(value: string | undefined): PersonBuilder;
 	firstName(value: string | undefined): PersonBuilder;
 	middleName(value: string | undefined): PersonBuilder;
@@ -21,8 +21,8 @@ function createBuilder(): PersonBuilder {
 			Object.assign(_def, parsed);
 			return builder;
 		},
-		fullName(value) {
-			_def.fullName = value;
+		name(value) {
+			_def.name = value;
 			return builder;
 		},
 		title(value) {

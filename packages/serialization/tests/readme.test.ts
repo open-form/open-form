@@ -74,7 +74,7 @@ describe("@open-form/serialization - README Examples", () => {
       const result = usaSerializers.person.stringify({
         firstName: "Alice",
         lastName: "Johnson",
-        fullName: "Alice Johnson",
+        name: "Alice Johnson",
       });
       expect(result).toBe("Alice Johnson");
     });

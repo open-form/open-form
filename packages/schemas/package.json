@@ -11,11 +11,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./schema.json": "./schemas/schema.json"
   },
   "sideEffects": false,
   "files": [
     "dist",
+    "schemas",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"

@@ -131,15 +131,17 @@ export function isLayer(value: unknown): value is Layer {
  * Shape-based type guard for Party.
  * Checks if value is a valid Person or Organization based on shape.
  *
- * - Person: has `fullName` property and passes Person validation
- * - Organization: has `name` property (and not `fullName`) and passes Organization validation
+ * - Organization: has org-specific keys (legalName, domicile, entityType, entityId, taxId)
+ * - Person: has `name` but no org-specific keys
  */
 export function isParty(value: unknown): value is Party {
   if (typeof value !== 'object' || value === null) return false
   const obj = value as Record<string, unknown>
-  if ('fullName' in obj) return _validatePerson(value)
-  if ('name' in obj) return _validateOrganization(value)
-  return false
+  if (!('name' in obj)) return false
+  const orgKeys = ['legalName', 'domicile', 'entityType', 'entityId', 'taxId']
+  const hasOrgKey = Object.keys(obj).some(k => orgKeys.includes(k))
+  if (hasOrgKey) return _validateOrganization(value)
+  return _validatePerson(value)
 }
 
 export function isSignature(value: unknown): value is Signature {

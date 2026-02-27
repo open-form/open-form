@@ -2,7 +2,7 @@
  * Bundle content item types
  */
 
-import type { CondExpr } from "../shared/logic";
+import type { CondExpr } from "../shared/expressions";
 import type { Document } from "../document";
 import type { Form } from "../form";
 import type { Checklist } from "../checklist";

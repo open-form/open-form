@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { evaluateFormLogic } from '@/logic/runtime/evaluation/form-evaluator'
+import { evaluateFormDefs } from '@/logic/runtime/evaluation/form-evaluator'
 import type { Form } from '@open-form/types'
 import {
   evaluateFieldStates,
@@ -37,17 +37,17 @@ describe('form-evaluator', () => {
       age: { type: 'number' },
       drivingLicense: {
         type: 'text',
-        visible: 'fields.age.value >= 18',
+        visible: 'fields.age >= 18',
         required: 'isAdult',
       },
       parentConsent: {
         type: 'boolean',
-        visible: 'fields.age.value < 18',
+        visible: 'fields.age < 18',
         required: 'not isAdult',
       },
     },
-    logic: {
-      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+    defs: {
+      isAdult: { type: 'boolean', value: 'fields.age >= 18' },
     },
   })
 
@@ -60,7 +60,7 @@ describe('form-evaluator', () => {
       hasAddress: { type: 'boolean' },
       address: {
         type: 'fieldset',
-        visible: 'fields.hasAddress.value',
+        visible: 'fields.hasAddress',
         fields: {
           street: { type: 'text', required: true },
           city: { type: 'text', required: true },
@@ -77,15 +77,15 @@ describe('form-evaluator', () => {
     fields: {
       age: { type: 'number' },
     },
-    logic: {
-      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+    defs: {
+      isAdult: { type: 'boolean', value: 'fields.age >= 18' },
     },
     annexes: {
-      'id-proof': {
+      'idProof': {
         title: 'ID Proof',
         required: true,
       },
-      'drivers-license': {
+      'driversLicense': {
         title: 'Drivers License',
         visible: 'isAdult',
         required: 'isAdult',
@@ -99,16 +99,16 @@ describe('form-evaluator', () => {
   })
 
   // ============================================================================
-  // evaluateFormLogic Tests
+  // evaluateFormDefs Tests
   // ============================================================================
 
-  describe('evaluateFormLogic', () => {
+  describe('evaluateFormDefs', () => {
     describe('basic field evaluation', () => {
       test('evaluates form with boolean literal conditions', () => {
         const form = createSimpleForm()
         const data = { fields: { name: 'John', age: 25, agreed: true } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -130,7 +130,7 @@ describe('form-evaluator', () => {
         const form = createSimpleForm()
         const data = { fields: { name: 'Jane', age: 30, agreed: false } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -146,7 +146,7 @@ describe('form-evaluator', () => {
         const form = createFormWithExpressions()
         const data = { fields: { age: 25 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -162,7 +162,7 @@ describe('form-evaluator', () => {
         const form = createFormWithExpressions()
         const data = { fields: { age: 16 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -178,7 +178,7 @@ describe('form-evaluator', () => {
         const form = createFormWithExpressions()
         const data = { fields: { age: 25 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -196,7 +196,7 @@ describe('form-evaluator', () => {
         const form = createFormWithFieldset()
         const data = { fields: { hasAddress: true } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -218,7 +218,7 @@ describe('form-evaluator', () => {
           },
         }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -235,14 +235,14 @@ describe('form-evaluator', () => {
         const form = createFormWithAnnexes()
         const data = { fields: { age: 25 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
           const state = result.value
 
-          // id-proof is always required
-          const idProof = state.annexes.get('id-proof')
+          // idProof is always required
+          const idProof = state.annexes.get('idProof')
           expect(idProof?.visible).toBe(true)
           expect(idProof?.required).toBe(true)
         }
@@ -252,15 +252,15 @@ describe('form-evaluator', () => {
         const form = createFormWithAnnexes()
         const data = { fields: { age: 25 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
           const state = result.value
 
-          // Adult: drivers-license visible, parent-consent hidden
-          expect(state.annexes.get('drivers-license')?.visible).toBe(true)
-          expect(state.annexes.get('drivers-license')?.required).toBe(true)
+          // Adult: driversLicense visible, parent-consent hidden
+          expect(state.annexes.get('driversLicense')?.visible).toBe(true)
+          expect(state.annexes.get('driversLicense')?.required).toBe(true)
           expect(state.annexes.get('parent-consent')?.visible).toBe(false)
           expect(state.annexes.get('parent-consent')?.required).toBe(false)
         }
@@ -270,15 +270,15 @@ describe('form-evaluator', () => {
         const form = createFormWithAnnexes()
         const data = { fields: { age: 16 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
           const state = result.value
 
-          // Minor: drivers-license hidden, parent-consent visible
-          expect(state.annexes.get('drivers-license')?.visible).toBe(false)
-          expect(state.annexes.get('drivers-license')?.required).toBe(false)
+          // Minor: driversLicense hidden, parent-consent visible
+          expect(state.annexes.get('driversLicense')?.visible).toBe(false)
+          expect(state.annexes.get('driversLicense')?.required).toBe(false)
           expect(state.annexes.get('parent-consent')?.visible).toBe(true)
           expect(state.annexes.get('parent-consent')?.required).toBe(true)
         }
@@ -290,25 +290,25 @@ describe('form-evaluator', () => {
         const form = createFormWithExpressions()
         const data = { fields: { age: 25 } }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
-          expect(result.value.logicValues.get('isAdult')).toBe(true)
+          expect(result.value.defsValues.get('isAdult')).toBe(true)
         }
       })
 
       test('logic values reflect data changes', () => {
         const form = createFormWithExpressions()
 
-        const adultResult = evaluateFormLogic(form, { fields: { age: 25 } })
-        const minorResult = evaluateFormLogic(form, { fields: { age: 16 } })
+        const adultResult = evaluateFormDefs(form, { fields: { age: 25 } })
+        const minorResult = evaluateFormDefs(form, { fields: { age: 16 } })
 
         expect('value' in adultResult).toBe(true)
         expect('value' in minorResult).toBe(true)
         if ('value' in adultResult && 'value' in minorResult) {
-          expect(adultResult.value.logicValues.get('isAdult')).toBe(true)
-          expect(minorResult.value.logicValues.get('isAdult')).toBe(false)
+          expect(adultResult.value.defsValues.get('isAdult')).toBe(true)
+          expect(minorResult.value.defsValues.get('isAdult')).toBe(false)
         }
       })
     })
@@ -330,7 +330,7 @@ describe('form-evaluator', () => {
         }
         const data = { fields: {} }
 
-        const result = evaluateFormLogic(form, data)
+        const result = evaluateFormDefs(form, data)
 
         expect('value' in result).toBe(true)
         if ('value' in result) {
@@ -368,8 +368,8 @@ describe('form-evaluator', () => {
       const states = evaluateAnnexStates(form, data)
 
       expect(states.size).toBe(3)
-      expect(states.get('id-proof')).toBeDefined()
-      expect(states.get('drivers-license')).toBeDefined()
+      expect(states.get('idProof')).toBeDefined()
+      expect(states.get('driversLicense')).toBeDefined()
       expect(states.get('parent-consent')).toBeDefined()
     })
 
@@ -410,10 +410,10 @@ describe('form-evaluator', () => {
       const form = createFormWithAnnexes()
       const data = { fields: { age: 25 } }
 
-      const state = getAnnexRuntimeState(form, data, 'id-proof')
+      const state = getAnnexRuntimeState(form, data, 'idProof')
 
       expect(state).toBeDefined()
-      expect(state?.annexId).toBe('id-proof')
+      expect(state?.annexId).toBe('idProof')
       expect(state?.required).toBe(true)
     })
 

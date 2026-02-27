@@ -11,15 +11,15 @@ describe('Party Builders', () => {
 		describe('Object Pattern', () => {
 			describe('person() - direct validation', () => {
 				test('creates valid person party with minimal config', () => {
-					const input = { fullName: 'John Doe' };
+					const input = { name: 'John Doe' };
 					const result = person(input as any);
 					expect(inferPartyType(result)).toBe('person');
-					expect(result.fullName).toBe('John Doe');
+					expect(result.name).toBe('John Doe');
 				});
 
 				test('creates person party with all name components', () => {
 					const input = {
-						fullName: 'Dr. Jane Mary Smith Jr.',
+						name: 'Dr. Jane Mary Smith Jr.',
 						title: 'Dr.',
 						firstName: 'Jane',
 						middleName: 'Mary',
@@ -28,7 +28,7 @@ describe('Party Builders', () => {
 					};
 					const result = person(input as any);
 					expect(inferPartyType(result)).toBe('person');
-					expect(result.fullName).toBe('Dr. Jane Mary Smith Jr.');
+					expect(result.name).toBe('Dr. Jane Mary Smith Jr.');
 					expect(result.title).toBe('Dr.');
 					expect(result.firstName).toBe('Jane');
 					expect(result.middleName).toBe('Mary');
@@ -38,7 +38,7 @@ describe('Party Builders', () => {
 
 				test('creates person party with first and last name only', () => {
 					const input = {
-						fullName: 'Jane Smith',
+						name: 'Jane Smith',
 						firstName: 'Jane',
 						lastName: 'Smith',
 					};
@@ -49,7 +49,7 @@ describe('Party Builders', () => {
 
 				test('creates person party with title prefix', () => {
 					const input = {
-						fullName: 'Mr. John Doe',
+						name: 'Mr. John Doe',
 						title: 'Mr.',
 						firstName: 'John',
 						lastName: 'Doe',
@@ -60,7 +60,7 @@ describe('Party Builders', () => {
 
 				test('creates person party with name suffix', () => {
 					const input = {
-						fullName: 'John Doe III',
+						name: 'John Doe III',
 						firstName: 'John',
 						lastName: 'Doe',
 						suffix: 'III',
@@ -71,7 +71,7 @@ describe('Party Builders', () => {
 
 				test('creates person party with middle name', () => {
 					const input = {
-						fullName: 'John Michael Doe',
+						name: 'John Michael Doe',
 						firstName: 'John',
 						middleName: 'Michael',
 						lastName: 'Doe',
@@ -82,7 +82,7 @@ describe('Party Builders', () => {
 			});
 
 			describe('validation failures', () => {
-				test('throws error when fullName is missing', () => {
+				test('throws error when name is missing', () => {
 					const input = { firstName: 'John' } as any;
 					expect(() => person(input)).toThrow();
 				});
@@ -91,15 +91,15 @@ describe('Party Builders', () => {
 
 		describe('person.parse()', () => {
 			test('parses valid person party', () => {
-				const input = { fullName: 'John Doe' };
+				const input = { name: 'John Doe' };
 				const result = person.parse(input);
 				expect(inferPartyType(result)).toBe('person');
-				expect(result.fullName).toBe('John Doe');
+				expect(result.name).toBe('John Doe');
 			});
 
 			test('parses person party with all properties', () => {
 				const input = {
-					fullName: 'Dr. Jane Smith',
+					name: 'Dr. Jane Smith',
 					title: 'Dr.',
 					firstName: 'Jane',
 					lastName: 'Smith',
@@ -124,16 +124,16 @@ describe('Party Builders', () => {
 
 		describe('person.safeParse()', () => {
 			test('returns success for valid person party', () => {
-				const input = { fullName: 'John Doe' };
+				const input = { name: 'John Doe' };
 				const result = person.safeParse(input);
 				expect(result.success).toBe(true);
 				if (result.success) {
 					expect(inferPartyType(result.data)).toBe('person');
-					expect(result.data.fullName).toBe('John Doe');
+					expect(result.data.name).toBe('John Doe');
 				}
 			});
 
-			test('returns error when fullName is missing', () => {
+			test('returns error when name is missing', () => {
 				const input = { firstName: 'John' };
 				const result = person.safeParse(input);
 				expect(result.success).toBe(false);
@@ -155,21 +155,21 @@ describe('Party Builders', () => {
 
 		describe('Builder Pattern', () => {
 			test('builds valid person party with minimal config', () => {
-				const result = person().fullName('John Doe').build();
+				const result = person().name('John Doe').build();
 				expect(inferPartyType(result)).toBe('person');
-				expect(result.fullName).toBe('John Doe');
+				expect(result.name).toBe('John Doe');
 			});
 
 			test('builds person party with all name components', () => {
 				const result = person()
-					.fullName('Dr. Jane Mary Smith Jr.')
+					.name('Dr. Jane Mary Smith Jr.')
 					.title('Dr.')
 					.firstName('Jane')
 					.middleName('Mary')
 					.lastName('Smith')
 					.suffix('Jr.')
 					.build();
-				expect(result.fullName).toBe('Dr. Jane Mary Smith Jr.');
+				expect(result.name).toBe('Dr. Jane Mary Smith Jr.');
 				expect(result.title).toBe('Dr.');
 				expect(result.firstName).toBe('Jane');
 				expect(result.middleName).toBe('Mary');
@@ -179,7 +179,7 @@ describe('Party Builders', () => {
 
 			test('builds person party with first and last name only', () => {
 				const result = person()
-					.fullName('Jane Smith')
+					.name('Jane Smith')
 					.firstName('Jane')
 					.lastName('Smith')
 					.build();
@@ -189,7 +189,7 @@ describe('Party Builders', () => {
 
 			test('builds person party with title prefix', () => {
 				const result = person()
-					.fullName('Mr. John Doe')
+					.name('Mr. John Doe')
 					.title('Mr.')
 					.firstName('John')
 					.lastName('Doe')
@@ -199,7 +199,7 @@ describe('Party Builders', () => {
 
 			test('builds person party with name suffix', () => {
 				const result = person()
-					.fullName('John Doe III')
+					.name('John Doe III')
 					.firstName('John')
 					.lastName('Doe')
 					.suffix('III')
@@ -209,7 +209,7 @@ describe('Party Builders', () => {
 
 			test('builds person party with middle name', () => {
 				const result = person()
-					.fullName('John Michael Doe')
+					.name('John Michael Doe')
 					.firstName('John')
 					.middleName('Michael')
 					.lastName('Doe')
@@ -219,89 +219,89 @@ describe('Party Builders', () => {
 
 			test('supports method chaining', () => {
 				const result = person()
-					.fullName('Jane Doe')
+					.name('Jane Doe')
 					.firstName('Jane')
 					.lastName('Doe')
 					.build();
-				expect(result.fullName).toBe('Jane Doe');
+				expect(result.name).toBe('Jane Doe');
 				expect(result.firstName).toBe('Jane');
 				expect(result.lastName).toBe('Doe');
 			});
 
-			test('allows overwriting fullName', () => {
+			test('allows overwriting name', () => {
 				const result = person()
-					.fullName('Original Name')
-					.fullName('Updated Name')
+					.name('Original Name')
+					.name('Updated Name')
 					.build();
-				expect(result.fullName).toBe('Updated Name');
+				expect(result.name).toBe('Updated Name');
 			});
 
 			test('allows undefined values for optional fields', () => {
 				const result = person()
-					.fullName('John Doe')
+					.name('John Doe')
 					.title(undefined)
 					.firstName(undefined)
 					.build();
-				expect(result.fullName).toBe('John Doe');
+				expect(result.name).toBe('John Doe');
 				expect(result.title).toBeUndefined();
 				expect(result.firstName).toBeUndefined();
 			});
 
-			test('throws error when fullName is not set', () => {
+			test('throws error when name is not set', () => {
 				expect(() => person().build()).toThrow();
 			});
 
 			test('returns builder instance', () => {
 				const builder = person();
 				expect(builder).toBeDefined();
-				expect(typeof builder.fullName).toBe('function');
+				expect(typeof builder.name).toBe('function');
 				expect(typeof builder.build).toBe('function');
 			});
 
 			test('builder methods return this for chaining', () => {
 				const builder = person();
-				const afterFullName = builder.fullName('John Doe');
+				const afterFullName = builder.name('John Doe');
 				const afterFirstName = afterFullName.firstName('John');
 				expect(afterFullName).toBe(builder);
 				expect(afterFirstName).toBe(builder);
 			});
 
 			test('multiple builders are independent', () => {
-				const builder1 = person().fullName('Person 1');
-				const builder2 = person().fullName('Person 2');
-				expect(builder1.build().fullName).toBe('Person 1');
-				expect(builder2.build().fullName).toBe('Person 2');
+				const builder1 = person().name('Person 1');
+				const builder2 = person().name('Person 2');
+				expect(builder1.build().name).toBe('Person 1');
+				expect(builder2.build().name).toBe('Person 2');
 			});
 
 			test('builder can be reused after build', () => {
-				const builder = person().fullName('John Doe');
+				const builder = person().name('John Doe');
 				const result1 = builder.build();
 				const result2 = builder.build();
 				expect(result1).toEqual(result2);
 			});
 
 			test('modifying builder after build affects subsequent builds', () => {
-				const builder = person().fullName('Original');
+				const builder = person().name('Original');
 				const result1 = builder.build();
 
-				builder.fullName('Modified');
+				builder.name('Modified');
 				const result2 = builder.build();
 
-				expect(result1.fullName).toBe('Original');
-				expect(result2.fullName).toBe('Modified');
+				expect(result1.name).toBe('Original');
+				expect(result2.name).toBe('Modified');
 			});
 		});
 
 		describe('builder pattern vs object pattern comparison', () => {
 			test('person builder produces same result as object pattern', () => {
 				const builderResult = person()
-					.fullName('John Doe')
+					.name('John Doe')
 					.firstName('John')
 					.lastName('Doe')
 					.build();
 
 				const objectResult = person({
-					fullName: 'John Doe',
+					name: 'John Doe',
 					firstName: 'John',
 					lastName: 'Doe',
 				} as any);
@@ -322,18 +322,18 @@ describe('Party Builders', () => {
 		describe('common usage patterns', () => {
 			test('creates individual party', () => {
 				const result = person()
-					.fullName('Jane Smith')
+					.name('Jane Smith')
 					.firstName('Jane')
 					.lastName('Smith')
 					.build();
 
 				expect(inferPartyType(result)).toBe('person');
-				expect(result.fullName).toBe('Jane Smith');
+				expect(result.name).toBe('Jane Smith');
 			});
 
 			test('creates person with professional title', () => {
 				const result = person()
-					.fullName('Dr. Robert Johnson')
+					.name('Dr. Robert Johnson')
 					.title('Dr.')
 					.firstName('Robert')
 					.lastName('Johnson')
@@ -344,7 +344,7 @@ describe('Party Builders', () => {
 
 			test('creates person with name suffix', () => {
 				const result = person()
-					.fullName('William Brown Jr.')
+					.name('William Brown Jr.')
 					.firstName('William')
 					.lastName('Brown')
 					.suffix('Jr.')
@@ -363,7 +363,7 @@ describe('Party Builders', () => {
 		describe('Object Pattern', () => {
 			describe('organization() - direct validation', () => {
 				test('creates valid organization party with minimal config', () => {
-					const input = { name: 'Acme Corporation' };
+					const input = { name: 'Acme Corporation', entityType: 'corporation' };
 					const result = organization(input as any);
 					expect(inferPartyType(result)).toBe('organization');
 					expect(result.name).toBe('Acme Corporation');
@@ -435,7 +435,7 @@ describe('Party Builders', () => {
 
 		describe('organization.parse()', () => {
 			test('parses valid organization party', () => {
-				const input = { name: 'Acme Corp' };
+				const input = { name: 'Acme Corp', entityType: 'corporation' };
 				const result = organization.parse(input);
 				expect(inferPartyType(result)).toBe('organization');
 				expect(result.name).toBe('Acme Corp');
@@ -469,7 +469,7 @@ describe('Party Builders', () => {
 
 		describe('organization.safeParse()', () => {
 			test('returns success for valid organization party', () => {
-				const input = { name: 'Acme Corp' };
+				const input = { name: 'Acme Corp', entityType: 'corporation' };
 				const result = organization.safeParse(input);
 				expect(result.success).toBe(true);
 				if (result.success) {
@@ -509,7 +509,7 @@ describe('Party Builders', () => {
 
 		describe('Builder Pattern', () => {
 			test('builds valid organization party with minimal config', () => {
-				const result = organization().name('Acme Corporation').build();
+				const result = organization().name('Acme Corporation').entityType('corporation').build();
 				expect(inferPartyType(result)).toBe('organization');
 				expect(result.name).toBe('Acme Corporation');
 			});
@@ -688,13 +688,13 @@ describe('Party Builders', () => {
 	describe('partyData', () => {
 		describe('partyData.parse()', () => {
 			test('parses person from shape', () => {
-				const input = { fullName: 'John Doe' };
+				const input = { name: 'John Doe' };
 				const result = partyData.parse(input);
 				expect(partyData.inferType(result)).toBe('person');
 			});
 
 			test('parses organization from shape', () => {
-				const input = { name: 'Acme Corp' };
+				const input = { name: 'Acme Corp', entityType: 'corporation' };
 				const result = partyData.parse(input);
 				expect(partyData.inferType(result)).toBe('organization');
 			});
@@ -711,7 +711,7 @@ describe('Party Builders', () => {
 
 		describe('partyData.safeParse()', () => {
 			test('returns success for valid person', () => {
-				const result = partyData.safeParse({ fullName: 'John' });
+				const result = partyData.safeParse({ name: 'John' });
 				expect(result.success).toBe(true);
 			});
 
@@ -727,13 +727,13 @@ describe('Party Builders', () => {
 		});
 
 		describe('partyData.inferType()', () => {
-			test('infers person from fullName', () => {
-				const p = person().fullName('John').build();
+			test('infers person from name', () => {
+				const p = person().name('John').build();
 				expect(partyData.inferType(p)).toBe('person');
 			});
 
 			test('infers organization from name', () => {
-				const o = organization().name('Corp').build();
+				const o = organization().name('Corp').entityType('corporation').build();
 				expect(partyData.inferType(o)).toBe('organization');
 			});
 		});

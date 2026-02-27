@@ -12,14 +12,14 @@ describe('RuntimeForm runtime state', () => {
   // Note: We don't use required: 'expression' here because schema validation
   // treats string expressions as truthy (required: true). Runtime evaluation
   // tests the required expression separately via isFieldRequired().
-  const createFormWithLogic = () =>
+  const createFormWithDefs = () =>
     form()
       .name('test-form')
       .version('1.0.0')
       .title('Test Form')
-      .logic({
-        isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
-        canDrive: { type: 'boolean', value: 'isAdult and fields.hasLicense.value' },
+      .defs({
+        isAdult: { type: 'boolean', value: 'fields.age >= 18' },
+        canDrive: { type: 'boolean', value: 'isAdult and fields.hasLicense' },
       })
       .field('age', { type: 'number' })
       .field('hasLicense', { type: 'boolean' })
@@ -40,12 +40,12 @@ describe('RuntimeForm runtime state', () => {
       .name('annex-form')
       .version('1.0.0')
       .title('Annex Form')
-      .logic({ isAdult: { type: 'boolean', value: 'fields.age.value >= 18' } })
+      .defs({ isAdult: { type: 'boolean', value: 'fields.age >= 18' } })
       .field('age', { type: 'number' })
-      .annex('id-proof', {
+      .annex('idProof', {
         title: 'ID Proof',
       })
-      .annex('drivers-license', {
+      .annex('driversLicense', {
         title: 'Drivers License',
         visible: 'isAdult',
       })
@@ -61,7 +61,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('runtimeState', () => {
     test('returns FormRuntimeState object', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       const state = filled.runtimeState
@@ -69,11 +69,11 @@ describe('RuntimeForm runtime state', () => {
       expect(state).toBeDefined()
       expect(state.fields).toBeDefined()
       expect(state.annexes).toBeDefined()
-      expect(state.logicValues).toBeDefined()
+      expect(state.defsValues).toBeDefined()
     })
 
     test('caches runtime state', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       const state1 = filled.runtimeState
@@ -83,7 +83,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('new RuntimeForm has fresh cache', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled1 = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
       // Use type assertion since builder pattern doesn't preserve exact field types
       const filled2 = (filled1.setField as (k: string, v: unknown) => typeof filled1)('age', 16)
@@ -92,8 +92,8 @@ describe('RuntimeForm runtime state', () => {
       const state2 = filled2.runtimeState
 
       expect(state1).not.toBe(state2) // Different objects
-      expect(state1.logicValues.get('isAdult')).toBe(true)
-      expect(state2.logicValues.get('isAdult')).toBe(false)
+      expect(state1.defsValues.get('isAdult')).toBe(true)
+      expect(state2.defsValues.get('isAdult')).toBe(false)
     })
   })
 
@@ -103,7 +103,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('getFieldState', () => {
     test('returns state for existing field', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       const state = filled.getFieldState('age')
@@ -114,7 +114,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns undefined for nonexistent field', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
       const state = filled.getFieldState('nonexistent')
@@ -125,7 +125,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('isFieldVisible', () => {
     test('returns true for visible field (adult)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       expect(filled.isFieldVisible('drivingLicense')).toBe(true)
@@ -133,7 +133,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns true for visible field (minor)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 16, hasLicense: false } } as any)
 
       expect(filled.isFieldVisible('drivingLicense')).toBe(false)
@@ -141,7 +141,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns true for nonexistent field (default)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
       expect(filled.isFieldVisible('nonexistent')).toBe(true)
@@ -150,7 +150,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('isFieldRequired', () => {
     test('returns false for field without required expression', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       // These fields don't have required expressions, so they're not required
@@ -159,7 +159,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns false for nonexistent field (default)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
       expect(filled.isFieldRequired('nonexistent')).toBe(false)
@@ -171,7 +171,7 @@ describe('RuntimeForm runtime state', () => {
   // expression tests that work with raw Form objects.
   describe('isFieldDisabled', () => {
     test('returns false for fields without disabled expression', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       // Fields don't have disabled expressions
@@ -180,7 +180,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns false for nonexistent field (default)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       expect(filled.isFieldDisabled('nonexistent')).toBe(false)
@@ -193,7 +193,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('getVisibleFields', () => {
     test('returns only visible fields (adult)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       const visibleFields = filled.getVisibleFields()
@@ -206,7 +206,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns only visible fields (minor)', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 16, hasLicense: false } } as any)
 
       const visibleFields = filled.getVisibleFields()
@@ -221,7 +221,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('getRequiredVisibleFields', () => {
     test('returns empty for form without required fields', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       const requiredVisibleFields = filled.getRequiredVisibleFields()
@@ -242,10 +242,10 @@ describe('RuntimeForm runtime state', () => {
       const formInstance = createFormWithAnnexes()
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
-      const state = filled.getAnnexState('id-proof')
+      const state = filled.getAnnexState('idProof')
 
       expect(state).toBeDefined()
-      expect(state?.annexId).toBe('id-proof')
+      expect(state?.annexId).toBe('idProof')
       // Annex doesn't have required expression in test fixture
       expect(state?.required).toBe(false)
     })
@@ -265,15 +265,15 @@ describe('RuntimeForm runtime state', () => {
       const formInstance = createFormWithAnnexes()
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
-      expect(filled.isAnnexVisible('id-proof')).toBe(true)
-      expect(filled.isAnnexVisible('drivers-license')).toBe(true)
+      expect(filled.isAnnexVisible('idProof')).toBe(true)
+      expect(filled.isAnnexVisible('driversLicense')).toBe(true)
     })
 
     test('returns false for hidden annex (minor)', () => {
       const formInstance = createFormWithAnnexes()
       const filled = formInstance.fill({ fields:  { age: 16 } } as any)
 
-      expect(filled.isAnnexVisible('drivers-license')).toBe(false)
+      expect(filled.isAnnexVisible('driversLicense')).toBe(false)
     })
 
     test('returns true for nonexistent annex (default)', () => {
@@ -290,8 +290,8 @@ describe('RuntimeForm runtime state', () => {
       const filled = formInstance.fill({ fields:  { age: 25 } } as any)
 
       // Neither annex has required expression in test fixture
-      expect(filled.isAnnexRequired('id-proof')).toBe(false)
-      expect(filled.isAnnexRequired('drivers-license')).toBe(false)
+      expect(filled.isAnnexRequired('idProof')).toBe(false)
+      expect(filled.isAnnexRequired('driversLicense')).toBe(false)
     })
 
     test('returns false for nonexistent annex (default)', () => {
@@ -308,7 +308,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('getLogicValue', () => {
     test('returns evaluated logic value', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       expect(filled.getLogicValue('isAdult')).toBe(true)
@@ -316,7 +316,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns false for minor', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 16, hasLicense: true } } as any)
 
       expect(filled.getLogicValue('isAdult')).toBe(false)
@@ -324,7 +324,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('returns undefined for nonexistent logic key', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: false } } as any)
 
       expect(filled.getLogicValue('nonexistent')).toBeUndefined()
@@ -337,7 +337,7 @@ describe('RuntimeForm runtime state', () => {
 
   describe('cache invalidation', () => {
     test('set() creates new RuntimeForm with fresh state', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 16, hasLicense: false } } as any)
 
       expect(filled.getLogicValue('isAdult')).toBe(false)
@@ -354,7 +354,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('update() creates new RuntimeForm with fresh state', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 16, hasLicense: false } } as any)
 
       expect(filled.getLogicValue('canDrive')).toBe(false)
@@ -369,7 +369,7 @@ describe('RuntimeForm runtime state', () => {
     })
 
     test('clone() creates new RuntimeForm with fresh cache', () => {
-      const formInstance = createFormWithLogic()
+      const formInstance = createFormWithDefs()
       const filled = formInstance.fill({ fields:  { age: 25, hasLicense: true } } as any)
 
       // Access state to cache it

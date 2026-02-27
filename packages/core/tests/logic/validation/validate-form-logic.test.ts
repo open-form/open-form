@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest'
-import { validateFormLogic } from '@/logic/design-time/validation/validate-form-logic'
+import { validateFormDefs } from '@/logic/design-time/validation/validate-form-logic'
 import type { Form } from '@open-form/types'
 
 /**
- * Tests for validateFormLogic (design-time validation).
+ * Tests for validateFormDefs (design-time validation).
  */
-describe('validateFormLogic', () => {
+describe('validateFormDefs', () => {
   // ============================================================================
   // Test Form Fixtures
   // ============================================================================
@@ -19,8 +19,8 @@ describe('validateFormLogic', () => {
       age: { type: 'number' },
       name: { type: 'text' },
     },
-    logic: {
-      isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+    defs: {
+      isAdult: { type: 'boolean', value: 'fields.age >= 18' },
     },
   })
 
@@ -40,14 +40,14 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
     test('validates form with valid logic expressions', () => {
       const form = createValidForm()
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -61,13 +61,13 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
           drivingLicense: {
             type: 'text',
-            visible: 'fields.age.value >= 18',
-            required: 'fields.age.value >= 18',
+            visible: 'fields.age >= 18',
+            required: 'fields.age >= 18',
           },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -85,12 +85,12 @@ describe('validateFormLogic', () => {
             required: 'isAdult',
           },
         },
-        logic: {
-          isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+        defs: {
+          isAdult: { type: 'boolean', value: 'fields.age >= 18' },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -110,12 +110,12 @@ describe('validateFormLogic', () => {
             },
           },
         },
-        logic: {
-          hasAddress: { type: 'boolean', value: 'fields.address.street.value != ""' },
+        defs: {
+          hasAddress: { type: 'boolean', value: 'fields.address.street != ""' },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -128,8 +128,8 @@ describe('validateFormLogic', () => {
         fields: {
           age: { type: 'number' },
         },
-        logic: {
-          isAdult: { type: 'boolean', value: 'fields.age.value >= 18' },
+        defs: {
+          isAdult: { type: 'boolean', value: 'fields.age >= 18' },
         },
         annexes: {
           proof: {
@@ -144,7 +144,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
   })
@@ -163,12 +163,12 @@ describe('validateFormLogic', () => {
         fields: {
           age: { type: 'number' },
         },
-        logic: {
-          broken: { type: 'boolean', value: 'fields.age.value >=' }, // Missing operand
+        defs: {
+          broken: { type: 'boolean', value: 'fields.age >=' }, // Missing operand
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         expect(result.issues.length).toBeGreaterThan(0)
@@ -190,7 +190,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
     })
 
@@ -209,7 +209,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
     })
   })
@@ -228,12 +228,12 @@ describe('validateFormLogic', () => {
         fields: {
           age: { type: 'number' },
         },
-        logic: {
-          broken: { type: 'boolean', value: 'fields.nonexistent.value >= 18' }, // nonexistent field
+        defs: {
+          broken: { type: 'boolean', value: 'fields.nonexistent >= 18' }, // nonexistent field
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         const issue = result.issues.find((i) => i.message.includes('nonexistent'))
@@ -255,7 +255,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
     })
 
@@ -273,12 +273,12 @@ describe('validateFormLogic', () => {
             },
           },
         },
-        logic: {
-          hasStreet: { type: 'boolean', value: 'fields.address.street.value != ""' },
+        defs: {
+          hasStreet: { type: 'boolean', value: 'fields.address.street != ""' },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
   })
@@ -295,12 +295,12 @@ describe('validateFormLogic', () => {
         version: '1.0.0',
         title: 'Self Ref Form',
         fields: {},
-        logic: {
+        defs: {
           selfRef: { type: 'boolean', value: 'selfRef' }, // references itself
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         const cycleIssue = result.issues.find((i) => i.message.includes('Circular dependency'))
@@ -315,13 +315,13 @@ describe('validateFormLogic', () => {
         version: '1.0.0',
         title: 'Cycle Form',
         fields: {},
-        logic: {
+        defs: {
           a: { type: 'boolean', value: 'b' },
           b: { type: 'boolean', value: 'a' },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         const cycleIssues = result.issues.filter((i) => i.message.includes('Circular dependency'))
@@ -345,12 +345,12 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
           field: {
             type: 'text',
-            visible: 'fields.age.value >= 18', // Comparison returns boolean
+            visible: 'fields.age >= 18', // Comparison returns boolean
           },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -364,12 +364,12 @@ describe('validateFormLogic', () => {
           agreed: { type: 'boolean' },
           field: {
             type: 'text',
-            required: 'fields.agreed.value', // Boolean field
+            required: 'fields.agreed', // Boolean field
           },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('value' in result).toBe(true)
     })
 
@@ -383,12 +383,12 @@ describe('validateFormLogic', () => {
           age: { type: 'number' },
           field: {
             type: 'text',
-            visible: 'fields.age.value', // Number, not boolean
+            visible: 'fields.age', // Number, not boolean
           },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       // This may or may not be an issue depending on strictness
       // The implementation uses truthy coercion at runtime
       // But type checking might warn about it
@@ -418,7 +418,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form, { collectAllErrors: true })
+      const result = validateFormDefs(form, { collectAllErrors: true })
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         // Should have multiple issues
@@ -444,7 +444,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form, { collectAllErrors: false })
+      const result = validateFormDefs(form, { collectAllErrors: false })
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues) {
         // Should stop at first error
@@ -472,7 +472,7 @@ describe('validateFormLogic', () => {
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues && result.issues[0]) {
         expect(result.issues[0].path).toBeDefined()
@@ -487,12 +487,12 @@ describe('validateFormLogic', () => {
         version: '1.0.0',
         title: 'Expr Test Form',
         fields: {},
-        logic: {
+        defs: {
           broken: { type: 'boolean', value: 'syntax error ((' },
         },
       }
 
-      const result = validateFormLogic(form)
+      const result = validateFormDefs(form)
       expect('issues' in result).toBe(true)
       if ('issues' in result && result.issues && result.issues[0]) {
         // The expression details are included in the message

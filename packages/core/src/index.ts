@@ -5,6 +5,7 @@
 export {
   // Form
   FormValidationError,
+  FormRuleViolationError,
   form,
   field,
   textField,
@@ -62,6 +63,9 @@ export type {
   FormInstance,
   RuntimeForm,
   DraftForm,
+  FillValidationOptions,
+  SafeFillResult,
+  FormValidationResult,
   SignableForm,
   ExecutedForm,
   FormInput,
@@ -224,6 +228,7 @@ export {
   isPhone,
   // Validators
   validateForm,
+  validateFormData,
   validateDocument,
   validateBundle,
   validateChecklist,
@@ -318,6 +323,10 @@ export type {
   Layer,
   InlineLayer,
   FileLayer,
+  // Validation rules
+  ValidationRule,
+  RulesSection,
+  RuleSeverity,
 } from "@open-form/types";
 
 // Block types (fields, fieldsets, annexes, parties)
@@ -420,3 +429,21 @@ export type {
 
 export { validateArtifact as validate } from "./validation";
 export { parse } from "./serialization";
+
+// ============================================================================
+// SECURITY
+// ============================================================================
+
+export {
+  assertSafePattern,
+  isSafePattern,
+  createSafeRegex,
+  UnsafePatternError,
+} from "./utils/safe-pattern";
+
+// ============================================================================
+// CODEGEN
+// ============================================================================
+
+export { jsonToDts, jsonToTsModule, jsonToLiteralType } from "./codegen";
+export type { JsonToTsModuleOptions } from "./codegen";

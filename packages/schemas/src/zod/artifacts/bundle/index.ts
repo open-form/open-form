@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ArtifactSchema } from '../shared/base';
-import { LogicSectionSchema } from '../logic/logic-section';
+import { DefsSectionSchema } from '../expressions/defs-section';
 import { BundleContentItemSchema } from './item';
 
 // Re-export item schema
@@ -11,7 +11,7 @@ export { BundleContentItemSchema } from './item';
  */
 export const BundleSchema = ArtifactSchema.extend({
 	kind: z.literal('bundle'),
-	logic: LogicSectionSchema.optional(),
+	defs: DefsSectionSchema.optional(),
 	contents: z.array(BundleContentItemSchema)
 		.describe('Ordered bundle contents. Each item has a key and is either an inline artifact, path reference, or registry reference.'),
 }).meta({

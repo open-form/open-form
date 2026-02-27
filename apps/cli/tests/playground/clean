@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Clean the playground directory, keeping only the ofm and clean scripts
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR"
+
+# Remove all files and directories except ofm and clean scripts
+find . -mindepth 1 -maxdepth 1 ! -name 'ofm' ! -name 'clean' -exec rm -rf {} +
+
+echo "✓ Playground cleaned (kept ofm and clean scripts)"

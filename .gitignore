@@ -34,6 +34,7 @@ pnpm-debug.log*
 # Testing
 coverage/
 **/tests/output/
+**/tests/debug/
 
 # IDE / Editors
 .vscode/
@@ -54,6 +55,7 @@ coverage/
 
 # Tools
 CLAUDE.md
+AGENTS.md
 .agents/
 .obsidian/
 .goose/

@@ -230,6 +230,9 @@ export interface RenderOptions<Output = unknown> {
 
   /** Key of the layer to use. If not provided, uses defaultLayer or first available. */
   layer?: string
+
+  /** Renderer bindings to override/merge with layer-spec bindings */
+  bindings?: Record<string, string>
 }
 
 /**
@@ -260,6 +263,9 @@ export interface RuntimeFormRenderOptions<Output = unknown> {
 
   /** Key of the layer to use. If not provided, uses defaultLayer or first available. */
   layer?: string
+
+  /** Renderer bindings to override/merge with layer-spec bindings */
+  bindings?: Record<string, string>
 }
 
 /**
@@ -304,7 +310,7 @@ export interface RuntimeChecklistRenderOptions<Output = unknown> {
  *   fields: { name: 'John', age: 30 },
  *   annexes: { schedule: { items: [...] } },
  *   parties: { buyer: { type: 'person', name: { firstName: 'John' } } },
- *   signers: { john: { person: { fullName: 'John Doe' } } },
+ *   signers: { john: { person: { name: 'John Doe' } } },
  *   signatories: { buyer: { 'buyer-0': [{ signerId: 'john' }] } }
  * })
  * ```

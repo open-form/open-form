@@ -81,7 +81,7 @@ describe("custom Serializers", () => {
       },
       person: {
         stringify: (value) =>
-          `CUSTOM PERSON: ${(value as any)?.fullName || "unknown"}`,
+          `CUSTOM PERSON: ${(value as any)?.name || "unknown"}`,
       },
       organization: {
         stringify: (value) =>

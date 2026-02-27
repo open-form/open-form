@@ -41,7 +41,7 @@ export interface ExtendedValidationResult {
  * Validate party data for a specific form role.
  *
  * This function:
- * 1. Infers the party type from shape (Person has fullName, Organization has name)
+ * 1. Infers the party type from shape (Organization has org-specific keys, Person does not)
  * 2. Validates the data against the appropriate schema
  * 3. Checks the inferred type against FormParty.partyType constraint
  *
@@ -54,11 +54,11 @@ export interface ExtendedValidationResult {
  * const formParty = { id: 'buyer', label: 'Buyer', partyType: 'person' };
  *
  * // Valid - person data for person-only role
- * validatePartyForRole({ fullName: 'John' }, formParty);
+ * validatePartyForRole({ name: 'John' }, formParty);
  * // { success: true, inferredType: 'person' }
  *
  * // Invalid - organization data for person-only role
- * validatePartyForRole({ name: 'Acme Corp' }, formParty);
+ * validatePartyForRole({ name: 'Acme Corp', legalName: 'Acme Corporation Inc.' }, formParty);
  * // { success: false, error: "Party type 'organization' not allowed...", inferredType: 'organization' }
  * ```
  */
@@ -74,18 +74,16 @@ export function validatePartyForRole(
   const obj = data as Record<string, unknown>;
   let inferredType: 'person' | 'organization';
 
-  // Infer type from shape and validate
-  if ('fullName' in obj) {
-    inferredType = 'person';
-    if (!validatePerson(obj)) {
-      const errors = (validatePerson as unknown as { errors: Array<{ message?: string }> }).errors;
-      return {
-        success: false,
-        error: `Invalid person data: ${errors?.[0]?.message || 'validation failed'}`,
-        inferredType,
-      };
-    }
-  } else if ('name' in obj) {
+  // Must have name
+  if (!('name' in obj)) {
+    return {
+      success: false,
+      error: 'Party must have a name property',
+    };
+  }
+
+  // Infer type from shape: org-specific keys → organization, otherwise → person
+  if (isOrganization(obj as unknown as Party)) {
     inferredType = 'organization';
     if (!validateOrganization(obj)) {
       const errors = (validateOrganization as unknown as { errors: Array<{ message?: string }> }).errors;
@@ -96,10 +94,15 @@ export function validatePartyForRole(
       };
     }
   } else {
-    return {
-      success: false,
-      error: 'Party must have fullName (person) or name (organization)',
-    };
+    inferredType = 'person';
+    if (!validatePerson(obj)) {
+      const errors = (validatePerson as unknown as { errors: Array<{ message?: string }> }).errors;
+      return {
+        success: false,
+        error: `Invalid person data: ${errors?.[0]?.message || 'validation failed'}`,
+        inferredType,
+      };
+    }
   }
 
   // Check FormParty.partyType constraint
@@ -196,8 +199,8 @@ export function validatePartyId(partyId: string, roleId: string): ExtendedValida
  *
  * // Multi-party role (max > 1)
  * validatePartiesForRole([
- *   { id: 'tenant-0', fullName: 'Jane' },
- *   { id: 'tenant-1', fullName: 'John' }
+ *   { id: 'tenant-0', name: 'Jane' },
+ *   { id: 'tenant-1', name: 'John' }
  * ], formParty, 'tenant')
  * ```
  */

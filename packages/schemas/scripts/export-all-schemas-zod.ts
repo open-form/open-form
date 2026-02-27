@@ -81,6 +81,15 @@ function transformRefsToBundle(
 }
 
 /**
+ * Strip local $defs from schema since all refs now point to the external bundle.
+ * This removes redundant definitions that were only needed for local resolution.
+ */
+function stripLocalDefs(schema: Record<string, unknown>): Record<string, unknown> {
+	const { $defs, ...rest } = schema;
+	return rest;
+}
+
+/**
  * Main export function
  */
 async function main() {
@@ -127,17 +136,20 @@ async function main() {
 				// Transform local $refs to bundle references
 				const transformedSchema = transformRefsToBundle(rawSchema, SCHEMA_VERSIONED_ID) as Record<string, unknown>;
 
+				// Strip local $defs (now redundant since refs point to bundle)
+				const cleanedSchema = stripLocalDefs(transformedSchema);
+
 				// Build the final schema with proper $id
 				const finalSchema = {
 					$schema: 'https://json-schema.org/draft/2020-12/schema',
 					$id: schemaId(baseName.toLowerCase()),
-					title: (transformedSchema.title as string) || baseName,
-					...transformedSchema,
+					title: (cleanedSchema.title as string) || baseName,
+					...cleanedSchema,
 				};
 
 				// Remove duplicate $schema if present
 				delete (finalSchema as Record<string, unknown>).title;
-				finalSchema.title = (transformedSchema.title as string) || baseName;
+				finalSchema.title = (cleanedSchema.title as string) || baseName;
 
 				// Write output
 				const outputPath = join(OUTPUT_DIR, filename);

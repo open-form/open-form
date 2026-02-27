@@ -334,13 +334,6 @@ describe('closure-based Checklist', () => {
 				expect(draft.getItem('item1' as any)).toBe(false) // original unchanged
 			})
 
-			// NOTE: With discriminated union types, this method doesn't exist on CompletedRuntimeChecklist
-			// The type system prevents calling setItem() on completed checklists at compile time
-			test.skip('throws when completed (now enforced by type system)', () => {
-				const instance = createChecklistWithItems()
-				const completed = instance.fill({ item1: true, item2: true } as any).complete()
-				expect(() => (completed as any).setItem('item1' as any, false)).toThrow('Cannot modify completed checklist')
-			})
 		})
 
 		describe('updateItems()', () => {
@@ -352,13 +345,6 @@ describe('closure-based Checklist', () => {
 				expect(updated.getAllItems()).toEqual({ item1: true, item2: true })
 			})
 
-			// NOTE: With discriminated union types, this method doesn't exist on CompletedRuntimeChecklist
-			// The type system prevents calling updateItems() on completed checklists at compile time
-			test.skip('throws when completed (now enforced by type system)', () => {
-				const instance = createChecklistWithItems()
-				const completed = instance.fill({ item1: true, item2: true } as any).complete()
-				expect(() => (completed as any).updateItems({ item1: false })).toThrow('Cannot modify completed checklist')
-			})
 		})
 
 		describe('setTargetLayer()', () => {
@@ -391,24 +377,6 @@ describe('closure-based Checklist', () => {
 				expect(() => (draft as any).setTargetLayer('nonexistent')).toThrow('Layer "nonexistent" not found')
 			})
 
-			// NOTE: With discriminated union types, this method doesn't exist on CompletedRuntimeChecklist
-			// The type system prevents calling setTargetLayer() on completed checklists at compile time
-			test.skip('throws when completed (now enforced by type system)', () => {
-				const instance = checklist({
-					name: 'multi-layer',
-					version: '1.0.0',
-					title: 'Multi Layer',
-					items: [{ id: 'item1', title: 'Item' }] as const,
-					layers: {
-						text: { kind: 'inline', mimeType: 'text/plain', text: 'Text' },
-						html: { kind: 'inline', mimeType: 'text/html', text: '<p>HTML</p>' },
-					},
-					defaultLayer: 'text',
-				})
-
-				const completed = instance.fill({ item1: true }).complete()
-				expect(() => (completed as any).setTargetLayer('html')).toThrow('Cannot modify completed checklist')
-			})
 		})
 
 		describe('complete()', () => {
@@ -422,13 +390,6 @@ describe('closure-based Checklist', () => {
 				expect(typeof completed.completedAt).toBe('string')
 			})
 
-			// NOTE: With discriminated union types, complete() method doesn't exist on CompletedRuntimeChecklist
-			// The type system prevents calling complete() on already completed checklists at compile time
-			test.skip('throws when already completed (now enforced by type system)', () => {
-				const instance = createChecklistWithItems()
-				const completed = instance.fill({ item1: true, item2: true } as any).complete()
-				expect(() => (completed as any).complete()).toThrow('Checklist is already completed')
-			})
 		})
 
 		describe('render()', () => {

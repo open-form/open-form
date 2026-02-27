@@ -234,33 +234,6 @@ describe('ChecklistInstance', () => {
   // ============================================================================
 
   describe('render()', () => {
-    const mockRenderer = {
-      id: 'test-renderer',
-      render: async (request: any) => {
-        return {
-          type: request.template.type,
-          content: request.template.content,
-          mimeType: request.template.mimeType,
-        }
-      },
-    }
-
-    // TODO: Implement renderer-based interface for checklist instance render()
-    test.skip('renders with inline layer using defaultLayer', async () => {
-      const instance = createChecklistWithLayers()
-      const output = await instance.render({ renderer: mockRenderer } as any)
-      expect((output as any).content).toBe('Item 1\nItem 2')
-      expect((output as any).mimeType).toBe('text/plain')
-    })
-
-    // TODO: Implement renderer-based interface for checklist instance render()
-    test.skip('renders with explicit layer parameter', async () => {
-      const instance = createChecklistWithLayers()
-      const output = await instance.render({ renderer: mockRenderer, layer: 'html' } as any)
-      expect((output as any).content).toBe('<ul><li>Item 1</li><li>Item 2</li></ul>')
-      expect((output as any).mimeType).toBe('text/html')
-    })
-
     test('throws error when checklist has no layers', async () => {
       const instance = createMinimalChecklist()
       await expect(instance.render()).rejects.toThrow(
@@ -304,55 +277,5 @@ describe('ChecklistInstance', () => {
       )
     })
 
-    // TODO: Implement renderer-based interface for checklist instance render()
-    test.skip('passes data with schema namespace to renderer', async () => {
-      let capturedData: any = undefined
-      const trackingRenderer = {
-        id: 'tracking-renderer',
-        render: async (request: any) => {
-          capturedData = request.data
-          return { success: true }
-        },
-      }
-
-      const instance = createChecklistWithLayers()
-      await instance.render({ renderer: trackingRenderer } as any)
-      expect(capturedData).toEqual({
-        schema: {
-          name: 'checklist-with-layers',
-          version: '1.0.0',
-          title: 'Checklist With Layers',
-          description: undefined,
-          code: undefined,
-          releaseDate: undefined,
-          metadata: {},
-        },
-        items: [{ id: 'item1', title: 'First Item' }],
-      })
-    })
-
-    // TODO: Implement renderer-based interface for checklist instance render()
-    test.skip('includes bindings in template when present', async () => {
-      let capturedTemplate: any = undefined
-      const trackingRenderer = {
-        id: 'tracking-renderer',
-        render: async (request: any) => {
-          capturedTemplate = request.template
-          return { success: true }
-        },
-      }
-
-      const instance = checklist()
-        .name('checklist')
-        .version('1.0.0')
-        .title('Checklist')
-        .item({ id: 'item1', title: 'Item' })
-        .inlineLayer('main', { mimeType: 'text/plain', text: 'Content', bindings: { status: 'active' } })
-        .defaultLayer('main')
-        .build()
-
-      await instance.render({ renderer: trackingRenderer } as any)
-      expect(capturedTemplate.bindings).toEqual({ status: 'active' })
-    })
   })
 })

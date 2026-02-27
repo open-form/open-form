@@ -101,11 +101,11 @@ Create a Handlebars template at `layers/lease.md`:
 
 This Lease Agreement is entered into on **{{startDate}}** between:
 
-**LANDLORD:** {{parties.landlord.fullName}}
+**LANDLORD:** {{parties.landlord.name}}
 
 **TENANT(S):**
 {{#each parties.tenant}}
-- {{fullName}}
+- {{name}}
 {{/each}}
 
 ---
@@ -153,7 +153,7 @@ Smoking is **not permitted** on the premises.
 
 **LANDLORD:**
 
-Name: {{parties.landlord.fullName}}
+Name: {{parties.landlord.name}}
 
 Signature: ___________________________  Date: ____________
 
@@ -161,7 +161,7 @@ Signature: ___________________________  Date: ____________
 **TENANT(S):**
 
 {{#each parties.tenant}}
-Name: {{fullName}}
+Name: {{name}}
 
 Signature: ___________________________  Date: ____________
 
@@ -251,10 +251,10 @@ const filled = leaseAgreement.fill({
     smokingAllowed: false,
   },
   parties: {
-    landlord: { id: 'landlord-1', fullName: 'Alice Chen' },
+    landlord: { id: 'landlord-1', name: 'Alice Chen' },
     tenant: [
-      { id: 'tenant-1', fullName: 'Bob Smith' },
-      { id: 'tenant-2', fullName: 'Carol Johnson' },
+      { id: 'tenant-1', name: 'Bob Smith' },
+      { id: 'tenant-2', name: 'Carol Johnson' },
     ],
   },
 })
@@ -299,7 +299,7 @@ You've now created a form that generates lease agreements from a Handlebars temp
 |---------|---------|-------------|
 | Field value | `{{fieldName}}` | Output a field value |
 | Nested value | `{{address.line1}}` | Access nested properties |
-| Party data | `{{parties.landlord.fullName}}` | Access party information |
+| Party data | `{{parties.landlord.name}}` | Access party information |
 | Loop | `{{#each parties.tenant}}...{{/each}}` | Iterate over arrays |
 | Conditional | `{{#if petsAllowed}}...{{/if}}` | Conditional content |
 | If/else | `{{#if x}}...{{else}}...{{/if}}` | Conditional with fallback |

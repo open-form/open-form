@@ -10,7 +10,7 @@ import type {
   RenderRequest,
   SerializerRegistry,
 } from "@open-form/types";
-import { usaSerializers } from "@open-form/serialization";
+import { usaSerializers, attachmentStringifier } from "@open-form/serialization";
 import { renderText } from "./render";
 import type { TextSignatureOptions } from "./utils/signature-helpers";
 
@@ -19,8 +19,47 @@ export type { TextSignatureOptions } from "./utils/signature-helpers";
 export {
   createSignatureHelper,
   createInitialsHelper,
+  createSignatureDateHelper,
   registerSignatureHelpers,
 } from "./utils/signature-helpers";
+
+/**
+ * Wrapper class for annexes that serializes to string via toString()
+ */
+class AnnexValueWrapper {
+  constructor(private readonly rawValue: unknown) {
+    // Copy all properties from rawValue to enable property access
+    if (rawValue !== null && typeof rawValue === "object") {
+      Object.assign(this, rawValue);
+    }
+  }
+
+  toString(): string {
+    try {
+      return attachmentStringifier.stringify(this.rawValue as Parameters<typeof attachmentStringifier.stringify>[0]);
+    } catch {
+      // Fallback for incomplete attachment data
+      return "[Attachment]";
+    }
+  }
+}
+
+/**
+ * Preprocess annexes by wrapping each value for automatic serialization
+ */
+function preprocessAnnexes(
+  annexes: Record<string, unknown>
+): Record<string, unknown> {
+  const processed: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(annexes)) {
+    if (value !== null && value !== undefined) {
+      processed[key] = new AnnexValueWrapper(value);
+    } else {
+      processed[key] = value;
+    }
+  }
+  return processed;
+}
 
 /**
  * Configuration options for the text renderer.
@@ -79,19 +118,35 @@ export function textRenderer(
       let dataRecord: Record<string, unknown>;
 
       if ("fields" in request.data) {
-        // FormData format: spread fields at top level, keep parties/annexes/logic namespaced
-        const { fields, parties, annexes, logic, ...rest } = request.data as {
+        // FormData format: spread fields at top level, keep parties/annexes/defs namespaced
+        const { fields, parties, annexes, defs, ...rest } = request.data as {
           fields?: Record<string, unknown>;
           parties?: Record<string, unknown>;
           annexes?: Record<string, unknown>;
-          logic?: Record<string, unknown>;
+          defs?: Record<string, unknown>;
           _signatures?: Record<string, unknown>;
         };
+
+        // Handle nested structure: annexes/parties/defs may be inside fields (from form.ts render)
+        // or at the top level of request.data
+        const fieldsObj = fields as Record<string, unknown> | undefined;
+        const actualAnnexes = annexes ?? (fieldsObj?.annexes as Record<string, unknown> | undefined);
+        const actualParties = parties ?? (fieldsObj?.parties as Record<string, unknown> | undefined);
+        const actualDefs = defs ?? (fieldsObj?.defs as Record<string, unknown> | undefined);
+
+        // If fields contained nested annexes/parties/defs, remove them before spreading
+        const cleanFields = fieldsObj ? { ...fieldsObj } : undefined;
+        if (cleanFields) {
+          delete cleanFields.annexes;
+          delete cleanFields.parties;
+          delete cleanFields.defs;
+        }
+
         dataRecord = {
-          ...fields,
-          ...(parties && { parties }),
-          ...(annexes && { annexes }),
-          ...(logic && { logic }),
+          ...cleanFields,
+          ...(actualParties && { parties: actualParties }),
+          ...(actualAnnexes && { annexes: preprocessAnnexes(actualAnnexes) }),
+          ...(actualDefs && { defs: actualDefs }),
           ...rest, // Include _signatures and other special keys
         };
       } else {

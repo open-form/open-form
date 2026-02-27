@@ -1,49 +1,49 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/organization.json",
-  "id": "Organization",
   "type": "object",
   "properties": {
     "name": {
-      "description": "Organization name",
       "type": "string",
       "minLength": 1,
-      "maxLength": 200
+      "maxLength": 200,
+      "description": "Organization name"
     },
     "legalName": {
-      "description": "Legal or registered name of the organization",
       "type": "string",
       "minLength": 1,
-      "maxLength": 200
+      "maxLength": 200,
+      "description": "Legal or registered name of the organization"
     },
     "domicile": {
-      "description": "Domicile",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Domicile"
     },
     "entityType": {
-      "description": "Legal entity type of the organization",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Legal entity type of the organization"
     },
     "entityId": {
-      "description": "Business identification number",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Business identification number"
     },
     "taxId": {
-      "description": "Tax identification number",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Tax identification number"
     }
   },
   "required": [
     "name"
   ],
   "additionalProperties": false,
+  "id": "Organization",
   "title": "Organization"
 }

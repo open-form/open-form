@@ -21,4 +21,4 @@ export { validateLogic } from './validation'
 export type { LogicValidatableArtifact } from './validation'
 
 // Schema types (re-export from @open-form/types)
-export type { CondExpr, LogicSection } from '@open-form/types'
+export type { CondExpr, DefsSection } from '@open-form/types'

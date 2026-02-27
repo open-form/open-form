@@ -110,11 +110,11 @@ describe('Formal Signing', () => {
 	})
 
 	const createLandlordSigner = (): Signer => ({
-		person: { fullName: 'John Landlord' },
+		person: { name: 'John Landlord' },
 	})
 
 	const createTenantSigner = (): Signer => ({
-		person: { fullName: 'Jane Tenant' },
+		person: { name: 'Jane Tenant' },
 	})
 
 	// ============================================================================
@@ -127,8 +127,8 @@ describe('Formal Signing', () => {
 			const draft = formInstance.fill({
 				fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 				parties: {
-					landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-					tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+					landlord: { id: 'landlord-0', name: 'John Landlord' },
+					tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 				},
 			})
 			const signable = draft.prepareForSigning()
@@ -144,8 +144,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -172,8 +172,8 @@ describe('Formal Signing', () => {
 			const draft = formInstance.fill({
 				fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 				parties: {
-					landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-					tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+					landlord: { id: 'landlord-0', name: 'John Landlord' },
+					tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 				},
 			})
 			const signable = draft.prepareForSigning()
@@ -187,8 +187,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -200,11 +200,11 @@ describe('Formal Signing', () => {
 
 			const landlordSigner = formal.getSignerForField('sig-landlord-0')
 			expect(landlordSigner).toBeDefined()
-			expect(landlordSigner?.person.fullName).toBe('John Landlord')
+			expect(landlordSigner?.person.name).toBe('John Landlord')
 
 			const tenantSigner = formal.getSignerForField('sig-tenant-0')
 			expect(tenantSigner).toBeDefined()
-			expect(tenantSigner?.person.fullName).toBe('Jane Tenant')
+			expect(tenantSigner?.person.name).toBe('Jane Tenant')
 		})
 
 		test('returns undefined for invalid field ID', async () => {
@@ -213,8 +213,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -238,8 +238,8 @@ describe('Formal Signing', () => {
 			const draft = formInstance.fill({
 				fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 				parties: {
-					landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-					tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+					landlord: { id: 'landlord-0', name: 'John Landlord' },
+					tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 				},
 			})
 			const signable = draft.prepareForSigning()
@@ -253,8 +253,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -281,8 +281,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -307,8 +307,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -336,8 +336,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -383,13 +383,13 @@ describe('Formal Signing', () => {
 			const draft = formDef
 				.fill({
 					fields: { name: 'Test' },
-					parties: { signer: { id: 'signer-0', fullName: 'Test Signer' } },
+					parties: { signer: { id: 'signer-0', name: 'Test Signer' } },
 				})
-				.addSigner('test-signer', { person: { fullName: 'Test Signer' } })
+				.addSigner('test-signer', { person: { name: 'Test Signer' } })
 				.addSignatory('signer', 'signer-0', { signerId: 'test-signer' })
 
 			await expect(draft.seal(createMockAdapter())).rejects.toThrow(
-				/layer "pdf" is not PDF-convertible/
+				/layer "pdf" has no signatureBlocks and is not PDF-convertible/
 			)
 		})
 
@@ -419,9 +419,9 @@ describe('Formal Signing', () => {
 			const draft = formInstance
 				.fill({
 					fields: { name: 'Test' },
-					parties: { applicant: { id: 'applicant-0', fullName: 'Test Applicant' } },
+					parties: { applicant: { id: 'applicant-0', name: 'Test Applicant' } },
 				})
-				.addSigner('test-signer', { person: { fullName: 'Test Signer' } })
+				.addSigner('test-signer', { person: { name: 'Test Signer' } })
 				.addSignatory('applicant', 'applicant-0', { signerId: 'test-signer' })
 
 			await expect(draft.seal(createMockAdapter())).rejects.toThrow(
@@ -434,8 +434,8 @@ describe('Formal Signing', () => {
 			const draft = formInstance.fill({
 				fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 				parties: {
-					landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-					tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+					landlord: { id: 'landlord-0', name: 'John Landlord' },
+					tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 				},
 			})
 			// Note: No signers or signatories added
@@ -457,8 +457,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -480,8 +480,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -500,7 +500,7 @@ describe('Formal Signing', () => {
 			expect(restored.canonicalPdfHash).toBe('sha256:abc123def456')
 
 			// Verify helper methods work on restored form
-			expect(restored.getSignerForField('sig-landlord-0')?.person.fullName).toBe('John Landlord')
+			expect(restored.getSignerForField('sig-landlord-0')?.person.name).toBe('John Landlord')
 			expect(restored.getFieldsForSigner('tenant-signer')).toHaveLength(2)
 		})
 
@@ -509,8 +509,8 @@ describe('Formal Signing', () => {
 			const draft = formInstance.fill({
 				fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 				parties: {
-					landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-					tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+					landlord: { id: 'landlord-0', name: 'John Landlord' },
+					tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 				},
 			})
 			const signable = draft.prepareForSigning()
@@ -526,8 +526,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -587,8 +587,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())
@@ -610,8 +610,8 @@ describe('Formal Signing', () => {
 				.fill({
 					fields: { rentAmount: 1500, moveInDate: '2024-01-01' },
 					parties: {
-						landlord: { id: 'landlord-0', fullName: 'John Landlord' },
-						tenant: { id: 'tenant-0', fullName: 'Jane Tenant' },
+						landlord: { id: 'landlord-0', name: 'John Landlord' },
+						tenant: [{ id: 'tenant-0', name: 'Jane Tenant' }],
 					},
 				})
 				.addSigner('landlord-signer', createLandlordSigner())

@@ -27,7 +27,8 @@ export { FieldsetFieldSchema } from './artifacts/form/field';
 
 // Shared
 export { ArtifactSchema } from './artifacts/shared/base';
-export { LayerSchema } from './artifacts/shared/layer';
+export { ContentRefSchema } from './artifacts/shared/content-ref';
+export { LayerSchema, SignatureBlockSchema, SignatureBlockTypeSchema } from './artifacts/shared/layer';
 
 // Primitives
 export {
@@ -45,26 +46,34 @@ export {
 	SignatureSchema,
 } from './primitives';
 
-// Logic
+// Expressions
 export {
 	CondExprSchema,
-	LogicSectionSchema,
-	LogicExpressionSchema,
-	SCALAR_LOGIC_TYPES,
-	OBJECT_LOGIC_TYPES,
-	ALL_LOGIC_TYPES,
-} from './artifacts/logic';
+	DefsSectionSchema,
+	ExpressionSchema,
+	SCALAR_EXPRESSION_TYPES,
+	OBJECT_EXPRESSION_TYPES,
+	ALL_EXPRESSION_TYPES,
+} from './artifacts/expressions';
 
 export type {
-	ScalarLogicType,
-	ObjectLogicType,
-	LogicExpressionType,
-} from './artifacts/logic';
+	ScalarExpressionType,
+	ObjectExpressionType,
+	ExpressionType,
+} from './artifacts/expressions';
+
+// Rules (form-level validation)
+export {
+	ValidationRuleSchema,
+	RuleSeveritySchema,
+	RulesSectionSchema,
+} from './artifacts/rules';
 
 // Registry schemas
 export {
 	GlobalConfigSchema,
 	GlobalDefaultsSchema,
+	GlobalArtifactOutputFormatSchema,
 	RegistryEntrySchema,
 	RegistryEntryObjectSchema,
 	LockFileSchema,
@@ -81,6 +90,7 @@ export {
 export type {
 	GlobalConfig,
 	GlobalDefaults,
+	GlobalArtifactOutputFormat,
 	RegistryEntry,
 	RegistryEntryObject,
 	LockFile,
@@ -95,5 +105,5 @@ export type {
 } from './registry';
 
 // Manifest
-export { ManifestSchema } from './manifest';
-export type { Manifest, ManifestRegistryEntry, ManifestArtifactConfig } from './manifest';
+export { ManifestSchema, ArtifactOutputFormatSchema } from './manifest';
+export type { Manifest, ManifestRegistryEntry, ManifestArtifactConfig, ArtifactOutputFormat } from './manifest';

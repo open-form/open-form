@@ -5,7 +5,7 @@ packages:
   - "platform/packages/*"
   - "incubator/apps/*"
   - "incubator/packages/*"
-  - "artifacts/*"
+  - "artifacts"
 
 catalog:
   tsup: "^8.4.0"
@@ -41,3 +41,5 @@ catalog:
   "@types/dotenv": "^8.2.3"
   tsx: "^4.20.6"
   stripe: "^20.0.0"
+  cron-schedule: "^5.0.1"
+  cronstrue: "^2.55.0"

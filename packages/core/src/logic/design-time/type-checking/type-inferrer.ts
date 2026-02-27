@@ -74,10 +74,10 @@ const parser = new Parser({
  * ```typescript
  * const env = buildFormTypeEnvironment(form)
  *
- * inferExpressionType('fields.age.value >= 18', env)
+ * inferExpressionType('fields.age >= 18', env)
  * // { type: 'boolean', confidence: 'certain' }
  *
- * inferExpressionType('fields.age.value + 10', env)
+ * inferExpressionType('fields.age + 10', env)
  * // { type: 'number', confidence: 'certain' }
  *
  * inferExpressionType('unknownVar', env)

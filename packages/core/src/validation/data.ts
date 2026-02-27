@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { Form } from '@open-form/types'
 import { compile, type InferFormPayload } from '@/inference'
 import { deepClone } from '@/utils/clone'
+import { createSafeRegex } from '@/utils/safe-pattern'
 
 // Re-export types from centralized types.ts
 export type { ValidationError, ValidationSuccess, ValidationFailure, ValidationResult, InstanceTemplate } from '@/types'
@@ -67,7 +68,8 @@ function jsonSchemaToZod(jsonSchema: Record<string, unknown>): z.ZodType {
 				schema = (schema as z.ZodString).max(maxLength)
 			}
 			if (pattern !== undefined) {
-				schema = (schema as z.ZodString).regex(new RegExp(pattern))
+				// Use safe regex to prevent ReDoS attacks from malicious patterns
+				schema = (schema as z.ZodString).regex(createSafeRegex(pattern))
 			}
 		}
 		return schema

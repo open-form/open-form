@@ -12,12 +12,12 @@ Build and validate person information. The Person primitive captures individual 
 ```ts
 // Object pattern
 const person = open.person({
-  fullName: 'John Michael Smith'
+  name: 'John Michael Smith'
 })
 
 // Builder pattern
 const person = open.person()
-  .fullName('John Michael Smith')
+  .name('John Michael Smith')
   .title('Dr.')
   .firstName('John')
   .middleName('Michael')
@@ -41,7 +41,7 @@ const person = open.person.parse(jsonData)
 // Safe parsing (returns result object)
 const result = open.person.safeParse(jsonData)
 if (result.success) {
-  console.log(`Name: ${result.data.fullName}`)
+  console.log(`Name: ${result.data.name}`)
 } else {
   console.error(result.error.message)
 }
@@ -60,7 +60,7 @@ const form = open.form({
 const filled = form.fill({
   fields: {
     applicant: open.person()
-      .fullName('Jane Doe')
+      .name('Jane Doe')
       .firstName('Jane')
       .lastName('Doe')
       .build()
@@ -79,7 +79,7 @@ open.person(input: Person): Person
 Pass a Person object for validation. Returns the validated Person or throws on error.
 
 ```ts
-const person = open.person({ fullName: 'Jane Doe' })
+const person = open.person({ name: 'Jane Doe' })
 ```
 
 ## Builder Pattern
@@ -89,7 +89,7 @@ Chain methods to build a Person value incrementally:
 <MethodChain
   starter="open.person()"
   methods={[
-    { name: 'fullName', params: 'value: string', description: 'Set full display name' },
+    { name: 'name', params: 'value: string', description: 'Set full display name' },
     { name: 'title', params: 'value: string | undefined', description: 'Set honorific (Mr., Dr., etc.)' },
     { name: 'firstName', params: 'value: string | undefined', description: 'Set given/first name' },
     { name: 'middleName', params: 'value: string | undefined', description: 'Set middle name(s)' },
@@ -111,7 +111,7 @@ Chain methods to build a Person value incrementally:
 # Properties
 
 <PropertiesTable properties={[
-  { name: 'fullName', type: 'string', description: 'Complete display name.' },
+  { name: 'name', type: 'string', description: 'Complete display name.' },
   { name: 'title', type: 'string?', description: 'Honorific or title (Mr., Mrs., Dr., Prof.).' },
   { name: 'firstName', type: 'string?', description: 'Given name or first name.' },
   { name: 'middleName', type: 'string?', description: 'Middle name(s).' },
@@ -148,14 +148,14 @@ Chain methods to build a Person value incrementally:
 
 The Person primitive validates:
 
-- `fullName` must be a non-empty string
+- `name` must be a non-empty string
 - All other fields are optional
 
 ```ts
 // Valid
-open.person({ fullName: 'John Doe' })
+open.person({ name: 'John Doe' })
 open.person({
-  fullName: 'Dr. John Michael Smith Jr.',
+  name: 'Dr. John Michael Smith Jr.',
   title: 'Dr.',
   firstName: 'John',
   middleName: 'Michael',
@@ -165,10 +165,10 @@ open.person({
 
 // Invalid - throws Error
 open.person({})
-// Error: Invalid Person: fullName is required
+// Error: Invalid Person: name is required
 
-open.person({ fullName: '' })
-// Error: Invalid Person: fullName cannot be empty
+open.person({ name: '' })
+// Error: Invalid Person: name cannot be empty
 ```
 
 # Related

@@ -13,21 +13,21 @@ const draft = form.fill({
   fields: { /* ... */ },
   parties: {
     landlord: { id: 'landlord-0', legalName: 'ABC Property LLC' },
-    tenant: { id: 'tenant-0', fullName: 'Jane Smith' }
+    tenant: { id: 'tenant-0', name: 'Jane Smith' }
   }
 })
 
 // 2. Register signers with their adopted signatures
 const withSigners = draft
   .addSigner('jane', {
-    person: { fullName: 'Jane Smith' },
+    person: { name: 'Jane Smith' },
     adopted: {
       signature: { image: 'data:image/png;base64,...', method: 'drawn' },
       initials: { method: 'typed' }
     }
   })
   .addSigner('bob', {
-    person: { fullName: 'Bob Manager' },
+    person: { name: 'Bob Manager' },
     adopted: {
       signature: { image: 'data:image/png;base64,...', method: 'drawn' }
     }
@@ -48,7 +48,7 @@ const signed = signable
 
 // 6. Add witnesses and attestations
 const witnessed = signed
-  .addWitness({ id: 'witness-0', party: { fullName: 'Sam Witness' } })
+  .addWitness({ id: 'witness-0', party: { name: 'Sam Witness' } })
   .addAttestation({
     witnessId: 'witness-0',
     signature: { image: 'data:...', method: 'drawn', timestamp: new Date().toISOString() },
@@ -120,11 +120,11 @@ interface PartySignatory {
 // Jane signs for herself as tenant AND as authorized representative for guarantor
 const draft = form.fill({
   parties: {
-    tenant: { id: 'tenant-0', fullName: 'Jane Smith' },
+    tenant: { id: 'tenant-0', name: 'Jane Smith' },
     guarantor: { id: 'guarantor-0', legalName: 'Smith Family Trust' }
   }
 })
-  .addSigner('jane', { person: { fullName: 'Jane Smith' }, adopted: { /* ... */ } })
+  .addSigner('jane', { person: { name: 'Jane Smith' }, adopted: { /* ... */ } })
   .addSignatory('tenant', 'tenant-0', { signerId: 'jane' })
   .addSignatory('guarantor', 'guarantor-0', { signerId: 'jane', capacity: 'Trustee' })
 ```
@@ -201,13 +201,13 @@ const signable = draft.prepareForSigning()
 // Add a regular witness
 const withWitness = signable.addWitness({
   id: 'witness-0',
-  party: { fullName: 'Sam Witness' }
+  party: { name: 'Sam Witness' }
 })
 
 // Add a notary
 const withNotary = withWitness.addWitness({
   id: 'notary-0',
-  party: { fullName: 'Nancy Notary' },
+  party: { name: 'Nancy Notary' },
   notary: true
 })
 ```
@@ -269,7 +269,7 @@ const attested = signable.addAttestation({
 
 // Using inline witness definition
 const attested = signable.addAttestation({
-  witness: { id: 'witness-1', party: { fullName: 'New Witness' } },
+  witness: { id: 'witness-1', party: { name: 'New Witness' } },
   signature: { /* ... */ },
   attestsTo: [{ roleId: 'tenant', partyId: 'tenant-0', signerId: 'jane' }]
 })

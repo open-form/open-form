@@ -5,7 +5,7 @@
  * with a single file using closures and composition.
  */
 
-import type { Checklist, ChecklistItem, Layer, Metadata, RendererLayer, Form } from '@open-form/types'
+import type { Checklist, ChecklistItem, Layer, Metadata, RendererLayer, Form, ContentRef } from '@open-form/types'
 import type { DraftChecklistJSON, CompletedChecklistJSON } from '@open-form/types'
 import { parseChecklist, parseChecklistItem, parseLayer } from '@/validation/artifact-parsers'
 import { toYAML } from '@/serialization/serialization'
@@ -338,6 +338,15 @@ function createRuntimeChecklist<C extends Checklist>(config: RuntimeChecklistCon
 			throw new Error('Unknown layer spec kind')
 		}
 
+		// Resolve bindingsFrom reference if no direct bindings
+		if (!bindings && layerSpec.bindingsFrom) {
+			const refLayer = layers[layerSpec.bindingsFrom]
+			if (!refLayer) {
+				throw new Error(`bindingsFrom "${layerSpec.bindingsFrom}" references unknown layer. Available: ${Object.keys(layers).join(', ')}`)
+			}
+			bindings = refLayer.bindings
+		}
+
 		// If no renderer provided, return raw layer content
 		if (!options?.renderer) {
 			return layerContent as Output
@@ -645,6 +654,15 @@ function createChecklistInstance<C extends Checklist>(checklistDef: C): Checklis
 				throw new Error('Unknown layer spec kind')
 			}
 
+			// Resolve bindingsFrom reference if no direct bindings
+			if (!bindings && layerSpec.bindingsFrom) {
+				const refLayer = layers[layerSpec.bindingsFrom]
+				if (!refLayer) {
+					throw new Error(`bindingsFrom "${layerSpec.bindingsFrom}" references unknown layer. Available: ${Object.keys(layers).join(', ')}`)
+				}
+				bindings = refLayer.bindings
+			}
+
 			// If no renderer provided, return raw layer content
 			if (!options?.renderer) {
 				return layerContent as Output
@@ -719,6 +737,8 @@ export interface ChecklistBuilderInterface<TItems extends ChecklistItem[] = []> 
 	code(value: string | undefined): ChecklistBuilderInterface<TItems>
 	releaseDate(value: string | undefined): ChecklistBuilderInterface<TItems>
 	metadata(value: Metadata | undefined): ChecklistBuilderInterface<TItems>
+	instructions(value: ContentRef): ChecklistBuilderInterface<TItems>
+	agentInstructions(value: ContentRef): ChecklistBuilderInterface<TItems>
 	item(itemDef: Buildable<ChecklistItem>): ChecklistBuilderInterface<TItems>
 	itemWithBooleanStatus(
 		id: string,
@@ -744,7 +764,6 @@ export interface ChecklistBuilderInterface<TItems extends ChecklistItem[] = []> 
 			text: string
 			title?: string
 			description?: string
-			checksum?: string
 			bindings?: Record<string, string>
 		},
 	): ChecklistBuilderInterface<TItems>
@@ -776,6 +795,8 @@ function createChecklistBuilder<TItems extends ChecklistItem[] = []>(): Checklis
 		code: undefined,
 		releaseDate: undefined,
 		metadata: {},
+		instructions: undefined,
+		agentInstructions: undefined,
 		items: [],
 		layers: undefined,
 		defaultLayer: undefined,
@@ -791,6 +812,8 @@ function createChecklistBuilder<TItems extends ChecklistItem[] = []>(): Checklis
 			_def.code = checklistValue.code
 			_def.releaseDate = checklistValue.releaseDate
 			_def.metadata = checklistValue.metadata ? { ...checklistValue.metadata } : {}
+			_def.instructions = checklistValue.instructions
+			_def.agentInstructions = checklistValue.agentInstructions
 			_def.items = checklistValue.items.map((item) => parseChecklistItem(item))
 			_def.layers = checklistValue.layers
 				? Object.fromEntries(Object.entries(checklistValue.layers).map(([key, layer]) => [key, parseLayer(layer)]))
@@ -831,6 +854,16 @@ function createChecklistBuilder<TItems extends ChecklistItem[] = []>(): Checklis
 
 		metadata(value: Metadata | undefined) {
 			_def.metadata = value
+			return builder
+		},
+
+		instructions(value: ContentRef) {
+			_def.instructions = value
+			return builder
+		},
+
+		agentInstructions(value: ContentRef) {
+			_def.agentInstructions = value
 			return builder
 		},
 
@@ -910,7 +943,6 @@ function createChecklistBuilder<TItems extends ChecklistItem[] = []>(): Checklis
 				text: string
 				title?: string
 				description?: string
-				checksum?: string
 				bindings?: Record<string, string>
 			},
 		) {

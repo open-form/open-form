@@ -1,7 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/bundlecontentitem.json",
-  "id": "BundleContentItem",
   "oneOf": [
     {
       "type": "object",
@@ -11,11 +10,11 @@
           "const": "inline"
         },
         "key": {
-          "description": "Unique identifier for this content item, used to reference it in logic expressions",
           "type": "string",
           "minLength": 1,
           "maxLength": 100,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Unique identifier for this content item, used to reference it in defs expressions"
         },
         "artifact": {
           "description": "Inline artifact definition (document, form, checklist, or nested bundle)"
@@ -32,11 +31,11 @@
       "type": "object",
       "properties": {
         "key": {
-          "description": "Unique identifier for this content item, used to reference it in logic expressions",
           "type": "string",
           "minLength": 1,
           "maxLength": 100,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Unique identifier for this content item, used to reference it in defs expressions"
         },
         "include": {
           "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
@@ -46,9 +45,9 @@
           "const": "path"
         },
         "path": {
-          "description": "Absolute path from repo root to the artifact file",
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Absolute path from repo root to the artifact file"
         }
       },
       "required": [
@@ -62,11 +61,11 @@
       "type": "object",
       "properties": {
         "key": {
-          "description": "Unique identifier for this content item, used to reference it in logic expressions",
           "type": "string",
           "minLength": 1,
           "maxLength": 100,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Unique identifier for this content item, used to reference it in defs expressions"
         },
         "include": {
           "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
@@ -76,9 +75,9 @@
           "const": "registry"
         },
         "slug": {
-          "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version",
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Resource slug in format @org/repo/resource or @org/repo/resource@version"
         }
       },
       "required": [
@@ -89,22 +88,6 @@
       "additionalProperties": false
     }
   ],
-  "$defs": {
-    "CondExpr": {
-      "id": "CondExpr",
-      "anyOf": [
-        {
-          "description": "Literal boolean value",
-          "type": "boolean"
-        },
-        {
-          "description": "Expression string - either inline expression or reference to a logic key",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2000
-        }
-      ]
-    }
-  },
+  "id": "BundleContentItem",
   "title": "BundleContentItem"
 }

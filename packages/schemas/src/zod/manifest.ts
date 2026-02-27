@@ -8,6 +8,35 @@
 import { z } from 'zod';
 
 /**
+ * Per-registry cache configuration
+ */
+export const ManifestRegistryCacheConfigSchema = z.object({
+	ttl: z.number()
+		.int()
+		.min(0)
+		.describe('Cache TTL in seconds. 0 disables caching for this registry.')
+		.optional(),
+}).meta({
+	title: 'ManifestRegistryCacheConfig',
+	description: 'Per-registry cache configuration',
+});
+
+/**
+ * Project-level cache configuration
+ */
+export const ManifestCacheConfigSchema = z.object({
+	ttl: z.number()
+		.int()
+		.min(0)
+		.default(3600)
+		.describe('Default cache TTL in seconds. 0 disables caching. Default: 3600 (1 hour)')
+		.optional(),
+}).meta({
+	title: 'ManifestCacheConfig',
+	description: 'Project-level cache configuration for registry data',
+});
+
+/**
  * Registry entry with authentication options
  */
 export const ManifestRegistryEntryObjectSchema = z.object({
@@ -17,6 +46,9 @@ export const ManifestRegistryEntryObjectSchema = z.object({
 		.optional(),
 	params: z.record(z.string(), z.string())
 		.describe('Query parameters to include in requests')
+		.optional(),
+	cache: ManifestRegistryCacheConfigSchema
+		.describe('Per-registry cache settings')
 		.optional(),
 }).meta({
 	title: 'ManifestRegistryEntryObject',
@@ -35,6 +67,23 @@ export const ManifestRegistryEntrySchema = z.union([
 });
 
 /**
+ * Output format for installed artifacts
+ * - 'json': Raw JSON file only
+ * - 'yaml': Raw YAML file only
+ * - 'typed': JSON file with TypeScript declaration file (.d.ts) for type safety
+ * - 'ts': TypeScript module with ready-to-use typed export
+ */
+export const ArtifactOutputFormatSchema = z.union([
+	z.literal('json'),
+	z.literal('yaml'),
+	z.literal('typed'),
+	z.literal('ts'),
+]).meta({
+	title: 'ArtifactOutputFormat',
+	description: 'Output format for installed artifacts',
+});
+
+/**
  * Artifact configuration for the project
  */
 export const ManifestArtifactConfigSchema = z.object({
@@ -44,9 +93,9 @@ export const ManifestArtifactConfigSchema = z.object({
 		.default('artifacts')
 		.describe('Directory for installed artifacts (default: "artifacts")')
 		.optional(),
-	format: z.union([z.literal('json'), z.literal('yaml')])
-		.default('yaml')
-		.describe('Default output format for artifacts (default: "yaml")')
+	output: ArtifactOutputFormatSchema
+		.default('json')
+		.describe('Default output format for artifacts: json, yaml, typed (json + .d.ts), or ts (TypeScript module)')
 		.optional(),
 }).meta({
 	title: 'ManifestArtifactConfig',
@@ -82,6 +131,9 @@ export const ManifestSchema = z.object({
 	).describe('Custom registries for this project (overrides global config)')
 		.optional(),
 	artifacts: ManifestArtifactConfigSchema.optional(),
+	cache: ManifestCacheConfigSchema
+		.describe('Project-level cache configuration (overrides global config)')
+		.optional(),
 }).meta({
 	title: 'OpenForm Project Manifest',
 	description: 'Schema for open-form.json project manifest files',
@@ -90,7 +142,9 @@ export const ManifestSchema = z.object({
 /**
  * Manifest Schema Registry
  *
- * Contains all manifest-related schemas with their IDs for proper $ref generation.
+ * Contains the main Manifest schema for JSON Schema generation.
+ * Note: Only the main schema is registered to avoid Zod v4 issues with
+ * $ref handling between nested schemas. Nested schemas are inlined automatically.
  */
 export const ManifestSchemaRegistry = z.registry<{
 	id?: string;
@@ -98,10 +152,24 @@ export const ManifestSchemaRegistry = z.registry<{
 	description?: string;
 }>();
 
-ManifestSchemaRegistry.add(ManifestRegistryEntryObjectSchema, { id: 'ManifestRegistryEntryObject' });
-ManifestSchemaRegistry.add(ManifestRegistryEntrySchema, { id: 'ManifestRegistryEntry' });
-ManifestSchemaRegistry.add(ManifestArtifactConfigSchema, { id: 'ManifestArtifactConfig' });
+// Only register the main schema - nested schemas will be inlined
 ManifestSchemaRegistry.add(ManifestSchema, { id: 'Manifest' });
+
+/**
+ * Per-registry cache configuration type
+ */
+export interface ManifestRegistryCacheConfig {
+	/** Cache TTL in seconds. 0 disables caching. */
+	ttl?: number;
+}
+
+/**
+ * Project-level cache configuration type
+ */
+export interface ManifestCacheConfig {
+	/** Default cache TTL in seconds. 0 disables caching. Default: 3600 */
+	ttl?: number;
+}
 
 /**
  * Manifest registry entry type
@@ -112,14 +180,20 @@ export type ManifestRegistryEntry =
 			url: string;
 			headers?: Record<string, string>;
 			params?: Record<string, string>;
+			cache?: ManifestRegistryCacheConfig;
 		};
+
+/**
+ * Artifact output format type
+ */
+export type ArtifactOutputFormat = 'json' | 'yaml' | 'typed' | 'ts';
 
 /**
  * Manifest artifact configuration type
  */
 export interface ManifestArtifactConfig {
 	dir?: string;
-	format?: 'json' | 'yaml';
+	output?: ArtifactOutputFormat;
 }
 
 /**
@@ -133,4 +207,5 @@ export interface Manifest {
 	visibility: 'public' | 'private';
 	registries?: Record<string, ManifestRegistryEntry>;
 	artifacts?: ManifestArtifactConfig;
+	cache?: ManifestCacheConfig;
 }

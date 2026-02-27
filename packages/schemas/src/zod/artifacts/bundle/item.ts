@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CondExprSchema } from '../logic/cond-expr';
+import { CondExprSchema } from '../expressions/cond-expr';
 
 /**
  * Base properties shared by path and registry bundle content items.
@@ -9,7 +9,7 @@ const ContentItemBaseSchema = z.object({
 		.min(1)
 		.max(100)
 		.regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/)
-		.describe('Unique identifier for this content item, used to reference it in logic expressions'),
+		.describe('Unique identifier for this content item, used to reference it in defs expressions'),
 	include: CondExprSchema.optional(),
 });
 
@@ -23,7 +23,7 @@ const InlineContentItemSchema = z.object({
 		.min(1)
 		.max(100)
 		.regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/)
-		.describe('Unique identifier for this content item, used to reference it in logic expressions'),
+		.describe('Unique identifier for this content item, used to reference it in defs expressions'),
 	// We use z.any() here and will refine with proper types in the module
 	// to avoid circular dependency issues
 	artifact: z.any()

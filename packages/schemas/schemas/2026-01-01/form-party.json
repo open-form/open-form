@@ -1,23 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.open-form.dev/2026-01-01/formparty.json",
-  "id": "FormParty",
   "type": "object",
   "properties": {
     "label": {
-      "description": "Display name for this role",
       "type": "string",
       "minLength": 1,
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Display name for this role"
     },
     "description": {
-      "description": "Description of this role",
       "type": "string",
-      "maxLength": 500
+      "maxLength": 500,
+      "description": "Description of this role"
     },
     "partyType": {
-      "description": "Constraint on party type",
       "default": "any",
+      "description": "Constraint on party type",
       "anyOf": [
         {
           "type": "string",
@@ -34,14 +33,14 @@
       ]
     },
     "min": {
-      "description": "Minimum parties required",
       "default": 1,
+      "description": "Minimum parties required",
       "type": "number",
       "minimum": 0
     },
     "max": {
-      "description": "Maximum parties allowed",
       "default": 1,
+      "description": "Maximum parties allowed",
       "type": "number",
       "minimum": 1
     },
@@ -49,50 +48,34 @@
       "$ref": "https://schema.open-form.dev/2026-01-01.json/$defs/CondExpr"
     },
     "signature": {
-      "title": "FormSignature",
-      "description": "Design-time signature requirements for a party role",
       "type": "object",
       "properties": {
         "required": {
-          "description": "Whether signature is required for this role",
           "default": false,
+          "description": "Whether signature is required for this role",
           "type": "boolean"
         },
         "witnesses": {
-          "description": "Number of witnesses required for this signature",
           "default": 0,
+          "description": "Number of witnesses required for this signature",
           "type": "number",
           "minimum": 0
         },
         "notarized": {
-          "description": "Whether at least one witness must be a notary",
           "default": false,
+          "description": "Whether at least one witness must be a notary",
           "type": "boolean"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "FormSignature",
+      "description": "Design-time signature requirements for a party role"
     }
   },
   "required": [
     "label"
   ],
   "additionalProperties": false,
-  "$defs": {
-    "CondExpr": {
-      "id": "CondExpr",
-      "anyOf": [
-        {
-          "description": "Literal boolean value",
-          "type": "boolean"
-        },
-        {
-          "description": "Expression string - either inline expression or reference to a logic key",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2000
-        }
-      ]
-    }
-  },
+  "id": "FormParty",
   "title": "FormParty"
 }

@@ -130,7 +130,7 @@ export type {
 } from './checklist'
 
 // Form artifact
-export { form, runtimeFormFromJSON, FormValidationError } from './form'
+export { form, runtimeFormFromJSON, FormValidationError, FormRuleViolationError } from './form'
 export type {
 	FormInstance,
 	RuntimeForm,
@@ -145,6 +145,9 @@ export type {
 	PartyRoleKeys,
 	CaptureOptions,
 	FormBuilderInterface,
+	FillValidationOptions,
+	SafeFillResult,
+	FormValidationResult,
 } from './form'
 
 // Bundle artifact

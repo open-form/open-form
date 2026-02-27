@@ -2,7 +2,7 @@
  * Bundle artifact type definition
  */
 
-import type { LogicSection } from "../shared/logic";
+import type { DefsSection } from "../shared/expressions";
 import type { ArtifactBase } from "../shared";
 import type { BundleContentItem } from "./item";
 
@@ -14,8 +14,8 @@ import type { BundleContentItem } from "./item";
 export interface Bundle extends ArtifactBase {
   /** Literal `"bundle"` discriminator. */
   kind: "bundle";
-  /** Named logic expressions that can be referenced in include conditions. */
-  logic?: LogicSection;
+  /** Named definitions that can be referenced in include conditions. */
+  defs?: DefsSection;
   /** Ordered list of bundle contents with keys. */
   contents: BundleContentItem[];
 }

@@ -92,7 +92,7 @@ Forms follow a three-phase lifecycle: Draft → Signable → Executed.
 const draft = form.fill({
   fields: { tenantName: 'John Doe', moveInDate: '2024-02-01' },
   parties: {
-    tenant: { id: 'tenant-0', fullName: 'John Doe' },
+    tenant: { id: 'tenant-0', name: 'John Doe' },
     landlord: { id: 'landlord-0', legalName: 'ABC Property LLC' }
   }
 })
@@ -100,7 +100,7 @@ const draft = form.fill({
 // 2. Configure signers and signatories
 const ready = draft
   .addSigner('john', {
-    person: { fullName: 'John Doe' },
+    person: { name: 'John Doe' },
     adopted: { signature: { image: 'data:...', method: 'drawn' } }
   })
   .addSignatory('tenant', 'tenant-0', { signerId: 'john' })

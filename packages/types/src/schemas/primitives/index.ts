@@ -124,12 +124,12 @@ export interface Phone {
 }
 
 /**
- * Person name information with required `fullName` and optional components.
+ * Person name information with required `name` and optional components.
  *
  * @example
  * ```ts
  * const person: Person = {
- *   fullName: "Dr. Jane Smith Jr.",
+ *   name: "Dr. Jane Smith Jr.",
  *   title: "Dr.",
  *   firstName: "Jane",
  *   lastName: "Smith",
@@ -143,7 +143,7 @@ export interface Person {
 	 * @minLength 1
 	 * @maxLength 200
 	 */
-	fullName: string
+	name: string
 	/**
 	 * Optional prefix or honorific (Mr., Dr., etc.).
 	 * @minLength 1

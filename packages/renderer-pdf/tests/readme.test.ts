@@ -75,7 +75,7 @@ describe("@open-form/renderer-pdf - README Examples", () => {
             petName: {
               firstName: "Fluffy",
               lastName: "Whiskers",
-              fullName: "Fluffy Whiskers",
+              name: "Fluffy Whiskers",
             },
             monthlyFee: {
               amount: 100,
@@ -156,7 +156,7 @@ describe("@open-form/renderer-pdf - README Examples", () => {
               petName: {
                 firstName: "Fluffy",
                 lastName: "Whiskers",
-                fullName: "Fluffy Whiskers",
+                name: "Fluffy Whiskers",
               },
               monthlyFee: {
                 amount: 100,
@@ -201,7 +201,7 @@ describe("@open-form/renderer-pdf - README Examples", () => {
             petName: {
               firstName: "Fluffy",
               lastName: "Whiskers",
-              fullName: "Fluffy Whiskers",
+              name: "Fluffy Whiskers",
             },
             monthlyFee: {
               amount: 100,

@@ -12,19 +12,16 @@ describe('Fieldset', () => {
 			describe('success cases', () => {
 				test('creates valid fieldset with minimal config', () => {
 					const input: FormFieldset = {
-						id: 'personal-info',
 						fields: {
 							name: { type: 'text' },
 						},
 					};
 					const result = fieldset(input);
-					expect(result.id).toBe('personal-info');
 					expect(result.fields!.name!.type).toBe('text');
 				});
 
 				test('creates fieldset with title', () => {
 					const input: FormFieldset = {
-						id: 'contact-info',
 						title: 'Contact Information',
 						fields: {
 							email: { type: 'email' },
@@ -36,7 +33,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with description', () => {
 					const input: FormFieldset = {
-						id: 'address-section',
 						title: 'Address',
 						description: 'Enter your mailing address',
 						fields: {
@@ -50,7 +46,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with multiple fields of different types', () => {
 					const input: FormFieldset = {
-						id: 'profile',
 						fields: {
 							name: { type: 'text', label: 'Full Name' },
 							age: { type: 'number', label: 'Age', min: 0, max: 120 } as NumberField,
@@ -66,7 +61,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with required flag', () => {
 					const input: FormFieldset = {
-						id: 'required-section',
 						fields: {
 							field1: { type: 'text' },
 						},
@@ -78,7 +72,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with order', () => {
 					const input: FormFieldset = {
-						id: 'section-1',
 						fields: {
 							field1: { type: 'text' },
 						},
@@ -90,7 +83,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with all properties', () => {
 					const input: FormFieldset = {
-						id: 'complete-section',
 						title: 'Complete Information',
 						description: 'All required fields',
 						fields: {
@@ -106,7 +98,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with nested fieldset', () => {
 					const input: FormFieldset = {
-						id: 'parent',
 						fields: {
 							personal: {
 								type: 'fieldset',
@@ -126,7 +117,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with deeply nested fieldsets', () => {
 					const input: FormFieldset = {
-						id: 'root',
 						fields: {
 							level1: {
 								type: 'fieldset',
@@ -148,7 +138,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with various field types', () => {
 					const input: FormFieldset = {
-						id: 'varied-fields',
 						fields: {
 							textField: { type: 'text' },
 							numberField: { type: 'number' },
@@ -165,39 +154,8 @@ describe('Fieldset', () => {
 					expect(Object.keys(result.fields)).toHaveLength(9);
 				});
 
-				test('creates fieldset with valid id patterns', () => {
-					const validIds = [
-						'simple',
-						'with-dash',
-						'with_underscore',
-						'camelCase',
-						'PascalCase',
-						'with123numbers',
-						'a1-b2_c3',
-					];
-
-					for (const id of validIds) {
-						const input: FormFieldset = {
-							id,
-							fields: { field1: { type: 'text' } },
-						};
-						const result = fieldset(input);
-						expect(result.id).toBe(id);
-					}
-				});
-
-				test('creates fieldset with long valid id', () => {
-					const input: FormFieldset = {
-						id: 'a'.repeat(100),
-						fields: { field1: { type: 'text' } },
-					};
-					const result = fieldset(input);
-					expect(result.id).toHaveLength(100);
-				});
-
 				test('creates fieldset with order value 0', () => {
 					const input: FormFieldset = {
-						id: 'first',
 						fields: { field1: { type: 'text' } },
 						order: 0,
 					};
@@ -207,7 +165,6 @@ describe('Fieldset', () => {
 
 				test('creates fieldset with large order value', () => {
 					const input: FormFieldset = {
-						id: 'last',
 						fields: { field1: { type: 'text' } },
 						order: 9999,
 					};
@@ -217,71 +174,13 @@ describe('Fieldset', () => {
 			});
 
 			describe('validation failures', () => {
-				test('throws error when id is missing', () => {
-					const input = {
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when fields is missing', () => {
-					const input = {
-						id: 'test',
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id is empty string', () => {
-					const input = {
-						id: '',
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id exceeds maxLength', () => {
-					const input = {
-						id: 'a'.repeat(101),
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id has invalid pattern (starts with dash)', () => {
-					const input = {
-						id: '-invalid',
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id has invalid pattern (starts with underscore)', () => {
-					const input = {
-						id: '_invalid',
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id has special characters', () => {
-					const input = {
-						id: 'invalid@id',
-						fields: { field1: { type: 'text' } },
-					} as any;
-					expect(() => fieldset(input)).toThrow();
-				});
-
-				test('throws error when id has spaces', () => {
-					const input = {
-						id: 'invalid id',
-						fields: { field1: { type: 'text' } },
-					} as any;
+				test('throws error when fields is invalid', () => {
+					const input = { fields: 'not-an-object' } as any;
 					expect(() => fieldset(input)).toThrow();
 				});
 
 				test('throws error when title is empty string', () => {
 					const input = {
-						id: 'test',
 						title: '',
 						fields: { field1: { type: 'text' } },
 					} as any;
@@ -290,7 +189,6 @@ describe('Fieldset', () => {
 
 				test('throws error when title exceeds maxLength', () => {
 					const input = {
-						id: 'test',
 						title: 'a'.repeat(201),
 						fields: { field1: { type: 'text' } },
 					} as any;
@@ -299,7 +197,6 @@ describe('Fieldset', () => {
 
 				test('throws error when description is empty string', () => {
 					const input = {
-						id: 'test',
 						description: '',
 						fields: { field1: { type: 'text' } },
 					} as any;
@@ -308,16 +205,14 @@ describe('Fieldset', () => {
 
 				test('throws error when description exceeds maxLength', () => {
 					const input = {
-						id: 'test',
 						description: 'a'.repeat(1001),
 						fields: { field1: { type: 'text' } },
 					} as any;
 					expect(() => fieldset(input)).toThrow();
 				});
 
-				test('throws error when fields is empty object', () => {
+				test('accepts empty fields object', () => {
 					const input = {
-						id: 'test',
 						fields: {},
 					} as any;
 					const result = fieldset(input);
@@ -326,7 +221,6 @@ describe('Fieldset', () => {
 
 				test('throws error when order is negative', () => {
 					const input = {
-						id: 'test',
 						fields: { field1: { type: 'text' } },
 						order: -1,
 					} as any;
@@ -335,7 +229,6 @@ describe('Fieldset', () => {
 
 				test('throws error when field definition is invalid', () => {
 					const input = {
-						id: 'test',
 						fields: {
 							invalid: { type: 'invalid-type' },
 						},
@@ -345,7 +238,6 @@ describe('Fieldset', () => {
 
 				test('rejects additional properties (strict validation)', () => {
 					const input = {
-						id: 'test',
 						fields: { field1: { type: 'text' } },
 						extra: 'should be removed',
 					} as any;
@@ -358,7 +250,6 @@ describe('Fieldset', () => {
 			describe('success cases', () => {
 				test('parses valid fieldset', () => {
 					const input = {
-						id: 'test',
 						fields: { name: { type: 'text' } },
 					};
 					const result = fieldset.parse(input);
@@ -367,7 +258,6 @@ describe('Fieldset', () => {
 
 				test('parses fieldset with all properties', () => {
 					const input = {
-						id: 'complete',
 						title: 'Complete',
 						description: 'A complete fieldset',
 						fields: { field1: { type: 'text' } },
@@ -380,8 +270,8 @@ describe('Fieldset', () => {
 			});
 
 			describe('validation failures', () => {
-				test('throws error for invalid input', () => {
-					expect(() => fieldset.parse({ id: '' })).toThrow();
+				test('throws error for missing fields', () => {
+					expect(() => fieldset.parse({})).toThrow();
 				});
 
 				test('throws error when input is null', () => {
@@ -391,10 +281,6 @@ describe('Fieldset', () => {
 				test('throws error when input is undefined', () => {
 					expect(() => fieldset.parse(undefined)).toThrow();
 				});
-
-				test('throws error when id is missing', () => {
-					expect(() => fieldset.parse({ fields: { field1: { type: 'text' } } })).toThrow();
-				});
 			});
 		});
 
@@ -402,7 +288,6 @@ describe('Fieldset', () => {
 			describe('success cases', () => {
 				test('returns success for valid fieldset', () => {
 					const input = {
-						id: 'test',
 						fields: { name: { type: 'text' } },
 					};
 					const result = fieldset.safeParse(input);
@@ -414,7 +299,6 @@ describe('Fieldset', () => {
 
 				test('returns success for fieldset with nested fields', () => {
 					const input = {
-						id: 'parent',
 						fields: {
 							child: {
 								type: 'fieldset',
@@ -430,23 +314,8 @@ describe('Fieldset', () => {
 			});
 
 			describe('failure cases', () => {
-				test('returns error for invalid id', () => {
-					const input = { id: '', fields: { field1: { type: 'text' } } };
-					const result = fieldset.safeParse(input);
-					expect(result.success).toBe(false);
-					if (!result.success) {
-						expect(result.error).toBeInstanceOf(Error);
-					}
-				});
-
-				test('returns error for missing id', () => {
-					const input = { fields: { field1: { type: 'text' } } };
-					const result = fieldset.safeParse(input);
-					expect(result.success).toBe(false);
-				});
-
 				test('returns error for missing fields', () => {
-					const input = { id: 'test' };
+					const input = {};
 					const result = fieldset.safeParse(input);
 					expect(result.success).toBe(false);
 				});
@@ -461,18 +330,8 @@ describe('Fieldset', () => {
 					expect(result.success).toBe(false);
 				});
 
-				test('returns error when id exceeds maxLength', () => {
-					const input = {
-						id: 'a'.repeat(101),
-						fields: { field1: { type: 'text' } },
-					};
-					const result = fieldset.safeParse(input);
-					expect(result.success).toBe(false);
-				});
-
 				test('returns error when order is negative', () => {
 					const input = {
-						id: 'test',
 						fields: { field1: { type: 'text' } },
 						order: -1,
 					};
@@ -491,13 +350,12 @@ describe('Fieldset', () => {
 		describe('fluent builder API', () => {
 			describe('success cases', () => {
 				test('builds valid fieldset with minimal config', () => {
-					const result = fieldset('personal-info').field('name', field.text().build()).build();
-					expect(result.id).toBe('personal-info');
+					const result = fieldset().field('name', field.text().build()).build();
 					expect(result.fields!.name!.type).toBe('text');
 				});
 
 				test('builds fieldset with title', () => {
-					const result = fieldset('contact-info')
+					const result = fieldset()
 						.title('Contact Information')
 						.field('email', field.email().build())
 						.build();
@@ -505,7 +363,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with description', () => {
-					const result = fieldset('address-section')
+					const result = fieldset()
 						.title('Address')
 						.description('Enter your mailing address')
 						.fields({
@@ -517,7 +375,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with multiple fields using fields() method', () => {
-					const result = fieldset('profile')
+					const result = fieldset()
 						.fields({
 							name: field.text().label('Full Name').build(),
 							age: field.number().label('Age').min(0).max(120).build(),
@@ -530,7 +388,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with multiple fields using field() method', () => {
-					const result = fieldset('profile')
+					const result = fieldset()
 						.field('name', field.text().label('Full Name').build())
 						.field('age', field.number().label('Age').build())
 						.field('email', field.email().label('Email').build())
@@ -539,7 +397,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with required flag', () => {
-					const result = fieldset('required-section')
+					const result = fieldset()
 						.field('field1', field.text().build())
 						.required()
 						.build();
@@ -547,7 +405,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with explicit required false', () => {
-					const result = fieldset('optional-section')
+					const result = fieldset()
 						.field('field1', field.text().build())
 						.required(false)
 						.build();
@@ -555,12 +413,12 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with order', () => {
-					const result = fieldset('section-1').field('field1', field.text().build()).order(1).build();
+					const result = fieldset().field('field1', field.text().build()).order(1).build();
 					expect(result.order).toBe(1);
 				});
 
 				test('builds fieldset with all properties', () => {
-					const result = fieldset('complete-section')
+					const result = fieldset()
 						.title('Complete Information')
 						.description('All required fields')
 						.fields({
@@ -570,14 +428,13 @@ describe('Fieldset', () => {
 						.required()
 						.order(1)
 						.build();
-					expect(result.id).toBe('complete-section');
 					expect(result.title).toBe('Complete Information');
 					expect(result.required).toBe(true);
 					expect(result.order).toBe(1);
 				});
 
 				test('builds fieldset with nested fieldset', () => {
-					const result = fieldset('parent')
+					const result = fieldset()
 						.field(
 							'personal',
 							field
@@ -596,7 +453,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with deeply nested fieldsets', () => {
-					const result = fieldset('root')
+					const result = fieldset()
 						.field(
 							'level1',
 							field
@@ -617,7 +474,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with various field types', () => {
-					const result = fieldset('varied-fields')
+					const result = fieldset()
 						.fields({
 							textField: field.text().build(),
 							numberField: field.number().build(),
@@ -634,7 +491,7 @@ describe('Fieldset', () => {
 				});
 
 				test('supports method chaining', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.title('Test')
 						.description('Description')
 						.required()
@@ -646,7 +503,7 @@ describe('Fieldset', () => {
 				});
 
 				test('allows overwriting title', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.title('Original')
 						.title('Updated')
 						.field('name', field.text().build())
@@ -655,7 +512,7 @@ describe('Fieldset', () => {
 				});
 
 				test('allows overwriting description', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.description('Original')
 						.description('Updated')
 						.field('name', field.text().build())
@@ -664,7 +521,7 @@ describe('Fieldset', () => {
 				});
 
 				test('allows adding fields incrementally', () => {
-					const builder = fieldset('incremental')
+					const builder = fieldset()
 						.field('field1', field.text().build())
 						.field('field2', field.number().build());
 					const result = builder.build();
@@ -672,7 +529,7 @@ describe('Fieldset', () => {
 				});
 
 				test('allows mixing field() and fields() methods', () => {
-					const result = fieldset('mixed')
+					const result = fieldset()
 						.field('field1', field.text().build())
 						.fields({
 							field2: field.number().build(),
@@ -684,17 +541,17 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with order value 0', () => {
-					const result = fieldset('first').field('field1', field.text().build()).order(0).build();
+					const result = fieldset().field('field1', field.text().build()).order(0).build();
 					expect(result.order).toBe(0);
 				});
 
 				test('builds fieldset with large order value', () => {
-					const result = fieldset('last').field('field1', field.text().build()).order(9999).build();
+					const result = fieldset().field('field1', field.text().build()).order(9999).build();
 					expect(result.order).toBe(9999);
 				});
 
 				test('builds fieldset with undefined title', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.title(undefined)
 						.field('field1', field.text().build())
 						.build();
@@ -702,7 +559,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with undefined description', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.description(undefined)
 						.field('field1', field.text().build())
 						.build();
@@ -710,7 +567,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builds fieldset with undefined order', () => {
-					const result = fieldset('test')
+					const result = fieldset()
 						.order(undefined)
 						.field('field1', field.text().build())
 						.build();
@@ -719,49 +576,15 @@ describe('Fieldset', () => {
 			});
 
 			describe('validation failures on build()', () => {
-				test('throws error when id is empty string', () => {
-					expect(() => fieldset('').field('field1', field.text().build()).build()).toThrow();
-				});
-
-				test('throws error when id exceeds maxLength', () => {
-					expect(() =>
-						fieldset('a'.repeat(101)).field('field1', field.text().build()).build()
-					).toThrow();
-				});
-
-				test('throws error when id has invalid pattern (starts with dash)', () => {
-					expect(() =>
-						fieldset('-invalid').field('field1', field.text().build()).build()
-					).toThrow();
-				});
-
-				test('throws error when id has invalid pattern (starts with underscore)', () => {
-					expect(() =>
-						fieldset('_invalid').field('field1', field.text().build()).build()
-					).toThrow();
-				});
-
-				test('throws error when id has special characters', () => {
-					expect(() =>
-						fieldset('invalid@id').field('field1', field.text().build()).build()
-					).toThrow();
-				});
-
-				test('throws error when id has spaces', () => {
-					expect(() =>
-						fieldset('invalid id').field('field1', field.text().build()).build()
-					).toThrow();
-				});
-
 				test('throws error when title is empty string', () => {
 					expect(() =>
-						fieldset('test').title('').field('field1', field.text().build()).build()
+						fieldset().title('').field('field1', field.text().build()).build()
 					).toThrow();
 				});
 
 				test('throws error when title exceeds maxLength', () => {
 					expect(() =>
-						fieldset('test')
+						fieldset()
 							.title('a'.repeat(201))
 							.field('field1', field.text().build())
 							.build()
@@ -770,13 +593,13 @@ describe('Fieldset', () => {
 
 				test('throws error when description is empty string', () => {
 					expect(() =>
-						fieldset('test').description('').field('field1', field.text().build()).build()
+						fieldset().description('').field('field1', field.text().build()).build()
 					).toThrow();
 				});
 
 				test('throws error when description exceeds maxLength', () => {
 					expect(() =>
-						fieldset('test')
+						fieldset()
 							.description('a'.repeat(1001))
 							.field('field1', field.text().build())
 							.build()
@@ -785,20 +608,20 @@ describe('Fieldset', () => {
 
 				test('throws error when order is negative', () => {
 					expect(() =>
-						fieldset('test').field('field1', field.text().build()).order(-1).build()
+						fieldset().field('field1', field.text().build()).order(-1).build()
 					).toThrow();
 				});
 
 				test('throws error when field definition is invalid', () => {
 					expect(() =>
-						fieldset('test').field('invalid', { type: 'invalid' } as any).build()
+						fieldset().field('invalid', { type: 'invalid' } as any).build()
 					).toThrow();
 				});
 			});
 
 			describe('builder instance behavior', () => {
-				test('returns builder instance when called with id', () => {
-					const builder = fieldset('test');
+				test('returns builder instance when called with no args', () => {
+					const builder = fieldset();
 					expect(builder).toBeDefined();
 					expect(typeof builder.title).toBe('function');
 					expect(typeof builder.field).toBe('function');
@@ -807,7 +630,7 @@ describe('Fieldset', () => {
 				});
 
 				test('builder methods return this for chaining', () => {
-					const builder = fieldset('test');
+					const builder = fieldset();
 					const afterTitle = builder.title('Test');
 					const afterField = afterTitle.field('name', field.text().build());
 					expect(afterTitle).toBe(builder);
@@ -815,23 +638,23 @@ describe('Fieldset', () => {
 				});
 
 				test('multiple builders are independent', () => {
-					const builder1 = fieldset('test1').title('Test 1');
-					const builder2 = fieldset('test2').title('Test 2');
+					const builder1 = fieldset().title('Test 1');
+					const builder2 = fieldset().title('Test 2');
 					builder1.field('field1', field.text().build());
 					builder2.field('field2', field.number().build());
-					expect(builder1.build().id).toBe('test1');
-					expect(builder2.build().id).toBe('test2');
+					expect(builder1.build().title).toBe('Test 1');
+					expect(builder2.build().title).toBe('Test 2');
 				});
 
 				test('builder can be reused after build', () => {
-					const builder = fieldset('test').field('name', field.text().build());
+					const builder = fieldset().field('name', field.text().build());
 					const result1 = builder.build();
 					const result2 = builder.build();
 					expect(result1).toEqual(result2);
 				});
 
 				test('modifying builder after build affects subsequent builds', () => {
-					const builder = fieldset('test').title('Original');
+					const builder = fieldset().title('Original');
 					builder.field('field1', field.text().build());
 					const result1 = builder.build();
 
@@ -845,14 +668,13 @@ describe('Fieldset', () => {
 
 			describe('builder pattern vs object pattern comparison', () => {
 				test('builder pattern produces same result as object pattern', () => {
-					const builderResult = fieldset('test')
+					const builderResult = fieldset()
 						.title('Test Section')
 						.field('name', field.text().label('Name').build())
 						.required()
 						.build();
 
 					const objectResult = fieldset({
-						id: 'test',
 						title: 'Test Section',
 						fields: {
 							name: { type: 'text', label: 'Name' },
@@ -865,13 +687,12 @@ describe('Fieldset', () => {
 
 				test('builder validates on build(), object validates immediately', () => {
 					// Builder - no error until build()
-					const builder = fieldset('test');
+					const builder = fieldset();
 					expect(() => builder.title('').build()).toThrow();
 
 					// Object - error immediately
 					expect(() =>
 						fieldset({
-							id: 'test',
 							title: '',
 							fields: { field1: { type: 'text' } },
 						} as any)
@@ -881,7 +702,7 @@ describe('Fieldset', () => {
 
 			describe('common usage patterns', () => {
 				test('creates personal information section', () => {
-					const result = fieldset('personal-info')
+					const result = fieldset()
 						.title('Personal Information')
 						.description('Please provide your personal details')
 						.fields({
@@ -894,12 +715,12 @@ describe('Fieldset', () => {
 						.order(1)
 						.build();
 
-					expect(result.id).toBe('personal-info');
+					expect(result.title).toBe('Personal Information');
 					expect(Object.keys(result.fields)).toHaveLength(4);
 				});
 
 				test('creates address section', () => {
-					const result = fieldset('address')
+					const result = fieldset()
 						.title('Address')
 						.fields({
 							street: field.text().label('Street Address').required().build(),
@@ -913,7 +734,7 @@ describe('Fieldset', () => {
 				});
 
 				test('creates nested contact information', () => {
-					const result = fieldset('contact')
+					const result = fieldset()
 						.title('Contact Information')
 						.field(
 							'personal',
@@ -944,7 +765,7 @@ describe('Fieldset', () => {
 				});
 
 				test('creates optional preferences section', () => {
-					const result = fieldset('preferences')
+					const result = fieldset()
 						.title('Preferences')
 						.description('Optional settings')
 						.fields({
