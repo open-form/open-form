@@ -1,5 +1,7 @@
 # @open-form/renderer-docx
 
+## 0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

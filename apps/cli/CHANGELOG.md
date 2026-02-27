@@ -1,5 +1,11 @@
 # @open-form/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- fix: move undici to runtime dependencies to fix npx execution
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @open-form/renderers
 
+## 0.3.1
+
+### Patch Changes
+
+- @open-form/renderer-text@0.3.1
+- @open-form/renderer-pdf@0.3.1
+- @open-form/renderer-docx@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

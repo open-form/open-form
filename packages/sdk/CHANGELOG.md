@@ -1,5 +1,13 @@
 # @open-form/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- @open-form/core@0.3.1
+- @open-form/serialization@0.3.1
+- @open-form/renderers@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

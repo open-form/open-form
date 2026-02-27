@@ -1,5 +1,12 @@
 # @open-form/core
 
+## 0.3.1
+
+### Patch Changes
+
+- @open-form/types@0.3.1
+- @open-form/schemas@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes
