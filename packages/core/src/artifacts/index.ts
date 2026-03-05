@@ -147,6 +147,7 @@ export type {
 	FormBuilderInterface,
 	FillValidationOptions,
 	SafeFillResult,
+	SafePartialFillResult,
 	FormValidationResult,
 } from './form'
 

@@ -1,0 +1,100 @@
+---
+title: TanStack AI
+description: Use OpenForm tools with TanStack AI
+ogTitle: TanStack AI — OpenForm AI
+ogDescription: Integrate OpenForm tools into TanStack AI applications with @open-form/tanstack-ai
+---
+
+`@open-form/tanstack-ai` wraps `@open-form/ai-tools` with TanStack AI's `toolDefinition().server()` pattern. Tools run server-side and work with TanStack AI's chat, agent, and server handler APIs.
+
+# Installation
+
+```bash
+npm install @open-form/tanstack-ai @tanstack/ai zod
+```
+
+Peer dependencies: `@tanstack/ai` and `zod` ^4.0.0.
+
+# Usage
+
+```typescript
+import { openFormTools } from "@open-form/tanstack-ai"
+
+const tools = openFormTools({
+  defaultRegistryUrl: "https://public.open-form.dev",
+})
+
+// Use with TanStack AI's chat, agent, or server handler
+```
+
+# Composing with other tools
+
+Spread alongside your own tools:
+
+```typescript
+import { openFormTools } from "@open-form/tanstack-ai"
+import { toolDefinition } from "@tanstack/ai"
+import { z } from "zod"
+
+const lookupCustomer = toolDefinition({
+  name: "lookupCustomer",
+  description: "Look up a customer by ID",
+  inputSchema: z.object({ id: z.string() }),
+}).server(async ({ id }) => fetchCustomer(id))
+
+const allTools = {
+  ...openFormTools(),
+  lookupCustomer,
+}
+```
+
+Or pick individual tools:
+
+```typescript
+const { validateArtifact, render } = openFormTools()
+```
+
+# Configuration
+
+```typescript
+openFormTools({
+  defaultRegistryUrl: "https://public.open-form.dev",
+  proxyTextRenderer: {
+    url: "https://your-documents-service.example.com",
+    apiKey: "your-api-key",
+  },
+  fetch: customFetchWithAuth,
+})
+```
+
+See the [configuration reference](/ai#configuration) for details on each option.
+
+# API
+
+## `openFormTools(config?)`
+
+Returns an object with five server tools:
+
+| Key | Tool name | Description |
+|-----|-----------|-------------|
+| `validateArtifact` | `validateArtifact` | Validates an OpenForm artifact against its schema |
+| `fill` | `fill` | Fills an OpenForm artifact with data and validates |
+| `render` | `render` | Renders an OpenForm artifact to PDF, markdown, or DOCX |
+| `getRegistry` | `getRegistry` | Fetches registry.json from a URL, returns available artifacts |
+| `getArtifact` | `getArtifact` | Fetches artifact JSON from a registry by name |
+
+## Re-exports
+
+The package also re-exports all output types from `@open-form/ai-tools`:
+
+```typescript
+import type {
+  OpenFormToolsConfig,
+  ProxyTextRendererConfig,
+  ValidateOutput,
+  FillOutput,
+  RenderOutput,
+  GetRegistryOutput,
+  GetArtifactOutput,
+} from "@open-form/tanstack-ai"
+```

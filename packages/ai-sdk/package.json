@@ -1,0 +1,85 @@
+{
+  "name": "@open-form/ai-sdk",
+  "version": "0.3.1",
+  "description": "Vercel AI SDK adapter for OpenForm tools — wraps @open-form/ai-tools with AI SDK tool()",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "ai",
+    "ai-sdk",
+    "vercel",
+    "tools",
+    "llm",
+    "agent"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "OpenForm",
+    "url": "https://open-form.dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "packages/ai-sdk"
+  },
+  "homepage": "https://open-form.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "pnpm run clean",
+    "pack:dry": "pnpm run build && npm pack --dry-run",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "check": "pnpm lint && pnpm check-types && echo \"All checks passed\" || echo \"Checks failed\""
+  },
+  "dependencies": {
+    "@open-form/ai-tools": "workspace:*",
+    "@open-form/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "ai": "catalog:",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@open-form/eslint-config": "workspace:*",
+    "@open-form/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "ai": "^6.0.0",
+    "eslint": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "ofm",
+  "private": true,
+  "version": "0.3.1",
+  "description": "CLI tool for OpenForm framework",
+  "bin": {
+    "ofm": "./node_modules/@open-form/cli/dist/index.js",
+    "open-form": "./node_modules/@open-form/cli/dist/index.js"
+  },
+  "files": [
+    "README.md"
+  ],
+  "keywords": [
+    "openform",
+    "open-form",
+    "ofm",
+    "cli",
+    "forms",
+    "command-line"
+  ],
+  "license": "MIT",
+  "author": "OpenForm",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-form/open-form.git",
+    "directory": "apps/ofm"
+  },
+  "homepage": "https://www.ofm.dev",
+  "bugs": {
+    "url": "https://github.com/open-form/open-form/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@open-form/cli": "workspace:*"
+  }
+}

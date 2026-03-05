@@ -14,7 +14,7 @@ import type { ValidationError, ValidationResult, InstanceTemplate } from '@/type
  * Build a Zod schema from a compiled JSON Schema
  * This is a simplified conversion for common form field patterns
  */
-function jsonSchemaToZod(jsonSchema: Record<string, unknown>): z.ZodType {
+export function jsonSchemaToZod(jsonSchema: Record<string, unknown>): z.ZodType {
 	const type = jsonSchema.type as string | undefined
 
 	if (type === 'object') {
@@ -140,7 +140,7 @@ function jsonSchemaToZod(jsonSchema: Record<string, unknown>): z.ZodType {
 /**
  * Apply defaults from JSON Schema to data
  */
-function applyDefaults(
+export function applyDefaults(
 	data: Record<string, unknown>,
 	jsonSchema: Record<string, unknown>
 ): Record<string, unknown> {
@@ -158,6 +158,89 @@ function applyDefaults(
 	}
 
 	return result
+}
+
+/**
+ * Map a single Zod issue to ValidationError format.
+ */
+export function mapZodIssueToValidationError(
+	issue: z.ZodIssue,
+	pathPrefix: Array<string | number> = []
+): ValidationError {
+	const fullPath = [...pathPrefix, ...issue.path]
+	const field = fullPath.join('.') || 'root'
+	let message = issue.message
+
+	// Enhance error messages based on code
+	// Zod 4 has different issue codes than Zod 3
+	if (issue.code === 'invalid_type') {
+		const invalidTypeIssue = issue as { expected?: string; received?: string }
+		// Check for undefined - Zod 4 may report as 'undefined' string or include it in the message
+		const isUndefined =
+			invalidTypeIssue.received === 'undefined' ||
+			message.includes('received undefined')
+		if (isUndefined) {
+			message = `Missing required field: ${field}`
+		} else if (invalidTypeIssue.expected && invalidTypeIssue.received) {
+			message = `Expected type ${invalidTypeIssue.expected}, received ${invalidTypeIssue.received}`
+		}
+	} else if (issue.code === 'too_small') {
+		const tooSmallIssue = issue as { minimum?: number; type?: string }
+		if (tooSmallIssue.minimum !== undefined) {
+			message = `Must be at least ${tooSmallIssue.minimum}`
+		}
+	} else if (issue.code === 'too_big') {
+		const tooBigIssue = issue as { maximum?: number; type?: string }
+		if (tooBigIssue.maximum !== undefined) {
+			message = `Must be at most ${tooBigIssue.maximum}`
+		}
+	} else if (issue.code === 'invalid_format') {
+		const formatIssue = issue as { format?: string }
+		if (formatIssue.format === 'email') {
+			message = 'Invalid email format'
+		} else if (formatIssue.format === 'url' || formatIssue.format === 'uri') {
+			message = 'Invalid URL format'
+		} else if (formatIssue.format === 'regex') {
+			message = 'Does not match required pattern'
+		}
+	} else if (issue.code === 'invalid_value') {
+		const valueIssue = issue as { values?: unknown[] }
+		if (valueIssue.values) {
+			message = `Must be one of: ${valueIssue.values.join(', ')}`
+		}
+	} else if (issue.code === 'invalid_union') {
+		const unionIssue = issue as { errors?: Array<Array<{ values?: unknown[] }>> }
+		const unionValues = unionIssue.errors
+			?.flatMap((branch) => branch)
+			.flatMap((nestedIssue) =>
+				Array.isArray(nestedIssue.values) ? nestedIssue.values : [],
+			)
+		const uniqueValues = Array.from(new Set(unionValues))
+		if (uniqueValues.length > 0) {
+			message = `Must be one of: ${uniqueValues.join(', ')}`
+		}
+	} else if (issue.code === 'unrecognized_keys') {
+		const keysIssue = issue as { keys?: string[] }
+		if (keysIssue.keys) {
+			message = `Unknown field(s): ${keysIssue.keys.join(', ')}`
+		}
+	}
+
+	return {
+		field,
+		message,
+		value: undefined, // Zod doesn't provide the invalid value directly
+	}
+}
+
+/**
+ * Map Zod issues array to ValidationError format.
+ */
+export function mapZodIssuesToValidationErrors(
+	issues: z.ZodIssue[],
+	pathPrefix: Array<string | number> = []
+): ValidationError[] {
+	return issues.map((issue) => mapZodIssueToValidationError(issue, pathPrefix))
 }
 
 /**
@@ -195,61 +278,7 @@ export function validateFormData<F extends Form>(
 		}
 	}
 
-	// Map Zod errors to our error format
-	const errors: ValidationError[] = result.error.issues.map((issue) => {
-		const field = issue.path.join('.') || 'root'
-		let message = issue.message
-
-		// Enhance error messages based on code
-		// Zod 4 has different issue codes than Zod 3
-		if (issue.code === 'invalid_type') {
-			const invalidTypeIssue = issue as { expected?: string; received?: string }
-			// Check for undefined - Zod 4 may report as 'undefined' string or include it in the message
-			const isUndefined =
-				invalidTypeIssue.received === 'undefined' ||
-				message.includes('received undefined')
-			if (isUndefined) {
-				message = `Missing required field: ${field}`
-			} else if (invalidTypeIssue.expected && invalidTypeIssue.received) {
-				message = `Expected type ${invalidTypeIssue.expected}, received ${invalidTypeIssue.received}`
-			}
-		} else if (issue.code === 'too_small') {
-			const tooSmallIssue = issue as { minimum?: number; type?: string }
-			if (tooSmallIssue.minimum !== undefined) {
-				message = `Must be at least ${tooSmallIssue.minimum}`
-			}
-		} else if (issue.code === 'too_big') {
-			const tooBigIssue = issue as { maximum?: number; type?: string }
-			if (tooBigIssue.maximum !== undefined) {
-				message = `Must be at most ${tooBigIssue.maximum}`
-			}
-		} else if (issue.code === 'invalid_format') {
-			const formatIssue = issue as { format?: string }
-			if (formatIssue.format === 'email') {
-				message = 'Invalid email format'
-			} else if (formatIssue.format === 'url' || formatIssue.format === 'uri') {
-				message = 'Invalid URL format'
-			} else if (formatIssue.format === 'regex') {
-				message = 'Does not match required pattern'
-			}
-		} else if (issue.code === 'invalid_value') {
-			const valueIssue = issue as { values?: unknown[] }
-			if (valueIssue.values) {
-				message = `Must be one of: ${valueIssue.values.join(', ')}`
-			}
-		} else if (issue.code === 'unrecognized_keys') {
-			const keysIssue = issue as { keys?: string[] }
-			if (keysIssue.keys) {
-				message = `Unknown field(s): ${keysIssue.keys.join(', ')}`
-			}
-		}
-
-		return {
-			field,
-			message,
-			value: undefined, // Zod doesn't provide the invalid value directly
-		}
-	})
+	const errors = mapZodIssuesToValidationErrors(result.error.issues)
 
 	return {
 		success: false,

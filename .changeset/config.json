@@ -15,7 +15,9 @@
       "@open-form/renderers",
       "@open-form/sdk",
       "@open-form/cli",
-      "open-form"
+      "@open-form/ai-tools",
+      "@open-form/ai-sdk",
+      "@open-form/tanstack-ai"
     ]
   ],
   "linked": [],

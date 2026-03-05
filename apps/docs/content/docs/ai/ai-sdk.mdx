@@ -1,0 +1,122 @@
+---
+title: Vercel AI SDK
+description: Use OpenForm tools with the Vercel AI SDK
+ogTitle: Vercel AI SDK — OpenForm AI
+ogDescription: Integrate OpenForm tools into Vercel AI SDK applications with @open-form/ai-sdk
+---
+
+`@open-form/ai-sdk` wraps `@open-form/ai-tools` with Vercel AI SDK's `tool()` function. Works with `generateText`, `streamText`, and any AI SDK-compatible model.
+
+# Installation
+
+```bash
+npm install @open-form/ai-sdk ai zod
+```
+
+Peer dependencies: `ai` ^6.0.0 and `zod` ^4.0.0.
+
+# Usage
+
+```typescript
+import { openFormTools } from "@open-form/ai-sdk"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
+
+const result = await generateText({
+  model: openai("gpt-4o"),
+  tools: openFormTools({
+    defaultRegistryUrl: "https://public.open-form.dev",
+  }),
+  prompt: "Fill the pet addendum for my dog Rex, 30 lbs, vaccinated",
+})
+```
+
+# Streaming
+
+```typescript
+import { streamText } from "ai"
+
+const result = streamText({
+  model: openai("gpt-4o"),
+  tools: openFormTools(),
+  prompt: "What artifacts are available in the public registry?",
+})
+
+for await (const part of result.textStream) {
+  process.stdout.write(part)
+}
+```
+
+# Composing with other tools
+
+Spread alongside your own tools:
+
+```typescript
+import { openFormTools } from "@open-form/ai-sdk"
+import { tool } from "ai"
+import { z } from "zod"
+
+const result = await generateText({
+  model,
+  tools: {
+    ...openFormTools(),
+    lookupCustomer: tool({
+      description: "Look up a customer by ID",
+      inputSchema: z.object({ id: z.string() }),
+      execute: async ({ id }) => fetchCustomer(id),
+    }),
+  },
+  prompt: "...",
+})
+```
+
+Or pick individual tools:
+
+```typescript
+const { validateArtifact, render } = openFormTools()
+```
+
+# Configuration
+
+```typescript
+openFormTools({
+  defaultRegistryUrl: "https://public.open-form.dev",
+  proxyTextRenderer: {
+    url: "https://your-documents-service.example.com",
+    apiKey: "your-api-key",
+  },
+  fetch: customFetchWithAuth,
+})
+```
+
+See the [configuration reference](/ai#configuration) for details on each option.
+
+# API
+
+## `openFormTools(config?)`
+
+Returns an object with five tools:
+
+| Key | AI SDK `tool()` description |
+|-----|----------------------------|
+| `validateArtifact` | Validates an OpenForm artifact against its schema |
+| `fill` | Fills an OpenForm artifact with data and validates |
+| `render` | Renders an OpenForm artifact to PDF, markdown, or DOCX |
+| `getRegistry` | Fetches registry.json from a URL, returns available artifacts |
+| `getArtifact` | Fetches artifact JSON from a registry by name |
+
+## Re-exports
+
+The package also re-exports all output types from `@open-form/ai-tools`:
+
+```typescript
+import type {
+  OpenFormToolsConfig,
+  ProxyTextRendererConfig,
+  ValidateOutput,
+  FillOutput,
+  RenderOutput,
+  GetRegistryOutput,
+  GetArtifactOutput,
+} from "@open-form/ai-sdk"
+```

@@ -12,7 +12,7 @@ The signing flow in OpenForm separates the concepts of **who can sign** (Signers
 const draft = form.fill({
   fields: { /* ... */ },
   parties: {
-    landlord: { id: 'landlord-0', legalName: 'ABC Property LLC' },
+    landlord: { id: 'landlord-0', name: 'ABC Property LLC' },
     tenant: { id: 'tenant-0', name: 'Jane Smith' }
   }
 })
@@ -121,7 +121,7 @@ interface PartySignatory {
 const draft = form.fill({
   parties: {
     tenant: { id: 'tenant-0', name: 'Jane Smith' },
-    guarantor: { id: 'guarantor-0', legalName: 'Smith Family Trust' }
+    guarantor: { id: 'guarantor-0', name: 'Smith Family Trust' }
   }
 })
   .addSigner('jane', { person: { name: 'Jane Smith' }, adopted: { /* ... */ } })

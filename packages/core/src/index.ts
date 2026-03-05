@@ -65,6 +65,7 @@ export type {
   DraftForm,
   FillValidationOptions,
   SafeFillResult,
+  SafePartialFillResult,
   FormValidationResult,
   SignableForm,
   ExecutedForm,
@@ -229,6 +230,14 @@ export {
   // Validators
   validateForm,
   validateFormData,
+  validateFieldInput,
+  validateFieldsPatch,
+  validatePartyInput,
+  validatePartiesPatch,
+  validateAnnexInput,
+  validateAnnexesPatch,
+  validateChecklistItemInput,
+  validateChecklistItemsPatch,
   validateDocument,
   validateBundle,
   validateChecklist,
@@ -271,6 +280,12 @@ export type {
   ValidateOptions,
   PartyValidationResult,
   ExtendedValidationResult,
+  ProgressiveValidationResult,
+  FieldInputValidationInput,
+  PartyInputValidationInput,
+  AnnexInputValidationInput,
+  ChecklistItemInputValidationInput,
+  NormalizedPartyInput,
 } from "./validation";
 
 // ============================================================================
@@ -298,6 +313,29 @@ export * from "./serialization";
 // ============================================================================
 
 export { OPENFORM_SCHEMA_URL } from "@open-form/schemas";
+
+// ============================================================================
+// FILL STATE (Progressive Filling)
+// ============================================================================
+
+export {
+  buildDependencyMap,
+  computeFillState,
+  computeRuntimeState,
+  getAvailableFillTargets,
+  getNextFillTarget,
+} from "./fill-state";
+
+export type {
+  FillValidationMode,
+  PartialFillOptions,
+  UpdateOptions,
+  FillTargetOptions,
+  FillTargetKind,
+  FillTarget,
+  FillItemState,
+  FillState,
+} from "./fill-state";
 
 // ============================================================================
 // LOGIC

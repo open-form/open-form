@@ -9,7 +9,8 @@
     "schemas",
     "sdk",
     "cli",
-    "mcp"
+    "mcp",
+    "ai"
   ],
   "defaultOpen": true
 }

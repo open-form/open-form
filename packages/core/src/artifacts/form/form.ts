@@ -39,7 +39,23 @@ import {
 	parseFormParty,
 	parseLayer,
 } from '@/validation/artifact-parsers'
-import { validateFormData, validatePartiesForRole, type ValidationResult, type ValidationError } from '@/validation'
+import {
+	validateFormData,
+	validatePartiesForRole,
+	validateFieldInput as validateProgressiveFieldInput,
+	validateFieldsPatch as validateProgressiveFieldsPatch,
+	validatePartyInput as validateProgressivePartyInput,
+	validatePartiesPatch as validateProgressivePartiesPatch,
+	validateAnnexInput as validateProgressiveAnnexInput,
+	validateAnnexesPatch as validateProgressiveAnnexesPatch,
+	type ValidationResult,
+	type ValidationError,
+	type ProgressiveValidationResult,
+	type FieldInputValidationInput,
+	type PartyInputValidationInput,
+	type AnnexInputValidationInput,
+	type NormalizedPartyInput,
+} from '@/validation'
 import { toYAML } from '@/serialization/serialization'
 import { withArtifactMethods, type ArtifactMethods } from '../shared/artifact-methods'
 import { layer as layerBuilder, type FileLayerBuilderType, type InlineLayerBuilderType } from '@/artifacts/builders/layer'
@@ -48,6 +64,14 @@ import type { FieldsToDataType } from '@/inference'
 import type { FormRuntimeState, FieldRuntimeState, AnnexRuntimeState, FormRulesValidationResult } from '@/logic'
 import { evaluateFormDefs, evaluateFormRules } from '@/logic'
 import type { RuntimeFormRenderOptions, RenderOptions, RendererLayer } from '@/types'
+import type {
+	PartialFillOptions,
+	UpdateOptions,
+	FillTargetOptions,
+	FillTarget,
+	FillState,
+} from '@/fill-state/types'
+import { computeFillState, computeRuntimeState, getAvailableFillTargets, getNextFillTarget } from '@/fill-state/engine'
 
 // ============================================================================
 // Type Inference for Form Payloads
@@ -242,6 +266,13 @@ export type SafeFillResult<F extends Form> =
 	| { success: false; error: Error; data?: DraftForm<F>; rules?: FormRulesValidationResult }
 
 /**
+ * Result of safePartialFill() — success means provided data is valid.
+ */
+export type SafePartialFillResult<F extends Form> =
+	| { success: true; data: DraftForm<F> }
+	| { success: false; error: Error }
+
+/**
  * FormInstance - design-time wrapper for Form artifacts
  */
 export interface FormInstance<F extends Form> extends ArtifactMethods<F> {
@@ -279,6 +310,36 @@ export interface FormInstance<F extends Form> extends ArtifactMethods<F> {
 	safeParseData(data: Record<string, unknown>): ValidationResult<InferFormPayload<F>>
 
 	/**
+	 * Validate a single field input against a `fields.<path>` schema.
+	 */
+	validateFieldInput(input: FieldInputValidationInput): ProgressiveValidationResult<unknown>
+
+	/**
+	 * Validate a partial fields patch without requiring unrelated fields.
+	 */
+	validateFieldsPatch(fields: unknown): ProgressiveValidationResult<Record<string, unknown>>
+
+	/**
+	 * Validate one party value for a role/index and normalize party ID.
+	 */
+	validatePartyInput(input: PartyInputValidationInput): ProgressiveValidationResult<NormalizedPartyInput>
+
+	/**
+	 * Validate a partial parties patch without requiring unrelated roles.
+	 */
+	validatePartiesPatch(parties: unknown): ProgressiveValidationResult<Record<string, RuntimeParty | RuntimeParty[]>>
+
+	/**
+	 * Validate one annex value against configured annex keys.
+	 */
+	validateAnnexInput(input: AnnexInputValidationInput): ProgressiveValidationResult<unknown>
+
+	/**
+	 * Validate a partial annexes patch against configured annex keys.
+	 */
+	validateAnnexesPatch(annexes: unknown): ProgressiveValidationResult<Record<string, unknown>>
+
+	/**
 	 * Create a RuntimeForm in draft phase with data.
 	 * By default validates both data and rules.
 	 * @throws FormValidationError if data validation fails
@@ -293,6 +354,18 @@ export interface FormInstance<F extends Form> extends ArtifactMethods<F> {
 	 * When data is valid but rules fail, the result includes `data` (the DraftForm) for inspection.
 	 */
 	safeFill(data: InferFormPayload<F>, options?: FillValidationOptions): SafeFillResult<F>
+
+	/**
+	 * Create a DraftForm from partial (or empty) data for progressive filling.
+	 * Uses patch validation by default — only validates provided fields.
+	 * @throws FormValidationError if validation fails (when validate is "patch" or "full")
+	 */
+	partialFill(seed?: Partial<InferFormPayload<F>>, options?: PartialFillOptions): DraftForm<F>
+
+	/**
+	 * Safely create a DraftForm from partial data, returning a result object.
+	 */
+	safePartialFill(seed?: Partial<InferFormPayload<F>>, options?: PartialFillOptions): SafePartialFillResult<F>
 
 	/**
 	 * Render form content directly.
@@ -444,6 +517,33 @@ export interface DraftForm<F extends Form> extends RuntimeFormBase<F> {
 
 	// Annex Mutation
 	setAnnex(annexId: string, annexData: unknown): DraftForm<F>
+
+	// Progressive Fill
+	/**
+	 * Merge a patch into current data and return a new DraftForm.
+	 * @throws FormValidationError if validation fails
+	 */
+	update(patch: Partial<InferFormPayload<F>>, options?: UpdateOptions): DraftForm<F>
+
+	/**
+	 * Safely merge a patch, returning a result object instead of throwing.
+	 */
+	safeUpdate(patch: Partial<InferFormPayload<F>>, options?: UpdateOptions): SafePartialFillResult<F>
+
+	/**
+	 * Compute the full fill state: open/blocked/done items, candidates, summary.
+	 */
+	getFillState(options?: FillTargetOptions): FillState
+
+	/**
+	 * Get the next recommended fill target, or null if all required are done.
+	 */
+	getNextFillTarget(options?: FillTargetOptions): FillTarget | null
+
+	/**
+	 * Get all available fill targets in declaration order.
+	 */
+	getAvailableFillTargets(options?: FillTargetOptions): FillTarget[]
 
 	// Layer Management
 	setTargetLayer<K extends keyof F['layers'] & string>(layer: K): DraftForm<F>
@@ -970,6 +1070,102 @@ function createRuntimeForm<F extends Form>(config: RuntimeFormConfig<F>): Runtim
 				...config,
 				annexes: { ...annexValues, [annexId]: annexData },
 			})
+		},
+
+		// ============================================================================
+		// Progressive Fill Methods (draft only)
+		// ============================================================================
+
+		update(patch: Partial<InferFormPayload<F>>, options?: UpdateOptions): DraftForm<F> {
+			ensureDraft('update')
+			const validate = options?.validate ?? 'patch'
+			const checkRules = options?.rules === true
+
+			const patchFields = (patch as Record<string, unknown>).fields as Record<string, unknown> | undefined
+			const patchParties = (patch as Record<string, unknown>).parties as Record<string, Party | Party[]> | undefined
+			const patchAnnexes = (patch as Record<string, unknown>).annexes as Record<string, unknown> | undefined
+
+			const mergedFields = { ...fieldValues, ...patchFields }
+			const mergedParties = { ...partyValues, ...patchParties }
+			const mergedAnnexes = { ...annexValues, ...patchAnnexes }
+
+			if (validate === 'patch') {
+				if (patchFields && Object.keys(patchFields).length > 0) {
+					const fieldResult = validateProgressiveFieldsPatch(formDef, patchFields)
+					if (!fieldResult.success) {
+						throw new FormValidationError(fieldResult.errors)
+					}
+				}
+				if (patchParties && Object.keys(patchParties).length > 0) {
+					const partyResult = validateProgressivePartiesPatch(formDef, patchParties)
+					if (!partyResult.success) {
+						throw new FormValidationError(partyResult.errors)
+					}
+				}
+				if (patchAnnexes && Object.keys(patchAnnexes).length > 0) {
+					const annexResult = validateProgressiveAnnexesPatch(formDef, patchAnnexes)
+					if (!annexResult.success) {
+						throw new FormValidationError(annexResult.errors)
+					}
+				}
+			} else if (validate === 'full') {
+				const fieldData = { fields: mergedFields, ...(Object.keys(mergedAnnexes).length > 0 ? { annexes: mergedAnnexes } : {}) }
+				const result = validateFormData(formDef, fieldData)
+				if (!result.success) {
+					throw new FormValidationError(result.errors)
+				}
+			}
+
+			const draft = createRuntimeForm<F>({
+				...config,
+				fields: mergedFields,
+				parties: mergedParties,
+				annexes: mergedAnnexes,
+				phase: 'draft',
+				executedAt: undefined,
+			})
+
+			if (checkRules) {
+				const ruleResult = draft.validateRules()
+				if (!ruleResult.valid) {
+					throw new FormRuleViolationError(ruleResult)
+				}
+			}
+
+			return draft
+		},
+
+		safeUpdate(patch: Partial<InferFormPayload<F>>, options?: UpdateOptions): SafePartialFillResult<F> {
+			ensureDraft('safeUpdate')
+			try {
+				const draft = runtime.update(patch, { ...options, rules: false })
+
+				if (options?.rules === true) {
+					const ruleResult = draft.validateRules()
+					if (!ruleResult.valid) {
+						return { success: false, error: new FormRuleViolationError(ruleResult) }
+					}
+				}
+
+				return { success: true, data: draft }
+			} catch (err) {
+				return { success: false, error: err as Error }
+			}
+		},
+
+		getFillState(options?: FillTargetOptions): FillState {
+			const state = getRuntimeState()
+			return computeFillState(formDef, fieldValues, partyValues, annexValues, state, options)
+		},
+
+		getNextFillTarget(options?: FillTargetOptions): FillTarget | null {
+			const state = getRuntimeState()
+			return getNextFillTarget(formDef, fieldValues, partyValues, annexValues, state, options)
+		},
+
+		getAvailableFillTargets(options?: FillTargetOptions): FillTarget[] {
+			const state = getRuntimeState()
+			return getAvailableFillTargets(formDef, fieldValues, partyValues, annexValues, state, options)
 		},
 
 		// ============================================================================
@@ -1703,11 +1899,35 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 			return result.data
 		},
 
-		safeParseData(data: Record<string, unknown>): ValidationResult<InferFormPayload<F>> {
-			return validateFormData(formDef, data) as ValidationResult<InferFormPayload<F>>
-		},
+			safeParseData(data: Record<string, unknown>): ValidationResult<InferFormPayload<F>> {
+				return validateFormData(formDef, data) as ValidationResult<InferFormPayload<F>>
+			},
 
-		fill(data: InferFormPayload<F>, options?: FillValidationOptions): DraftForm<F> {
+			validateFieldInput(input: FieldInputValidationInput): ProgressiveValidationResult<unknown> {
+				return validateProgressiveFieldInput(formDef, input)
+			},
+
+			validateFieldsPatch(fields: unknown): ProgressiveValidationResult<Record<string, unknown>> {
+				return validateProgressiveFieldsPatch(formDef, fields)
+			},
+
+			validatePartyInput(input: PartyInputValidationInput): ProgressiveValidationResult<NormalizedPartyInput> {
+				return validateProgressivePartyInput(formDef, input)
+			},
+
+			validatePartiesPatch(parties: unknown): ProgressiveValidationResult<Record<string, RuntimeParty | RuntimeParty[]>> {
+				return validateProgressivePartiesPatch(formDef, parties)
+			},
+
+			validateAnnexInput(input: AnnexInputValidationInput): ProgressiveValidationResult<unknown> {
+				return validateProgressiveAnnexInput(formDef, input)
+			},
+
+			validateAnnexesPatch(annexes: unknown): ProgressiveValidationResult<Record<string, unknown>> {
+				return validateProgressiveAnnexesPatch(formDef, annexes)
+			},
+
+			fill(data: InferFormPayload<F>, options?: FillValidationOptions): DraftForm<F> {
 			const checkRules = options?.rules !== false
 
 			// Normalize data
@@ -1783,6 +2003,85 @@ function createFormInstance<F extends Form>(formDef: F): FormInstance<F> {
 			}
 
 			return { success: true, data: draft, rules: ruleResult }
+		},
+
+		partialFill(seed?: Partial<InferFormPayload<F>>, options?: PartialFillOptions): DraftForm<F> {
+			const validate = options?.validate ?? 'patch'
+			const checkRules = options?.rules === true
+
+			const fields = (seed as Record<string, unknown> | undefined)?.fields ?? {}
+			const parties = (seed as Record<string, unknown> | undefined)?.parties ?? {}
+			const annexes = (seed as Record<string, unknown> | undefined)?.annexes ?? {}
+			const signers = (seed as Record<string, unknown> | undefined)?.signers ?? {}
+			const signatories = (seed as Record<string, unknown> | undefined)?.signatories ?? {}
+
+			// Validate based on mode
+			if (validate === 'patch') {
+				if (Object.keys(fields as Record<string, unknown>).length > 0) {
+					const fieldResult = validateProgressiveFieldsPatch(formDef, fields)
+					if (!fieldResult.success) {
+						throw new FormValidationError(fieldResult.errors)
+					}
+				}
+				if (Object.keys(parties as Record<string, unknown>).length > 0) {
+					const partyResult = validateProgressivePartiesPatch(formDef, parties)
+					if (!partyResult.success) {
+						throw new FormValidationError(partyResult.errors)
+					}
+				}
+				if (Object.keys(annexes as Record<string, unknown>).length > 0) {
+					const annexResult = validateProgressiveAnnexesPatch(formDef, annexes)
+					if (!annexResult.success) {
+						throw new FormValidationError(annexResult.errors)
+					}
+				}
+			} else if (validate === 'full') {
+				const fieldData = { fields, ...(Object.keys(annexes as Record<string, unknown>).length > 0 ? { annexes } : {}) }
+				const result = validateFormData(formDef, fieldData)
+				if (!result.success) {
+					throw new FormValidationError(result.errors)
+				}
+			}
+			// validate === 'none' → skip
+
+			const targetLayer = formDef.defaultLayer || (formDef.layers ? Object.keys(formDef.layers)[0] : '') || ''
+
+			const draft = createRuntimeForm({
+				form: formDef,
+				fields: fields as Record<string, unknown>,
+				parties: parties as Record<string, Party | Party[]>,
+				annexes: annexes as Record<string, unknown>,
+				signers: signers as Record<string, Signer>,
+				signatories: signatories as Record<string, Record<string, PartySignatory[]>>,
+				targetLayer,
+				phase: 'draft',
+			})
+
+			if (checkRules) {
+				const ruleResult = draft.validateRules()
+				if (!ruleResult.valid) {
+					throw new FormRuleViolationError(ruleResult)
+				}
+			}
+
+			return draft
+		},
+
+		safePartialFill(seed?: Partial<InferFormPayload<F>>, options?: PartialFillOptions): SafePartialFillResult<F> {
+			try {
+				const draft = instance.partialFill(seed, { ...options, rules: false })
+
+				if (options?.rules === true) {
+					const ruleResult = draft.validateRules()
+					if (!ruleResult.valid) {
+						return { success: false, error: new FormRuleViolationError(ruleResult) }
+					}
+				}
+
+				return { success: true, data: draft }
+			} catch (err) {
+				return { success: false, error: err as Error }
+			}
 		},
 
 		async render<Output>(options: RenderOptions<Output>): Promise<Output> {

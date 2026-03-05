@@ -1,5 +1,6 @@
 {
   "name": "open-form",
+  "private": true,
   "version": "0.3.1",
   "description": "CLI tool for OpenForm framework",
   "bin": {

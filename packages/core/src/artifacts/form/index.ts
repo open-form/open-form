@@ -20,6 +20,7 @@ export type {
 	FormBuilderInterface,
 	FillValidationOptions,
 	SafeFillResult,
+	SafePartialFillResult,
 	FormValidationResult,
 } from './form'
 export type { LayerRenderOptions } from '../shared/render-layer'

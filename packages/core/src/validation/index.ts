@@ -76,6 +76,26 @@ export { validateSchema, validate as validateArtifact, parseArtifact } from './a
 // Data validation
 export { validateFormData, validateInstance } from './data'
 
+// Progressive validation
+export {
+  validateFieldInput,
+  validateFieldsPatch,
+  validatePartyInput,
+  validatePartiesPatch,
+  validateAnnexInput,
+  validateAnnexesPatch,
+  validateChecklistItemInput,
+  validateChecklistItemsPatch,
+} from './progressive'
+export type {
+  ProgressiveValidationResult,
+  FieldInputValidationInput,
+  PartyInputValidationInput,
+  AnnexInputValidationInput,
+  ChecklistItemInputValidationInput,
+  NormalizedPartyInput,
+} from './progressive'
+
 // Types
 export type {
   ValidationError,

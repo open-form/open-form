@@ -1,0 +1,18 @@
+{
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@open-form/ai-tools": ["../ai-tools/src/index.ts"],
+      "@open-form/sdk": ["../sdk/src/index.ts"],
+      "@open-form/core": ["../core/src/index.ts"],
+      "@open-form/renderers": ["../renderers/src/index.ts"],
+      "@/*": ["../core/src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

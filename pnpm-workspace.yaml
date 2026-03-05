@@ -37,6 +37,7 @@ catalog:
   yaml-diff-patch: "^2.0.0"
   zod: "^4.1.12"
   "@workos-inc/node": "^7.81.0"
+  ai: "^6.0.108"
   dotenv: "^17.2.3"
   "@types/dotenv": "^8.2.3"
   tsx: "^4.20.6"

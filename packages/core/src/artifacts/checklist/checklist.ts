@@ -8,6 +8,12 @@
 import type { Checklist, ChecklistItem, Layer, Metadata, RendererLayer, Form, ContentRef } from '@open-form/types'
 import type { DraftChecklistJSON, CompletedChecklistJSON } from '@open-form/types'
 import { parseChecklist, parseChecklistItem, parseLayer } from '@/validation/artifact-parsers'
+import {
+	validateChecklistItemInput,
+	validateChecklistItemsPatch,
+	type ChecklistItemInputValidationInput,
+	type ProgressiveValidationResult,
+} from '@/validation'
 import { toYAML } from '@/serialization/serialization'
 import { withArtifactMethods, type ArtifactMethods } from '../shared/artifact-methods'
 import { layer as layerBuilder, type FileLayerBuilderType, type InlineLayerBuilderType } from '@/artifacts/builders/layer'
@@ -74,6 +80,16 @@ export interface ChecklistInstance<C extends Checklist> extends ArtifactMethods<
 	 * @throws Error if data validation fails
 	 */
 	fill(data: InferChecklistPayload<C>): DraftChecklist<C>
+
+	/**
+	 * Validate one checklist item input by item ID.
+	 */
+	validateItemInput(input: ChecklistItemInputValidationInput): ProgressiveValidationResult<boolean | string>
+
+	/**
+	 * Validate a partial checklist items patch.
+	 */
+	validateItemsPatch(items: unknown): ProgressiveValidationResult<Record<string, boolean | string>>
 
 	/**
 	 * Safely create a RuntimeChecklist, returning a result object instead of throwing.
@@ -586,10 +602,22 @@ function createChecklistInstance<C extends Checklist>(checklistDef: C): Checklis
 		// Checklist-specific properties (type assertions needed for conditional types)
 		items: checklistDef.items as ChecklistInstance<C>['items'],
 		layers: checklistDef.layers as ChecklistInstance<C>['layers'],
-		defaultLayer: checklistDef.defaultLayer as ChecklistInstance<C>['defaultLayer'],
+			defaultLayer: checklistDef.defaultLayer as ChecklistInstance<C>['defaultLayer'],
 
-		fill(data: InferChecklistPayload<C>): DraftChecklist<C> {
-			const targetLayer =
+			validateItemInput(
+				input: ChecklistItemInputValidationInput,
+			): ProgressiveValidationResult<boolean | string> {
+				return validateChecklistItemInput(checklistDef, input)
+			},
+
+			validateItemsPatch(
+				items: unknown,
+			): ProgressiveValidationResult<Record<string, boolean | string>> {
+				return validateChecklistItemsPatch(checklistDef, items)
+			},
+
+			fill(data: InferChecklistPayload<C>): DraftChecklist<C> {
+				const targetLayer =
 				checklistDef.defaultLayer || (checklistDef.layers ? Object.keys(checklistDef.layers)[0] : '') || ''
 
 			return createRuntimeChecklist({

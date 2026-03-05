@@ -93,7 +93,7 @@ const draft = form.fill({
   fields: { tenantName: 'John Doe', moveInDate: '2024-02-01' },
   parties: {
     tenant: { id: 'tenant-0', name: 'John Doe' },
-    landlord: { id: 'landlord-0', legalName: 'ABC Property LLC' }
+    landlord: { id: 'landlord-0', name: 'ABC Property LLC' }
   }
 })
 
@@ -172,8 +172,16 @@ Returns a `FormInstance` with the following properties and methods:
   { name: 'parties', type: 'Record<string, FormParty> | undefined', description: 'Party role definitions' },
   { name: 'parseData', type: '(data: Record<string, unknown>) => InferFormPayload', description: 'Validate data against form (throws on error)', isMethod: true },
   { name: 'safeParseData', type: '(data: Record<string, unknown>) => ValidationResult', description: 'Validate data (returns result object)', isMethod: true },
+  { name: 'validateFieldInput', type: '(input: { fieldPath: string | string[]; value: unknown }) => ProgressiveValidationResult<unknown>', description: 'Validate one field input at fields.<path>', isMethod: true },
+  { name: 'validateFieldsPatch', type: '(fields: unknown) => ProgressiveValidationResult<Record<string, unknown>>', description: 'Validate a partial fields patch without requiring unrelated fields', isMethod: true },
+  { name: 'validatePartyInput', type: '(input: { roleId: string; index?: number; value: unknown }) => ProgressiveValidationResult<{ roleId; index; party }>', description: 'Validate one party input and normalize runtime party id', isMethod: true },
+  { name: 'validatePartiesPatch', type: '(parties: unknown) => ProgressiveValidationResult<Record<string, RuntimeParty | RuntimeParty[]>>', description: 'Validate a partial parties patch', isMethod: true },
+  { name: 'validateAnnexInput', type: '(input: { annexId: string; value: unknown }) => ProgressiveValidationResult<unknown>', description: 'Validate one annex input key/value', isMethod: true },
+  { name: 'validateAnnexesPatch', type: '(annexes: unknown) => ProgressiveValidationResult<Record<string, unknown>>', description: 'Validate a partial annexes patch', isMethod: true },
   { name: 'fill', type: '(data: FillOptions) => DraftForm', description: 'Create a DraftForm with validated data', isMethod: true },
   { name: 'safeFill', type: '(data: FillOptions) => Result<DraftForm>', description: 'Create DraftForm (returns result object)', isMethod: true },
+  { name: 'partialFill', type: '(seed?: Partial<Payload>, options?: PartialFillOptions) => DraftForm', description: 'Create a DraftForm from partial or empty data for progressive filling', isMethod: true },
+  { name: 'safePartialFill', type: '(seed?: Partial<Payload>, options?: PartialFillOptions) => SafePartialFillResult', description: 'Safely create a DraftForm from partial data (returns result object)', isMethod: true },
   { name: 'render', type: '(options: RenderOptions) => Promise<Output>', description: 'Render using a renderer', isMethod: true },
   { name: 'clone', type: '() => FormInstance', description: 'Deep clone the instance', isMethod: true },
   { name: 'validate', type: '(options?: ValidateOptions) => StandardSchemaV1.Result', description: 'Validate the form definition', isMethod: true },
@@ -243,6 +251,159 @@ if (result.success) {
 }
 ```
 
+# Progressive Validation
+
+Use progressive validators to validate one user answer at a time before calling `fill()`.
+
+## Return shape
+
+All progressive validators return:
+
+```ts
+type ProgressiveValidationResult<T> =
+  | { success: true; value: T; errors: null }
+  | { success: false; value: null; errors: ValidationError[] }
+```
+
+## Field input validation
+
+```ts
+const species = form.validateFieldInput({
+  fieldPath: 'species',
+  value: 'cat',
+})
+
+const nested = form.validateFieldInput({
+  fieldPath: ['profile', 'nickname'],
+  value: 'Toby',
+})
+
+const partialFields = form.validateFieldsPatch({
+  species: 'dog',
+  weight: 20,
+})
+```
+
+## Party input validation
+
+```ts
+const tenantResult = form.validatePartyInput({
+  roleId: 'tenant',
+  value: { name: 'John Smith' },
+})
+
+// For multi-party roles, pass an index.
+const witnessResult = form.validatePartyInput({
+  roleId: 'witness',
+  index: 1,
+  value: { name: 'Jane Witness' },
+})
+
+const partiesPatch = form.validatePartiesPatch({
+  tenant: { name: 'John Smith' },
+  landlord: { name: 'Acme Inc', legalName: 'Acme Inc' },
+})
+```
+
+`validatePartyInput` normalizes runtime IDs using `{roleId}-{index}` (for example `tenant-0`).
+
+## Annex input validation
+
+```ts
+const annexResult = form.validateAnnexInput({
+  annexId: 'photoId',
+  value: { name: 'photo-id.pdf', mimeType: 'application/pdf' },
+})
+
+const annexPatch = form.validateAnnexesPatch({
+  photoId: { name: 'photo-id.pdf', mimeType: 'application/pdf' },
+})
+```
+
+When `allowAdditionalAnnexes` is `false`, unknown annex keys are rejected.
+
+# Incremental Filling
+
+Use `partialFill` to create a DraftForm from partial (or empty) data, then progressively fill it with `update`. This is the recommended pattern for AI agents and step-by-step UIs that collect data one field at a time.
+
+## Creating a draft from partial data
+
+```ts
+// Start with empty data
+const draft = form.partialFill()
+
+// Start with some known values
+const draft = form.partialFill({
+  fields: { tenantName: 'John Doe' },
+  parties: { tenant: { id: 'tenant-0', name: 'John Doe' } }
+})
+
+// Safe variant (returns result object)
+const result = form.safePartialFill({ fields: { tenantName: 'John' } })
+if (result.success) {
+  const draft = result.data
+}
+```
+
+## Updating a draft progressively
+
+```ts
+// Merge additional data into the draft
+const updated = draft.update({
+  fields: { moveInDate: '2024-06-01' }
+})
+
+// Safe variant
+const result = draft.safeUpdate({ fields: { monthlyRent: { amount: 1500, currency: 'USD' } } })
+if (result.success) {
+  const updated = result.data
+}
+```
+
+## Querying fill state
+
+`getFillState()` returns a snapshot of progress, including what's open, what's blocked behind conditional visibility, and what to ask next. See [Fill State](/sdk/artifacts/form/fill-state) for full type reference.
+
+```ts
+const state = draft.getFillState()
+
+// Progress
+state.summary.completionPercent  // 0–100
+state.summary.requiredRemaining  // fields/parties still needed
+
+// What to ask next
+state.next       // FillTarget | null — first candidate
+state.candidates // FillTarget[] — all visible, unfilled targets
+
+// Items blocked by conditional visibility
+state.blocked    // FillItemState[] — will unblock when dependencies are filled
+
+// Shorthand helpers
+const next = draft.getNextFillTarget()
+const all = draft.getAvailableFillTargets()
+```
+
+## Validation modes
+
+Both `partialFill` and `update` accept a `validate` option:
+
+| Mode | Behavior |
+|------|----------|
+| `"patch"` (default) | Validate only the provided fields |
+| `"full"` | Validate entire payload including required fields |
+| `"none"` | Skip validation entirely |
+
+```ts
+// Skip validation (useful when data is pre-validated)
+const draft = form.partialFill(data, { validate: 'none' })
+
+// Full validation (same as fill())
+const draft = form.partialFill(data, { validate: 'full' })
+
+// Also evaluate rules
+const draft = form.partialFill(data, { validate: 'patch', rules: true })
+```
+
 # Lifecycle Types
 
 The `fill()` method returns a `DraftForm` that follows the form lifecycle:
@@ -255,7 +416,7 @@ The `fill()` method returns a `DraftForm` that follows the form lifecycle:
 
 ## DraftForm
 
-Created by `form.fill()`. Mutable data and signer configuration.
+Created by `form.fill()` or `form.partialFill()`. Mutable data and signer configuration.
 
 <PropertiesTable properties={[
   { name: 'phase', type: "'draft'", description: 'Phase discriminator' },
@@ -275,6 +436,11 @@ Created by `form.fill()`. Mutable data and signer configuration.
   { name: 'addParty', type: '(roleId: string, party: Party) => DraftForm', description: 'Add party to role', isMethod: true },
   { name: 'addSigner', type: '(signerId: string, signer: Signer) => DraftForm', description: 'Add signer to registry', isMethod: true },
   { name: 'addSignatory', type: '(roleId, partyId, signatory) => DraftForm', description: 'Link signer to party', isMethod: true },
+  { name: 'update', type: '(patch: Partial<Payload>, options?: UpdateOptions) => DraftForm', description: 'Merge a patch into current data and return a new DraftForm', isMethod: true },
+  { name: 'safeUpdate', type: '(patch: Partial<Payload>, options?: UpdateOptions) => SafePartialFillResult', description: 'Safely merge a patch (returns result object)', isMethod: true },
+  { name: 'getFillState', type: '(options?: FillTargetOptions) => FillState', description: 'Compute full fill state: open/blocked/done items, candidates, progress summary', isMethod: true },
+  { name: 'getNextFillTarget', type: '(options?: FillTargetOptions) => FillTarget | null', description: 'Get the next recommended fill target, or null if all required are done', isMethod: true },
+  { name: 'getAvailableFillTargets', type: '(options?: FillTargetOptions) => FillTarget[]', description: 'Get all available fill targets in declaration order', isMethod: true },
   { name: 'prepareForSigning', type: '() => SignableForm', description: 'Transition to signable phase', isMethod: true },
   { name: 'seal', type: '(adapter: Sealer) => Promise<SignableForm>', description: 'Seal for formal e-signing', isMethod: true },
   { name: 'render', type: '(options: RenderOptions) => Promise<Output>', description: 'Render with embedded data', isMethod: true },
@@ -322,4 +488,5 @@ Created by `signable.finalize()`. Fully frozen, ready for archival.
 - [field](/sdk/artifacts/form/field) - Field definitions
 - [annex](/sdk/artifacts/form/annex) - Annex slot definitions
 - [party](/sdk/artifacts/form/party) - Party role definitions
+- [fill-state](/sdk/artifacts/form/fill-state) - Fill state types and progressive filling
 - [Form Schema](/schemas/artifacts/form)
