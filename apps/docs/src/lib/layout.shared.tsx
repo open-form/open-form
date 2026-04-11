@@ -5,7 +5,7 @@ export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: (
-        <Logo className="sm:-translate-y-[6px] sm:translate-x-[1px] h-6 w-auto dark:text-foreground" />
+        <Logo className="sm:-translate-y-[6px] sm:translate-x-[1px] h-5 w-auto dark:text-white" />
       ),
     },
     links: [

@@ -8,6 +8,7 @@ const coreEntry = fs.existsSync(coreSourceEntry) ? coreSourceEntry : coreDistEnt
 
 export default defineConfig({
   test: {
+    silent: true,
     globals: true,
     environment: 'node',
     globalSetup: ['./tests/setup/test-registry-server.ts'],
