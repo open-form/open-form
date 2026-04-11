@@ -141,4 +141,4 @@ We're open to all community contributions! If you'd like to contribute in any wa
 
 This project is licensed under the MIT license.
 
-See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE) for more information.

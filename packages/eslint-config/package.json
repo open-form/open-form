@@ -7,7 +7,7 @@
   "files": [
     "*.js",
     "README.md",
-    "LICENSE.md"
+    "LICENSE"
   ],
   "keywords": [
     "openform",

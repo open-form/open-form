@@ -78,4 +78,4 @@ For the full command reference, see the [`@open-form/cli` README](https://www.np
 
 This project is licensed under the MIT license.
 
-See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE.md) for more information.
+See [LICENSE](https://github.com/open-form/open-form/blob/main/LICENSE) for more information.

@@ -15,7 +15,7 @@
 		"dist",
 		"README.md",
 		"CHANGELOG.md",
-		"LICENSE.md"
+		"LICENSE"
 	],
 	"keywords": [
 		"open-form",
